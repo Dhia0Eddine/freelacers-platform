@@ -1,0 +1,18 @@
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+
+class ServiceBase(BaseModel):
+    category_id: int
+    name: str
+    description: Optional[str]
+
+class ServiceCreate(ServiceBase):
+    pass
+
+class ServiceOut(ServiceBase):
+    id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

@@ -14,5 +14,5 @@ class Review(Base, TimestampMixin):
     comment = Column(Text, nullable=True)
 
     booking = relationship("Booking", back_populates="review")
-    reviewer = relationship("User", foreign_keys=[reviewer_id], back_populates="reviews_given")
-    reviewee = relationship("User", foreign_keys=[reviewee_id], back_populates="reviews_received")
+    reviewer = relationship("User", foreign_keys=[reviewer_id])
+    reviewee = relationship("User", foreign_keys=[reviewee_id])

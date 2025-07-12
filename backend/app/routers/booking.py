@@ -20,7 +20,7 @@ class Booking(Base, TimestampMixin):
     status = Column(Enum(BookingStatus), default=BookingStatus.scheduled)
 
     quote = relationship("Quote", back_populates="booking")
-    customer = relationship("User", foreign_keys=[customer_id], back_populates="bookings_as_customer")
-    provider = relationship("User", foreign_keys=[provider_id], back_populates="bookings_as_provider")
+    customer = relationship("User", foreign_keys=[customer_id])
+    provider = relationship("User", foreign_keys=[provider_id])
     review = relationship("Review", uselist=False, back_populates="booking")
     payment = relationship("Payment", uselist=False, back_populates="booking")
