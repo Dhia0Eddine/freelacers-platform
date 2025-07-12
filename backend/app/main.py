@@ -1,7 +1,7 @@
 #app/main
 
 from fastapi import FastAPI
-from backend.app.routers import auth
+from app.routers import auth
 from fastapi.middleware.cors import CORSMiddleware
 
 app= FastAPI()
