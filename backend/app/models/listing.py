@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Float, Boolean
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, Boolean, DateTime
 from sqlalchemy.orm import relationship
 from app.database import Base
+from datetime import datetime
 
 class Listing(Base):
     __tablename__ = "listings"
@@ -15,6 +16,7 @@ class Listing(Base):
     max_price = Column(Float)
     location = Column(String)
     available = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     user = relationship("User", back_populates="listings")
     service = relationship("Service", back_populates="listings")

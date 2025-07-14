@@ -1,21 +1,18 @@
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime
 
-class CategoryBase(BaseModel):
+class CategoryCreate(BaseModel):
     name: str
-    description: Optional[str]
+    description: Optional[str] = None
 
-class CategoryCreate(CategoryBase):
-    pass
+class CategoryUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
 
-class CategoryOut(CategoryBase):
+class CategoryOut(BaseModel):
     id: int
-    created_at: datetime
+    name: str
+    description: Optional[str] = None
 
     class Config:
         from_attributes = True
-        
-        # This allows Pydantic to read data as dictionaries from ORM models
-        # and convert them to Pydantic models.
-        # It is useful when you want to serialize SQLAlchemy models directly.
