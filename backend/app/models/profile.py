@@ -12,5 +12,6 @@ class Profile(Base):
     location = Column(String)
     bio = Column(String)
     average_rating = Column(Float)
+    phone = Column(String)
 
     user = relationship("User", back_populates="profile")

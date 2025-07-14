@@ -3,7 +3,6 @@ from typing import Optional
 from datetime import datetime
 
 class ListingBase(BaseModel):
-    user_id: int
     service_id: int
     title: str
     description: Optional[str]

@@ -1,22 +1,21 @@
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime
 
-class ProfileBase(BaseModel):
-    user_id: int
-    full_name: Optional[str]
-    phone: Optional[str]
-    location: Optional[str]
-    bio: Optional[str]
-    profile_image: Optional[str]
-    average_rating: Optional[float]
+class ProfileCreate(BaseModel):
+    full_name: str
+    phone: str
+    location: str
+    bio: Optional[str] = None
 
-class ProfileCreate(ProfileBase):
-    pass
+class ProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    phone: Optional[str] = None
+    location: Optional[str] = None
+    bio: Optional[str] = None
 
-class ProfileOut(ProfileBase):
+class ProfileOut(ProfileCreate):
     id: int
-    created_at: datetime
+    user_id: int
 
     class Config:
         from_attributes = True

@@ -12,7 +12,12 @@ class ServiceCreate(ServiceBase):
 
 class ServiceOut(ServiceBase):
     id: int
-    created_at: datetime
+    
 
     class Config:
         from_attributes = True
+
+class ServiceUpdate(BaseModel):
+    category_id: Optional[int] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
