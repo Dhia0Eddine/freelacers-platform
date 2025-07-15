@@ -7,6 +7,7 @@ from app.models.listing import Listing
 from app.schemas.listing import ListingCreate, ListingOut
 from app.utils.auth import get_current_user
 from app.models.user import User
+from app.models.service import Service  # Import the Service model
 
 router = APIRouter(prefix="/listings", tags=["Listings"])
 
@@ -59,6 +60,11 @@ def update_listing(
         raise HTTPException(status_code=404, detail="Listing not found")
     if listing.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized to update this listing")
+
+    # Check if the service_id is valid
+    service = db.query(Service).filter(Service.id == updated_data.service_id).first()
+    if not service:
+        raise HTTPException(status_code=400, detail="Invalid service_id")
 
     for field, value in updated_data.dict().items():
         setattr(listing, field, value)

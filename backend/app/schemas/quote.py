@@ -1,26 +1,24 @@
+# schemas/quote.py
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
-from enum import Enum
 
-class QuoteStatus(str, Enum):
-    pending = "pending"
-    accepted = "accepted"
-    rejected = "rejected"
-
-class QuoteBase(BaseModel):
-    provider_id: int
+class QuoteCreate(BaseModel):
     request_id: int
     listing_id: int
     price: float
-    message: Optional[str]
-    status: QuoteStatus = QuoteStatus.pending
+    message: Optional[str] = None
 
-class QuoteCreate(QuoteBase):
-    pass
-
-class QuoteOut(QuoteBase):
+class QuoteUpdate(BaseModel):
+    status: str  # should be "accepted" or "rejected"
+class QuoteOut(BaseModel):
     id: int
+    request_id: int
+    listing_id: int
+    provider_id: int
+    price: float
+    message: Optional[str]
+    status: str
     created_at: datetime
 
     class Config:

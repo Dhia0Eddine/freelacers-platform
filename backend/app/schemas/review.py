@@ -1,19 +1,19 @@
-from datetime import datetime
 from pydantic import BaseModel
 from typing import Optional
+from datetime import datetime
 
-class ReviewBase(BaseModel):
+class ReviewCreate(BaseModel):
+    booking_id: int
+    rating: int
+    comment: Optional[str] = None
+
+class ReviewOut(BaseModel):
+    id: int
     booking_id: int
     reviewer_id: int
     reviewee_id: int
-    rating: int  # 1 to 5
-    comment: Optional[str] = None
-
-class ReviewCreate(ReviewBase):
-    pass
-
-class ReviewOut(ReviewBase):
-    id: int
+    rating: int
+    comment: Optional[str]
     created_at: datetime
 
     class Config:

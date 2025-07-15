@@ -1,42 +1,80 @@
-# File: backend/app/models/quote.py
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, Enum, DateTime
-from sqlalchemy.orm import relationship
-from app.database import Base
-import enum
-from datetime import datetime
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+from typing import List
 
-class QuoteStatus(str, enum.Enum):
-    pending = "pending"
-    accepted = "accepted"
-    rejected = "rejected"
+from app.dependencies.db import get_db
+from app.models.quote import Quote
+from app.models.user import User
+from app.models.request import Request
+from app.models.listing import Listing
+from app.schemas.quote import QuoteCreate, QuoteOut, QuoteUpdate
+from app.utils.auth import get_current_user
 
-class Quote(Base):
-    __tablename__ = "quotes"
+router = APIRouter(prefix="/quotes", tags=["Quotes"])
 
-    id = Column(Integer, primary_key=True, index=True)
-    provider_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    request_id = Column(Integer, ForeignKey("requests.id", ondelete="CASCADE"), nullable=False)
-    listing_id = Column(Integer, ForeignKey("listings.id", ondelete="CASCADE"), nullable=False)
+# CREATE a quote (provider only)
+@router.post("/", response_model=QuoteOut)
+def create_quote(data: QuoteCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    if current_user.role != "provider":
+        raise HTTPException(status_code=403, detail="Only providers can send quotes")
 
-    price = Column(Float, nullable=False)
-    message = Column(String)
-    status = Column(Enum(QuoteStatus), default=QuoteStatus.pending)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    request_obj = db.query(Request).filter_by(id=data.request_id).first()
+    listing_obj = db.query(Listing).filter_by(id=data.listing_id, user_id=current_user.id).first()
 
-    provider = relationship("User", back_populates="quotes")
-    request = relationship("Request", back_populates="quotes")
-    listing = relationship("Listing", back_populates="quotes")
-    booking = relationship("Booking", uselist=False, back_populates="quote")
+    if not request_obj:
+        raise HTTPException(status_code=404, detail="Request not found")
+    if not listing_obj:
+        raise HTTPException(status_code=404, detail="Listing not found or not owned by user")
+    quote = Quote(
+        request_id=data.request_id,
+        listing_id=data.listing_id,
+        provider_id=current_user.id,
+        price=data.price,
+        message=data.message,
+        status="pending"
+    )
+    db.add(quote)
+    db.commit()
+    db.refresh(quote)
+    return quote
+
+# GET all quotes (optional filters)
+@router.get("/", response_model=List[QuoteOut])
+def get_quotes(db: Session = Depends(get_db)):
+    return db.query(Quote).all()
+
+# GET quotes for a specific request (for customers)
+@router.get("/request/{request_id}", response_model=List[QuoteOut])
+def get_quotes_for_request(request_id: int, db: Session = Depends(get_db)):
+    return db.query(Quote).filter_by(request_id=request_id).all()
+
+# UPDATE quote status (customer only)
+@router.patch("/{quote_id}/status", response_model=QuoteOut)
+def update_quote_status(quote_id: int, update: QuoteUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    quote = db.query(Quote).filter_by(id=quote_id).first()
+    if not quote:
+        raise HTTPException(status_code=404, detail="Quote not found")
+
+    # Get request and confirm current user owns it
+    request_obj = db.query(Request).filter_by(id=quote.request_id).first()
+    if request_obj.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You can only update quotes on your own requests")
+
+    if update.status not in ["accepted", "rejected"]:
+        raise HTTPException(status_code=400, detail="Invalid status")
     
-# app/models/quote.py
+    quote.status = update.status
+    db.commit()
+    db.refresh(quote)
+    return quote
 
-# ADD this inside the Quote model:
-
-    # Assuming User, Request, and Listing models exist and have a foreign key to Quote
-    # If not, you need to define those models similarly to how Quote is defined     
-    # If you have a User model, it should have a relationship defined like this:
-    # quotes = relationship("Quote", back_populates="provider", cascade="all, delete")
-    # If you have a Request model, it should have a relationship defined like this:
-    # quotes = relationship("Quote", back_populates="request", cascade="all, delete")
-    # If you have a Listing model, it should have a relationship defined like this:
-    # quotes = relationship("Quote", back_populates="listing", cascade="all, delete")   
+# DELETE a quote (provider only)
+@router.delete("/{quote_id}")
+def delete_quote(quote_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    quote = db.query(Quote).filter_by(id=quote_id, provider_id=current_user.id).first()
+    if not quote:
+        raise HTTPException(status_code=404, detail="Quote not found or not owned by user")
+    
+    db.delete(quote)
+    db.commit()
+    return {"detail": "Quote deleted"}

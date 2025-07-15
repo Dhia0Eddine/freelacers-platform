@@ -10,7 +10,6 @@ class RequestStatus(str, Enum):
     closed = "closed"
 
 class RequestBase(BaseModel):
-    user_id: int
     service_id: int
     description: Optional[str]
     location: Optional[str]
@@ -26,3 +25,10 @@ class RequestOut(RequestBase):
 
     class Config:
         from_attributes = True
+
+class RequestUpdate(BaseModel):
+    service_id: Optional[int] = None
+    description: Optional[str] = None
+    location: Optional[str] = None
+    preferred_date: Optional[datetime] = None
+    status: Optional[RequestStatus] = None

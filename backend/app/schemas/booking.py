@@ -1,26 +1,23 @@
-from datetime import datetime
+# schemas/booking.py
+
 from pydantic import BaseModel
-from typing import Optional
-from enum import Enum
+from datetime import datetime
 
-class BookingStatus(str, Enum):
-    scheduled = "scheduled"
-    completed = "completed"
-    cancelled = "cancelled"
+class BookingCreate(BaseModel):
+    quote_id: int
+    scheduled_time: datetime
 
-class BookingBase(BaseModel):
+class BookingUpdate(BaseModel):
+    status: str  # scheduled, completed, cancelled
+
+class BookingOut(BaseModel):
+    id: int
     quote_id: int
     customer_id: int
     provider_id: int
     scheduled_time: datetime
-    status: BookingStatus = BookingStatus.scheduled
-
-class BookingCreate(BookingBase):
-    pass
-
-class BookingOut(BookingBase):
-    id: int
+    status: str
     created_at: datetime
 
     class Config:
-        from_attributes = True
+         from_attributes = True
