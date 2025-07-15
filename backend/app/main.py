@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import auth, profile, category, service,listing, request, booking,quote, review
+from app.routers import auth, profile, category, service,listing, request, booking,quote, review,payment
 app = FastAPI()
 
 app.add_middleware(
@@ -22,3 +22,4 @@ app.include_router(request.router)
 app.include_router(booking.router)
 app.include_router(quote.router)
 app.include_router(review.router)
+app.include_router(payment.router)

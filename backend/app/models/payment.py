@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from app.database import Base
 from app.models.base import TimestampMixin
 import enum
+from datetime import datetime
 
 class PaymentMethod(enum.Enum):
     credit_card = "credit_card"
@@ -23,6 +24,6 @@ class Payment(Base, TimestampMixin):
     amount = Column(Numeric(10, 2), nullable=False)
     method = Column(Enum(PaymentMethod), default=PaymentMethod.manual)
     status = Column(Enum(PaymentStatus), default=PaymentStatus.pending)
-    paid_at = Column(DateTime, nullable=True)
+    paid_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     booking = relationship("Booking", back_populates="payment")

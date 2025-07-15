@@ -1,28 +1,27 @@
-from sqlalchemy import Column, Integer, ForeignKey, Numeric, Enum, DateTime
-from sqlalchemy.orm import relationship
-from app.database import Base
-from app.models.base import TimestampMixin
-import enum
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from app.dependencies.db import get_db
+from app.schemas.payment import PaymentCreate, PaymentOut
+from app.models.payment import Payment
+from app.models.booking import Booking
 
-class PaymentMethod(enum.Enum):
-    credit_card = "credit_card"
-    paypal = "paypal"
-    stripe = "stripe"
-    manual = "manual"
+router = APIRouter(prefix="/payments", tags=["Payments"])
 
-class PaymentStatus(enum.Enum):
-    pending = "pending"
-    paid = "paid"
-    failed = "failed"
+@router.post("/", response_model=PaymentOut)
+def create_dummy_payment(data: PaymentCreate, db: Session = Depends(get_db)):
+    booking = db.query(Booking).filter(Booking.id == data.booking_id).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
 
-class Payment(Base, TimestampMixin):
-    __tablename__ = "payments"
+    # Simulate payment (assume always successful)
+    payment = Payment(
+        booking_id=booking.id,
+        amount=data.amount,
+        method=data.method,
+        status="paid"
+    )
+    db.add(payment)
+    db.commit()
+    db.refresh(payment)
 
-    id = Column(Integer, primary_key=True, index=True)
-    booking_id = Column(Integer, ForeignKey("bookings.id", ondelete="CASCADE"))
-    amount = Column(Numeric(10, 2), nullable=False)
-    method = Column(Enum(PaymentMethod), default=PaymentMethod.manual)
-    status = Column(Enum(PaymentStatus), default=PaymentStatus.pending)
-    paid_at = Column(DateTime, nullable=True)
-
-    booking = relationship("Booking", back_populates="payment")
+    return payment
