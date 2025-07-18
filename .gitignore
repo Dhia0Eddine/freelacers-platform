@@ -1,0 +1,48 @@
+# Ignore Python bytecode files
+*.pyc
+*.pyo
+__pycache__/
+
+# Ignore environment files
+.env
+
+# Ignore virtual environment folders
+venv/
+.env/
+
+# Ignore logs
+*.log
+
+# Ignore database files
+*.sqlite3
+
+# Ignore IDE-specific files
+.vscode/
+.idea/
+
+# Ignore build files
+build/
+dist/
+*.egg-info/
+
+# Ignore coverage reports
+.coverage
+htmlcov/
+
+# Ignore pytest cache
+.pytest_cache/
+
+# Ignore Uvicorn reload files
+*.pid
+
+# Ignore node_modules (if frontend uses Node.js)
+node_modules/
+
+# Ignore temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
