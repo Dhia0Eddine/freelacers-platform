@@ -1,10 +1,16 @@
 // src/routes/index.tsx
-import { createBrowserRouter, RouterProvider } from "react-router-dom"
+import { createBrowserRouter, Route, RouterProvider } from "react-router-dom"
 import AppLayout from "../layout/AppLayout"
 import LoginPage from "../pages/LoginPage"
 import RegisterPage from "../pages/RegisterPage"
+import ProfileSetupPage from "../pages/ProfileSetupPage"
 import HomePage from "../pages/HomePage"
-
+import ProfilePage from "../pages/ProfilePage";
+import EditProfilePage from "../pages/EditProfilePage";
+import ApiDebugPage from "../pages/ApiDebugPage";
+import UserProfilePage from "../pages/UserProfilePage";
+import ServiceListingsPage from "../pages/ServiceListingsPage";
+import ServiceListingDetailPage from "../pages/ServiceListingDetailPage";
 
 export const router = createBrowserRouter([
   {
@@ -13,7 +19,14 @@ export const router = createBrowserRouter([
     children: [
       { path: "", element: <HomePage /> },
       { path: "login", element: <LoginPage /> },
-      { path: "signup", element: <RegisterPage /> }, // Changed from "register" to "signup"
+      { path: "signup", element: <RegisterPage /> },
+      { path: "profile-setup", element: <ProfileSetupPage /> },
+      { path: "profile/me", element: <ProfilePage /> },
+      { path: "profile/edit", element: <EditProfilePage /> },
+      { path: "profile/:userId", element: <UserProfilePage /> },
+      { path: "services", element: <ServiceListingsPage /> }, // Add the new route
+      { path: "listings/:listingId", element: <ServiceListingDetailPage /> },
+      
     ],
   },
 ])

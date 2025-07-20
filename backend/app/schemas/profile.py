@@ -1,21 +1,26 @@
 from pydantic import BaseModel
 from typing import Optional
 
-class ProfileCreate(BaseModel):
-    full_name: str
-    phone: str
-    location: str
+class ProfileBase(BaseModel):
+    full_name: str  # Note: Using snake_case here
     bio: Optional[str] = None
+    location: str
+    phone: str  # Add the phone field to match frontend expectations
+    average_rating: Optional[float] = None  # Add optional average_rating field
+
+class ProfileCreate(ProfileBase):
+    pass
 
 class ProfileUpdate(BaseModel):
     full_name: Optional[str] = None
-    phone: Optional[str] = None
-    location: Optional[str] = None
     bio: Optional[str] = None
+    location: Optional[str] = None
+    phone: Optional[str] = None  # Add optional phone field for updates
+    average_rating: Optional[float] = None  # Add optional average_rating field for updates
 
-class ProfileOut(ProfileCreate):
+class ProfileOut(ProfileBase):
     id: int
     user_id: int
 
     class Config:
-        from_attributes = True
+        orm_mode = True

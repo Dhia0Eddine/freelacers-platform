@@ -4,12 +4,13 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuthContext } from '@/context/AuthContext';
 import { ArrowLeft } from 'lucide-react';
+import { authService } from '@/services/api';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState('client');
+  const [role, setRole] = useState('customer'); // Changed default to match backend
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -37,20 +38,24 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      // Mock registration - replace with API call when ready
-      console.log('Registering:', { email, password, role });
+      // Register the user with the backend
+      await authService.register(email, password, role);
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Login automatically after successful registration
+      const loginResponse = await authService.login(email, password);
+      login(loginResponse.access_token);
       
-      // Mock login
-      login('mock-token');
+      // Store registration data for profile setup
+      sessionStorage.setItem('registration', JSON.stringify({
+        email,
+        role
+      }));
       
-      // Redirect to home page after successful registration
-      navigate('/');
+      // Redirect to profile setup page
+      navigate('/profile-setup');
     } catch (err) {
       console.error('Registration error:', err);
-      setError('Registration failed. Please try again.');
+      setError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -63,7 +68,7 @@ export default function RegisterPage() {
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Create an account</h1>
             <p className="mt-2 text-gray-600 dark:text-gray-300">
-              Join our community and start your journey
+              Step 1: Basic information
             </p>
           </div>
 
@@ -119,31 +124,50 @@ export default function RegisterPage() {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                I am a:
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                I am joining as:
               </label>
-              <div className="flex gap-4 mt-2">
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    value="client"
-                    checked={role === 'client'}
-                    onChange={() => setRole('client')}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
-                  />
-                  <span className="ml-2 text-gray-700 dark:text-gray-300">Client</span>
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    value="freelancer"
-                    checked={role === 'freelancer'}
-                    onChange={() => setRole('freelancer')}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
-                  />
-                  <span className="ml-2 text-gray-700 dark:text-gray-300">Freelancer</span>
-                </label>
+              <div className="grid grid-cols-2 gap-4">
+                <div 
+                  className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                    role === 'customer' 
+                      ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30' 
+                      : 'border-gray-300 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-700'
+                  }`}
+                  onClick={() => setRole('customer')}
+                >
+                  <div className="flex items-center mb-2">
+                    <input
+                      type="radio"
+                      checked={role === 'customer'}
+                      onChange={() => setRole('customer')}
+                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span className="ml-2 font-medium text-gray-900 dark:text-white">Customer</span>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">I need to hire talent for projects</p>
+                </div>
+                
+                <div 
+                  className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                    role === 'provider' 
+                      ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30' 
+                      : 'border-gray-300 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-700'
+                  }`}
+                  onClick={() => setRole('provider')}
+                >
+                  <div className="flex items-center mb-2">
+                    <input
+                      type="radio"
+                      checked={role === 'provider'}
+                      onChange={() => setRole('provider')}
+                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span className="ml-2 font-medium text-gray-900 dark:text-white">Provider</span>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">I want to offer my services</p>
+                </div>
               </div>
             </div>
 
@@ -153,7 +177,7 @@ export default function RegisterPage() {
                 className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg"
                 disabled={loading}
               >
-                {loading ? 'Creating Account...' : 'Create Account'}
+                {loading ? 'Creating Account...' : 'Continue'}
               </Button>
             </div>
           </form>

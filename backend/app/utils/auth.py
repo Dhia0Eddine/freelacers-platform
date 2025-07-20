@@ -7,7 +7,7 @@ from app.core.config import Config
 from app.models.user import User
 from app.dependencies.db import get_db
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 SECRET_KEY = Config.JWT_SECRET
 ALGORITHM = "HS256"

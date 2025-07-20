@@ -16,7 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
+app.include_router(auth.router, prefix="", tags=["Auth"])
 app.include_router(profile.router)
 app.include_router(category.router)
 app.include_router(service.router)
