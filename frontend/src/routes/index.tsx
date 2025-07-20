@@ -11,7 +11,8 @@ import ApiDebugPage from "../pages/ApiDebugPage";
 import UserProfilePage from "../pages/UserProfilePage";
 import ServiceListingsPage from "../pages/ServiceListingsPage";
 import ServiceListingDetailPage from "../pages/ServiceListingDetailPage";
-
+import ServiceBrowsingPage from "../pages/ServiceBrowsingPage";
+import ListingsPagebyServiceId from "../pages/ListingsPagebyServiceId";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -24,7 +25,8 @@ export const router = createBrowserRouter([
       { path: "profile/me", element: <ProfilePage /> },
       { path: "profile/edit", element: <EditProfilePage /> },
       { path: "profile/:userId", element: <UserProfilePage /> },
-      { path: "services", element: <ServiceListingsPage /> }, // Add the new route
+      { path: "services", element: <ServiceBrowsingPage /> },
+      { path: "listings/service/:serviceId", element: <ListingsPagebyServiceId /> }, // Add this new route
       { path: "listings/:listingId", element: <ServiceListingDetailPage /> },
       
     ],

@@ -155,7 +155,7 @@ export default function ProfilePage() {
   console.log("Rendering profile page with data:", { profile, user, listings });
 
   // Update the role check to handle both provider and freelancer
-  const isFreelancer = user?.role === 'provider';
+  const isFreelancer = user?.role === 'freelancer' || user?.role === 'provider';
   
   console.log("User is freelancer:", isFreelancer, "Role:", user?.role);
 
@@ -199,7 +199,7 @@ export default function ProfilePage() {
         <div className={`fixed top-0 left-0 h-full ${sidebarCollapsed ? 'w-20' : 'w-64'} bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 pt-24 hidden md:block shadow-sm`}>
           <div className="px-4 mb-8">
             <div className="flex items-center justify-between">
-              {!sidebarCollapsed && <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-500 to-purple-500 text-transparent bg-clip-text">Freelance Hub</h1>}
+              {!sidebarCollapsed && <h1 className="text-xl font-bold bg-gradient-to-r from-blue-500 to-blue-700 text-transparent bg-clip-text">Freelance Hub</h1>}
               <button 
                 className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300"
                 onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -220,7 +220,7 @@ export default function ProfilePage() {
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden mb-6 transition-all duration-300 hover:shadow-md">
                 <div className="relative">
                   {/* Cover image with animation */}
-                  <div className="h-48 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 animate-gradientShift rounded-t-2xl"></div>
+                  <div className="h-48 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 animate-gradientShift rounded-t-2xl"></div>
                   
                   {/* Avatar with pulsing animation on hover */}
                   <div className="absolute -bottom-12 left-8">
@@ -253,7 +253,7 @@ export default function ProfilePage() {
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white transition-all duration-300">
                           {profile?.full_name}
                         </h1>
-                        <span className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 hover:shadow-md">
+                        <span className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 hover:shadow-md">
                           {isFreelancer ? 'Freelancer' : 'Client'}
                         </span>
                         {profile?.average_rating && (
@@ -268,40 +268,40 @@ export default function ProfilePage() {
                     
                     <div className="flex gap-6 mt-4 md:mt-0">
                       <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
-                        <div className="text-2xl font-semibold text-indigo-600 dark:text-indigo-400">12</div>
+                        <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">12</div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">Projects</div>
                       </div>
                       <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
-                        <div className="text-2xl font-semibold text-indigo-600 dark:text-indigo-400">36</div>
+                        <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">36</div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">Clients</div>
                       </div>
                       <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
-                        <div className="text-2xl font-semibold text-indigo-600 dark:text-indigo-400">4.8</div>
+                        <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">4.8</div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">Rating</div>
                       </div>
                     </div>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                    <div className="flex items-center text-gray-600 dark:text-gray-300 transition-all duration-300 hover:text-indigo-500">
-                      <Mail className="h-5 w-5 mr-3 text-indigo-500 dark:text-indigo-400" />
+                    <div className="flex items-center text-gray-600 dark:text-gray-300 transition-all duration-300 hover:text-blue-500">
+                      <Mail className="h-5 w-5 mr-3 text-blue-500 dark:text-blue-400" />
                       <span>{user?.email}</span>
                     </div>
                     
-                    <div className="flex items-center text-gray-600 dark:text-gray-300 transition-all duration-300 hover:text-indigo-500">
-                      <Phone className="h-5 w-5 mr-3 text-indigo-500 dark:text-indigo-400" />
+                    <div className="flex items-center text-gray-600 dark:text-gray-300 transition-all duration-300 hover:text-blue-500">
+                      <Phone className="h-5 w-5 mr-3 text-blue-500 dark:text-blue-400" />
                       <span>
                         {profile?.phone || 'No phone number provided'}
                       </span>
                     </div>
                     
-                    <div className="flex items-center text-gray-600 dark:text-gray-300 transition-all duration-300 hover:text-indigo-500">
-                      <MapPin className="h-5 w-5 mr-3 text-indigo-500 dark:text-indigo-400" />
+                    <div className="flex items-center text-gray-600 dark:text-gray-300 transition-all duration-300 hover:text-blue-500">
+                      <MapPin className="h-5 w-5 mr-3 text-blue-500 dark:text-blue-400" />
                       <span>{profile?.location}</span>
                     </div>
                     
-                    <div className="flex items-center text-gray-600 dark:text-gray-300 transition-all duration-300 hover:text-indigo-500">
-                      <Globe className="h-5 w-5 mr-3 text-indigo-500 dark:text-indigo-400" />
+                    <div className="flex items-center text-gray-600 dark:text-gray-300 transition-all duration-300 hover:text-blue-500">
+                      <Globe className="h-5 w-5 mr-3 text-blue-500 dark:text-blue-400" />
                       <span>yourwebsite.com</span>
                     </div>
                   </div>
@@ -313,7 +313,7 @@ export default function ProfilePage() {
                     </div>
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
                       <div 
-                        className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full transition-all duration-1000 ease-out" 
+                        className="bg-gradient-to-r from-blue-500 to-blue-700 h-2 rounded-full transition-all duration-1000 ease-out" 
                         style={{ width: `${profileCompleteness}%` }}
                       ></div>
                     </div>
@@ -329,7 +329,7 @@ export default function ProfilePage() {
                       key={tab}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                         activeTab === tab 
-                          ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md' 
+                          ? 'bg-gradient-to-r from-blue-500 to-blue-700 text-white shadow-md' 
                           : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                       }`}
                       onClick={() => setActiveTab(tab)}
@@ -362,7 +362,7 @@ export default function ProfilePage() {
                           {skills.map((skill, index) => (
                             <span 
                               key={skill} 
-                              className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-lg text-sm transition-all duration-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 hover:text-indigo-700 dark:hover:text-indigo-300"
+                              className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-lg text-sm transition-all duration-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-700 dark:hover:text-blue-300"
                               style={{ animationDelay: `${index * 0.1}s` }}
                             >
                               {skill}
@@ -371,7 +371,7 @@ export default function ProfilePage() {
                           <Button 
                             variant="outline" 
                             size="sm" 
-                            className="rounded-lg transition-all duration-300 hover:bg-indigo-50 hover:text-indigo-700 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-300"
+                            className="rounded-lg transition-all duration-300 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-900/30 dark:hover:text-blue-300"
                           >
                             <Plus className="h-4 w-4 mr-1" />
                             Add Skill
@@ -419,7 +419,7 @@ export default function ProfilePage() {
                     <div className="flex justify-between items-center mb-6">
                       <h2 className="text-xl font-semibold text-gray-900 dark:text-white">My Services</h2>
                       <Button 
-                        className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white transition-all duration-300 hover:shadow-lg"
+                        className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-300 hover:shadow-lg"
                         onClick={() => console.log("Would create new listing with data:", { user })}
                       >
                         <Plus className="h-4 w-4 mr-1" />
@@ -433,7 +433,7 @@ export default function ProfilePage() {
                         {listings.map((listing, index) => (
                           <div 
                             key={listing.id} 
-                            className="border border-gray-200 dark:border-gray-700 rounded-lg p-5 transition-all duration-300 hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-700"
+                            className="border border-gray-200 dark:border-gray-700 rounded-lg p-5 transition-all duration-300 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700"
                             style={{ animationDelay: `${index * 0.1}s` }}
                           >
                             <div className="flex justify-between items-start">
@@ -457,7 +457,7 @@ export default function ProfilePage() {
                             </div>
                             
                             <div className="flex flex-wrap gap-3 mt-3">
-                              <div className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-3 py-1 rounded-full text-sm">
+                              <div className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-sm">
                                 ${listing.min_price} - ${listing.max_price}
                               </div>
                               <div className="bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full text-sm flex items-center text-gray-700 dark:text-gray-300">
@@ -470,7 +470,7 @@ export default function ProfilePage() {
                               <Button 
                                 variant="outline" 
                                 size="sm"
-                                className="transition-all duration-300 hover:bg-indigo-50 hover:text-indigo-700 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-300"
+                                className="transition-all duration-300 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-900/30 dark:hover:text-blue-300"
                               >
                                 Edit
                               </Button>
@@ -492,7 +492,7 @@ export default function ProfilePage() {
                         <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-4">
                           Start offering your services by creating your first listing.
                         </p>
-                        <Button className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white transition-all duration-300 hover:shadow-lg">
+                        <Button className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-300 hover:shadow-lg">
                           Create Your First Service
                         </Button>
                       </div>
@@ -510,7 +510,7 @@ export default function ProfilePage() {
                           className="flex items-start p-3 rounded-lg transition-all duration-300 hover:bg-gray-50 dark:hover:bg-gray-700/50"
                           style={{ animationDelay: `${index * 0.1}s` }}
                         >
-                          <div className="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full p-2 mr-4 shadow-md">
+                          <div className="bg-gradient-to-r from-blue-500 to-blue-700 rounded-full p-2 mr-4 shadow-md">
                             <div className="text-white">
                               <Calendar className="h-5 w-5" />
                             </div>
@@ -604,7 +604,7 @@ function SidebarContent({ collapsed }: { collapsed: boolean }) {
   return (
     <div className="px-4 space-y-6">
       <div className="space-y-2">
-        <Link to="/dashboard" className={`flex items-center space-x-3 px-3 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white transition-all duration-300 hover:shadow-md`}>
+        <Link to="/dashboard" className={`flex items-center space-x-3 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-700 text-white transition-all duration-300 hover:shadow-md`}>
           <Home size={20} />
           {!collapsed && <span>Dashboard</span>}
         </Link>
@@ -669,11 +669,11 @@ function SidebarContent({ collapsed }: { collapsed: boolean }) {
           </div>
           
           <div className="mt-8">
-            <div className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-lg p-4 relative overflow-hidden transition-all duration-300 hover:shadow-md">
-              <div className="absolute -bottom-8 -right-8 w-24 h-24 rounded-full bg-indigo-500/20 blur-xl"></div>
-              <h3 className="font-medium text-indigo-700 dark:text-indigo-400 mb-2 relative z-10">Upgrade to Pro</h3>
+            <div className="bg-gradient-to-r from-blue-500/10 to-blue-700/10 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-4 relative overflow-hidden transition-all duration-300 hover:shadow-md">
+              <div className="absolute -bottom-8 -right-8 w-24 h-24 rounded-full bg-blue-500/20 blur-xl"></div>
+              <h3 className="font-medium text-blue-700 dark:text-blue-400 mb-2 relative z-10">Upgrade to Pro</h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 relative z-10">Unlock premium features and get more clients.</p>
-              <Button className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white transition-all duration-300 hover:shadow-lg relative z-10">
+              <Button className="w-full bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-300 hover:shadow-lg relative z-10">
                 Upgrade Now
               </Button>
             </div>

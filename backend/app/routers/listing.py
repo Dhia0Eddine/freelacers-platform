@@ -195,3 +195,54 @@ def get_listings_by_user_id(
     
     print(f"Found {len(listings)} listings for user {user_id}")
     return listings
+
+@router.get("/service/{service_id}", response_model=List[ListingOut])
+def get_listings_by_service_id(
+    service_id: int,
+    db: Session = Depends(get_db)
+):
+    """Get listings for a specific service by its ID"""
+    # First check if the service exists
+    service = db.query(Service).filter(Service.id == service_id).first()
+    if not service:
+        raise HTTPException(status_code=404, detail="Service not found")
+    
+    # Get all active listings for this service
+    listings = db.query(Listing).options(
+        joinedload(Listing.user).joinedload(User.profile)
+    ).filter(
+        Listing.service_id == service_id,
+        Listing.available == True
+    ).all()
+    
+    # Prepare the response items with profile information
+    response_items = []
+    for listing in listings:
+        # Convert the listing to a dictionary
+        listing_dict = {
+            "id": listing.id,
+            "title": listing.title,
+            "description": listing.description,
+            "min_price": listing.min_price,
+            "max_price": listing.max_price,
+            "location": listing.location,
+            "available": listing.available,
+            "user_id": listing.user_id,
+            "service_id": listing.service_id,
+            "created_at": listing.created_at
+        }
+        
+        # Add profile information if available
+        if listing.user and listing.user.profile:
+            listing_dict["profile"] = {
+                "id": listing.user.profile.id,
+                "user_id": listing.user.profile.user_id,
+                "full_name": listing.user.profile.full_name,
+                "location": listing.user.profile.location,
+                "average_rating": listing.user.profile.average_rating
+            }
+        
+        response_items.append(listing_dict)
+    
+    print(f"Found {len(listings)} listings for service {service_id}")
+    return response_items

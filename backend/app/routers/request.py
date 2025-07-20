@@ -18,9 +18,37 @@ def create_request(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    # Add explicit check to ensure only customers can create requests
     if current_user.role != "customer":
-        raise HTTPException(status_code=403, detail="Only customers can create requests")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, 
+            detail="Only customers can create service requests"
+        )
 
+    # Check if the listing exists and is available
+    from app.models.listing import Listing
+    listing = db.query(Listing).filter_by(id=request_data.listing_id).first()
+    if not listing:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Listing with ID {request_data.listing_id} not found"
+        )
+    
+    # Optionally, check if the listing is available
+    if not listing.available:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This service is currently unavailable for booking"
+        )
+
+    # Prevent customers from requesting their own listings
+    if listing.user_id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You cannot request your own service"
+        )
+
+    # Create the request
     new_request = RequestModel(**request_data.dict(), user_id=current_user.id)
     db.add(new_request)
     db.commit()

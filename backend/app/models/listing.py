@@ -16,8 +16,9 @@ class Listing(Base):
     max_price = Column(Float)
     location = Column(String)
     available = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=True)
 
     user = relationship("User", back_populates="listings")
     service = relationship("Service", back_populates="listings")
     quotes = relationship("Quote", back_populates="listing", cascade="all, delete")
+    requests = relationship("Request", back_populates="listing", cascade="all, delete")

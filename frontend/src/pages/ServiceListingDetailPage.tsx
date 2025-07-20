@@ -6,8 +6,11 @@ import { Button } from '@/components/ui/button';
 import { 
   MapPin, Star, User, MessageSquare, Calendar, 
   DollarSign, Tag, Briefcase, CheckCircle, XCircle, 
-  Phone, Mail, Clock, ArrowLeft
+  Phone, Mail, Clock, ArrowLeft, Info
 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { RequestFormModal } from '@/components/request-form-modal';
+import { requestService } from '@/services/api';
 
 interface Profile {
   id: number;
@@ -38,8 +41,10 @@ export default function ServiceListingDetailPage() {
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, isCustomer } = useAuthContext();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -76,6 +81,43 @@ export default function ServiceListingDetailPage() {
 
     fetchListingData();
   }, [listingId, navigate]);
+
+  const handleRequestSubmit = async (formData: {
+    description: string;
+    location: string;
+    preferred_date: string;
+  }) => {
+    if (!isAuthenticated || !isCustomer) {
+      toast.error('Only customers can send service requests');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      if (!listing?.id) {
+        toast.error('Listing ID is missing. Cannot send request.');
+        return;
+      }
+
+      const requestData = {
+        listing_id: listing.id,
+        description: formData.description || undefined,
+        location: formData.location || undefined,
+        preferred_date: formData.preferred_date
+      };
+
+      await requestService.createRequest(requestData);
+      
+      toast.success('Request sent successfully!');
+      setShowRequestModal(false);
+    } catch (error) {
+      console.error('Error submitting request:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to send request');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -246,11 +288,11 @@ export default function ServiceListingDetailPage() {
               </p>
               
               <div className="flex flex-wrap gap-4">
-                {isAuthenticated && (
+                {isAuthenticated && isCustomer && (
                   <>
                     <Button 
                       className="bg-indigo-600 hover:bg-indigo-700 text-white"
-                      onClick={() => navigate(`/requests/new?listing=${listing.id}`)}
+                      onClick={() => setShowRequestModal(true)}
                     >
                       <MessageSquare className="h-4 w-4 mr-2" />
                       Send Request
@@ -260,6 +302,13 @@ export default function ServiceListingDetailPage() {
                       Contact Provider
                     </Button>
                   </>
+                )}
+                
+                {isAuthenticated && !isCustomer && (
+                  <div className="text-amber-600 dark:text-amber-400 flex items-center p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                    <Info className="h-4 w-4 mr-2" />
+                    Only customers can send service requests
+                  </div>
                 )}
                 
                 {!isAuthenticated && (
@@ -292,6 +341,17 @@ export default function ServiceListingDetailPage() {
           </div>
         </div>
       </div>
+      
+      {/* Add the RequestFormModal component */}
+      {listing && (
+        <RequestFormModal
+          isOpen={showRequestModal}
+          onClose={() => setShowRequestModal(false)}
+          onSubmit={handleRequestSubmit}
+          listingTitle={listing.title}
+          isLoading={isSubmitting}
+        />
+      )}
     </div>
   );
 }

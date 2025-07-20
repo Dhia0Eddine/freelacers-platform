@@ -10,12 +10,13 @@ class RequestStatus(str, enum.Enum):
     booked = "booked"
     closed = "closed"
 
+
 class Request(Base):
     __tablename__ = "requests"
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    service_id = Column(Integer, ForeignKey("services.id", ondelete="CASCADE"), nullable=False)
+    listing_id = Column(Integer, ForeignKey("listings.id", ondelete="CASCADE"), nullable=False)
 
     description = Column(String)
     location = Column(String)
@@ -23,8 +24,7 @@ class Request(Base):
     status = Column(Enum(RequestStatus), default=RequestStatus.open)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    # Relationships
     user = relationship("User", back_populates="requests")
-    service = relationship("Service", back_populates="requests")
+    listing = relationship("Listing", back_populates="requests")
     quotes = relationship("Quote", back_populates="request", cascade="all, delete")
-    # Assuming Quote model exists and has a foreign key to Request
-    # If not, you need to define the Quote model similarly to how Request is defined        

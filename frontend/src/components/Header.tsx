@@ -8,7 +8,7 @@ import { useTheme } from '@/context/ThemeContext';
 
 // Temporary Logo component with modern styling
 const Logo = () => (
-    <div className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 font-bold text-2xl md:text-3xl">Freelance Hub</div>
+    <div className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-blue-700 font-bold text-2xl md:text-3xl">Freelance Hub</div>
 );
 
 const menuItems = [
@@ -115,7 +115,7 @@ export const HeroHeader = () => {
                                         }}
                                         className="flex items-center gap-2 rounded-full px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
                                     >
-                                        <div className="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full p-1">
+                                        <div className="bg-gradient-to-r from-blue-500 to-blue-700 rounded-full p-1">
                                             <User className="text-white size-5" />
                                         </div>
                                         <span className="text-gray-700 dark:text-gray-200">Profile</span>
@@ -162,7 +162,7 @@ export const HeroHeader = () => {
                                         <Button 
                                             variant="ghost" 
                                             size="sm"
-                                            className="text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400"
+                                            className="text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400"
                                         >
                                             Login
                                         </Button>
@@ -170,7 +170,7 @@ export const HeroHeader = () => {
                                     <Link to="/signup">
                                         <Button 
                                             size="sm"
-                                            className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white rounded-full px-5 transition-transform duration-300 hover:scale-105 hover:shadow-md"
+                                            className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white rounded-full px-5 transition-transform duration-300 hover:scale-105 hover:shadow-md"
                                         >
                                             Sign Up
                                         </Button>
@@ -281,7 +281,7 @@ export const HeroHeader = () => {
                                         className="block w-full"
                                     >
                                         <Button 
-                                            className="w-full justify-center bg-gradient-to-r from-indigo-500 to-purple-500 text-white"
+                                            className="w-full justify-center bg-gradient-to-r from-blue-500 to-blue-700 text-white"
                                         >
                                             Sign Up
                                         </Button>

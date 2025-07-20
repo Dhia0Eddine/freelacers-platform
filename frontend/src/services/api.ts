@@ -262,7 +262,13 @@ export const listingService = {
       if (params.page) queryParams.append('page', params.page.toString());
       if (params.limit) queryParams.append('limit', params.limit.toString());
       if (params.keyword) queryParams.append('keyword', params.keyword);
-      if (params.serviceId) queryParams.append('service_id', params.serviceId.toString());
+      
+      // Log the serviceId being passed to ensure it's correctly formatted
+      if (params.serviceId) {
+        console.log(`Adding service_id=${params.serviceId} to query params`);
+        queryParams.append('service_id', params.serviceId.toString());
+      }
+      
       if (params.minPrice) queryParams.append('min_price', params.minPrice.toString());
       if (params.maxPrice) queryParams.append('max_price', params.maxPrice.toString());
       if (params.location) queryParams.append('location', params.location);
@@ -271,12 +277,18 @@ export const listingService = {
       const queryString = queryParams.toString();
       const url = `/listings${queryString ? `?${queryString}` : ''}`;
       
-      console.log('Fetching listings with URL:', url);
+      // Enhanced logging to see the complete URL
+      console.log('Fetching listings with URL:', `${API_URL}${url}`);
       const response = await api.get(url);
+      console.log('Listings API response status:', response.status);
       return response.data;
     } catch (error) {
+      // Add more detailed error logging
+      console.error('Error fetching listings:', error);
+      
       if (axios.isAxiosError(error) && error.response) {
-        console.error('Listings fetch error details:', error.response.data);
+        console.error('Response status:', error.response.status);
+        console.error('Response data:', error.response.data);
         throw new Error(error.response.data.detail || 'Failed to get listings');
       }
       throw new Error('Failed to get listings due to network issue');
@@ -312,6 +324,121 @@ export const listingService = {
       throw new Error('Failed to get listing due to network issue');
     }
   },
+};
+
+// Service related API calls
+export const serviceService = {
+  getAllServices: async () => {
+    try {
+      console.log('Fetching services from:', `${API_URL}/services/`);
+      const response = await api.get('/services/');
+      console.log('Services response data:', response.data);
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Services fetch error details:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to get services');
+      }
+      throw new Error('Failed to get services due to network issue');
+    }
+  },
+
+  getServiceById: async (serviceId: string) => {
+    try {
+      console.log(`Fetching service ${serviceId} from: ${API_URL}/services/${serviceId}`);
+      const response = await api.get(`/services/${serviceId}`);
+      console.log('Service response data:', response.data);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Service fetch error details:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to get service');
+      }
+      throw new Error('Failed to get service due to network issue');
+    }
+  },
+  
+  createService: async (serviceData: {
+    category_id: number;
+    name: string;
+    description?: string;
+  }) => {
+    try {
+      const response = await api.post('/services/', serviceData);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Service creation error details:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to create service');
+      }
+      throw new Error('Failed to create service due to network issue');
+    }
+  },
+  
+  updateService: async (serviceId: string, serviceData: {
+    category_id?: number;
+    name?: string;
+    description?: string;
+  }) => {
+    try {
+      const response = await api.put(`/services/${serviceId}`, serviceData);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Service update error details:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to update service');
+      }
+      throw new Error('Failed to update service due to network issue');
+    }
+  },
+  
+  deleteService: async (serviceId: string) => {
+    try {
+      await api.delete(`/services/${serviceId}`);
+      return true;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Service deletion error details:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to delete service');
+      }
+      throw new Error('Failed to delete service due to network issue');
+    }
+  }
+};
+
+// Request related API calls
+export const requestService = {
+  createRequest: async (requestData: {
+    listing_id: number;
+    description?: string;
+    location?: string;
+    preferred_date: string;
+  }) => {
+    try {
+      console.log('Creating request with data:', requestData);
+      const response = await api.post('/requests/', requestData);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Request creation error details:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to create request');
+      }
+      throw new Error('Failed to create request due to network issue');
+    }
+  },
+
+  getMyRequests: async () => {
+    try {
+      const response = await api.get('/requests/me');
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error fetching requests:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to get requests');
+      }
+      throw new Error('Failed to get requests due to network issue');
+    }
+  }
 };
 
 export default api;

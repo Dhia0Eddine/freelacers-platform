@@ -5,7 +5,7 @@ class ProfileBase(BaseModel):
     full_name: str  # Note: Using snake_case here
     bio: Optional[str] = None
     location: str
-    phone: str  # Add the phone field to match frontend expectations
+    phone: Optional[str] = None  # Changed to Optional to allow None values
     average_rating: Optional[float] = None  # Add optional average_rating field
 
 class ProfileCreate(ProfileBase):
@@ -23,4 +23,4 @@ class ProfileOut(ProfileBase):
     user_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # Updated from orm_mode=True which is deprecated

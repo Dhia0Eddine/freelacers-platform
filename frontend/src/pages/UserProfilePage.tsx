@@ -162,7 +162,7 @@ export default function UserProfilePage() {
       
         {/* Profile Header - Modernized */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden mb-8 transition-all duration-300 hover:shadow-md animate-fadeIn">
-          <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 animate-gradientShift h-48 relative">
+          <div className="bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 animate-gradientShift h-48 relative">
             {/* Action Buttons */}
             <div className="absolute top-4 right-4 flex space-x-2">
               {isAuthenticated && (
@@ -198,7 +198,7 @@ export default function UserProfilePage() {
             <div className="flex-shrink-0 -mt-20 mb-6 md:mb-0">
               <div className="bg-white dark:bg-gray-700 border-4 border-white dark:border-gray-800 rounded-full h-28 w-28 flex items-center justify-center shadow-lg transition-transform duration-300 hover:scale-105 group">
                 {isFreelancer ? (
-                  <Briefcase className="h-12 w-12 text-indigo-500 dark:text-indigo-400 transition-all duration-300 group-hover:text-indigo-600" />
+                  <Briefcase className="h-12 w-12 text-blue-500 dark:text-blue-400 transition-all duration-300 group-hover:text-blue-600" />
                 ) : (
                   <User className="h-12 w-12 text-blue-500 dark:text-blue-400 transition-all duration-300 group-hover:text-blue-600" />
                 )}
@@ -217,7 +217,7 @@ export default function UserProfilePage() {
                 </div>
                 
                 <div className="flex items-center mt-4 md:mt-0 space-x-3 animate-fadeIn" style={{ animationDelay: '0.3s' }}>
-                  <span className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 hover:shadow-md">
+                  <span className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 hover:shadow-md">
                     {isFreelancer ? 'Freelancer' : 'Client'}
                   </span>
                   
@@ -232,26 +232,26 @@ export default function UserProfilePage() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 animate-fadeIn" style={{ animationDelay: '0.4s' }}>
                 {user?.email && (
-                  <div className="flex items-center text-gray-600 dark:text-gray-300 transition-all duration-300 hover:text-indigo-500">
-                    <Mail className="h-5 w-5 mr-3 text-indigo-500 dark:text-indigo-400" />
+                  <div className="flex items-center text-gray-600 dark:text-gray-300 transition-all duration-300 hover:text-blue-500">
+                    <Mail className="h-5 w-5 mr-3 text-blue-500 dark:text-blue-400" />
                     <span>{user.email}</span>
                   </div>
                 )}
                 
                 {profile?.phone && (
-                  <div className="flex items-center text-gray-600 dark:text-gray-300 transition-all duration-300 hover:text-indigo-500">
-                    <Phone className="h-5 w-5 mr-3 text-indigo-500 dark:text-indigo-400" />
+                  <div className="flex items-center text-gray-600 dark:text-gray-300 transition-all duration-300 hover:text-blue-500">
+                    <Phone className="h-5 w-5 mr-3 text-blue-500 dark:text-blue-400" />
                     <span>{profile.phone}</span>
                   </div>
                 )}
                 
-                <div className="flex items-center text-gray-600 dark:text-gray-300 transition-all duration-300 hover:text-indigo-500">
-                  <MapPin className="h-5 w-5 mr-3 text-indigo-500 dark:text-indigo-400" />
+                <div className="flex items-center text-gray-600 dark:text-gray-300 transition-all duration-300 hover:text-blue-500">
+                  <MapPin className="h-5 w-5 mr-3 text-blue-500 dark:text-blue-400" />
                   <span>{profile?.location}</span>
                 </div>
                 
-                <div className="flex items-center text-gray-600 dark:text-gray-300 transition-all duration-300 hover:text-indigo-500">
-                  <Globe className="h-5 w-5 mr-3 text-indigo-500 dark:text-indigo-400" />
+                <div className="flex items-center text-gray-600 dark:text-gray-300 transition-all duration-300 hover:text-blue-500">
+                  <Globe className="h-5 w-5 mr-3 text-blue-500 dark:text-blue-400" />
                   <span>View website</span>
                 </div>
               </div>
@@ -259,21 +259,21 @@ export default function UserProfilePage() {
               {/* Quick Stats */}
               <div className="flex mt-6 space-x-8 animate-fadeIn" style={{ animationDelay: '0.5s' }}>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                     {listings?.length || 0}
                   </div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">Services</div>
                 </div>
                 
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                     {Math.floor(Math.random() * 50) + 10}
                   </div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">Projects</div>
                 </div>
                 
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                     {Math.floor((profile?.average_rating || 4) * 20)}
                   </div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">Reviews</div>
@@ -289,7 +289,7 @@ export default function UserProfilePage() {
             <button 
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                 activeSection === 'about' 
-                  ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md' 
+                  ? 'bg-gradient-to-r from-blue-500 to-blue-700 text-white shadow-md' 
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
               onClick={() => setActiveSection('about')}
@@ -299,7 +299,7 @@ export default function UserProfilePage() {
             <button 
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                 activeSection === 'services' 
-                  ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md' 
+                  ? 'bg-gradient-to-r from-blue-500 to-blue-700 text-white shadow-md' 
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
               onClick={() => setActiveSection('services')}
@@ -309,7 +309,7 @@ export default function UserProfilePage() {
             <button 
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                 activeSection === 'testimonials' 
-                  ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md' 
+                  ? 'bg-gradient-to-r from-blue-500 to-blue-700 text-white shadow-md' 
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
               onClick={() => setActiveSection('testimonials')}
@@ -338,9 +338,9 @@ export default function UserProfilePage() {
               
               {/* Additional about information */}
               <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-5 transition-all duration-300 hover:border-indigo-300 dark:hover:border-indigo-700">
+                <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-5 transition-all duration-300 hover:border-blue-300 dark:hover:border-blue-700">
                   <h3 className="flex items-center text-lg font-medium text-gray-900 dark:text-white mb-3">
-                    <Calendar className="h-5 w-5 mr-2 text-indigo-500 dark:text-indigo-400" />
+                    <Calendar className="h-5 w-5 mr-2 text-blue-500 dark:text-blue-400" />
                     Availability
                   </h3>
                   <p className="text-gray-600 dark:text-gray-300">
@@ -348,9 +348,9 @@ export default function UserProfilePage() {
                   </p>
                 </div>
                 
-                <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-5 transition-all duration-300 hover:border-indigo-300 dark:hover:border-indigo-700">
+                <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-5 transition-all duration-300 hover:border-blue-300 dark:hover:border-blue-700">
                   <h3 className="flex items-center text-lg font-medium text-gray-900 dark:text-white mb-3">
-                    <Briefcase className="h-5 w-5 mr-2 text-indigo-500 dark:text-indigo-400" />
+                    <Briefcase className="h-5 w-5 mr-2 text-blue-500 dark:text-blue-400" />
                     Experience
                   </h3>
                   <p className="text-gray-600 dark:text-gray-300">
@@ -372,7 +372,7 @@ export default function UserProfilePage() {
                     {listings.map((listing, index) => (
                       <div 
                         key={listing.id} 
-                        className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 transition-all duration-300 hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-700"
+                        className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 transition-all duration-300 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700"
                         style={{ animationDelay: `${0.1 * index}s` }}
                       >
                         <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
@@ -385,7 +385,7 @@ export default function UserProfilePage() {
                             </p>
                             
                             <div className="flex flex-wrap gap-3 mb-4">
-                              <div className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-3 py-1 rounded-full text-sm font-medium">
+                              <div className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-sm font-medium">
                                 ${listing.min_price} - ${listing.max_price}
                               </div>
                               <div className="bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full text-sm flex items-center text-gray-700 dark:text-gray-300">
@@ -409,7 +409,7 @@ export default function UserProfilePage() {
                         
                         <div className="mt-4">
                           <Button 
-                            className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white transition-all duration-300 hover:shadow-lg"
+                            className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-300 hover:shadow-lg"
                           >
                             Request Service
                           </Button>

@@ -9,16 +9,19 @@ class RequestStatus(str, Enum):
     booked = "booked"
     closed = "closed"
 
+# Shared base schema
 class RequestBase(BaseModel):
-    service_id: int
+    listing_id: int  # 🔁 changed from service_id
     description: Optional[str]
     location: Optional[str]
     preferred_date: datetime
     status: RequestStatus = RequestStatus.open
 
+# For creating a request
 class RequestCreate(RequestBase):
     pass
 
+# For returning request data
 class RequestOut(RequestBase):
     id: int
     created_at: datetime
@@ -26,8 +29,9 @@ class RequestOut(RequestBase):
     class Config:
         from_attributes = True
 
+# For updating a request
 class RequestUpdate(BaseModel):
-    service_id: Optional[int] = None
+    listing_id: Optional[int] = None  # 🔁 changed from service_id
     description: Optional[str] = None
     location: Optional[str] = None
     preferred_date: Optional[datetime] = None
