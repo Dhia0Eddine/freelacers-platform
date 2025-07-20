@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
+from datetime import datetime  # Add this import
 
 from app.dependencies.db import get_db
 from app.models.listing import Listing
-from app.schemas.listing import ListingCreate, ListingOut
+from app.schemas.listing import ListingCreate, ListingOut, ListingOutWithProfile, PaginatedListingResponse
 from app.utils.auth import get_current_user
 from app.models.user import User
 from app.models.service import Service  # Import the Service model
@@ -196,24 +197,50 @@ def get_listings_by_user_id(
     print(f"Found {len(listings)} listings for user {user_id}")
     return listings
 
-@router.get("/service/{service_id}", response_model=List[ListingOut])
+@router.get("/service/{service_id}", response_model=PaginatedListingResponse)
 def get_listings_by_service_id(
     service_id: int,
+    page: int = Query(1, ge=1),
+    limit: int = Query(9, ge=1, le=100),
+    keyword: Optional[str] = Query(None),
+    min_price: Optional[float] = Query(None),
+    max_price: Optional[float] = Query(None),
+    location: Optional[str] = Query(None),
+    min_rating: Optional[float] = Query(None),
     db: Session = Depends(get_db)
 ):
-    """Get listings for a specific service by its ID"""
+    """Get listings for a specific service by its ID with pagination and filtering"""
     # First check if the service exists
     service = db.query(Service).filter(Service.id == service_id).first()
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
     
-    # Get all active listings for this service
-    listings = db.query(Listing).options(
+    # Start with base query - ensure we select all needed fields
+    query = db.query(Listing).options(
         joinedload(Listing.user).joinedload(User.profile)
     ).filter(
         Listing.service_id == service_id,
         Listing.available == True
-    ).all()
+    )
+    
+    # Apply filters if provided
+    if keyword:
+        query = query.filter(Listing.title.ilike(f"%{keyword}%") | Listing.description.ilike(f"%{keyword}%"))
+    if min_price is not None:
+        query = query.filter(Listing.min_price >= min_price)
+    if max_price is not None:
+        query = query.filter(Listing.max_price <= max_price)
+    if location:
+        query = query.filter(Listing.location.ilike(f"%{location}%"))
+    
+    # Get total count before pagination
+    total = query.count()
+    
+    # Apply pagination
+    query = query.offset((page - 1) * limit).limit(limit)
+    
+    # Get results
+    listings = query.all()
     
     # Prepare the response items with profile information
     response_items = []
@@ -244,5 +271,11 @@ def get_listings_by_service_id(
         
         response_items.append(listing_dict)
     
-    print(f"Found {len(listings)} listings for service {service_id}")
-    return response_items
+    # Return paginated results with metadata
+    return {
+        "items": response_items,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "pages": (total + limit - 1) // limit  # Ceiling division to get total pages
+    }

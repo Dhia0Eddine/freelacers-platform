@@ -11,7 +11,9 @@ import {
   ChevronLeftIcon,
   SearchIcon,
   FilterIcon,
-  XIcon
+  XIcon,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,12 +45,29 @@ interface Listing {
   profile: Profile | null;
 }
 
+interface PaginationInfo {
+  totalItems: number;
+  totalPages: number;
+  currentPage: number;
+  itemsPerPage: number;
+}
+
 const ListingsPagebyServiceId: React.FC = () => {
   const { serviceId } = useParams<{ serviceId: string }>();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [serviceName, setServiceName] = useState<string>('');
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [itemsPerPage] = useState<number>(9); // Fixed number of items per page
+  const [paginationInfo, setPaginationInfo] = useState<PaginationInfo>({
+    totalItems: 0,
+    totalPages: 0,
+    currentPage: 1,
+    itemsPerPage: itemsPerPage
+  });
   
   // Filter states
   const [minPriceFilter, setMinPriceFilter] = useState<number | null>(null);
@@ -59,6 +78,7 @@ const ListingsPagebyServiceId: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [showFilters, setShowFilters] = useState<boolean>(false);
   const [filteredListings, setFilteredListings] = useState<Listing[]>([]);
+  const [isFiltering, setIsFiltering] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchListings = async () => {
@@ -70,28 +90,51 @@ const ListingsPagebyServiceId: React.FC = () => {
           setServiceName(serviceResponse.data.name);
         }
 
-        // Then get the listings for this service
-        const response = await axios.get(`${API_URL}/listings/service/${serviceId}`);
-        console.log('API Response:', response.data); // Debug the response
+        // Prepare filter parameters for API call
+        const params: any = {
+          page: currentPage,
+          limit: itemsPerPage
+        };
+
+        // Add filter parameters if they exist
+        if (minPriceFilter !== null) params.min_price = minPriceFilter;
+        if (maxPriceFilter !== null) params.max_price = maxPriceFilter;
+        if (locationFilter) params.location = locationFilter;
+        if (availabilityFilter !== null) params.available = availabilityFilter;
+        if (minRatingFilter !== null) params.min_rating = minRatingFilter;
+        if (searchTerm) params.keyword = searchTerm;
         
-        // Ensure listings is always an array
-        if (Array.isArray(response.data)) {
-          setListings(response.data);
+        // Then get the listings for this service with pagination
+        const response = await axios.get(`${API_URL}/listings/service/${serviceId}`, { params });
+        
+        // Check if the response has pagination info
+        if (response.data && response.data.items) {
+          setListings(response.data.items);
+          setPaginationInfo({
+            totalItems: response.data.total,
+            totalPages: Math.ceil(response.data.total / itemsPerPage),
+            currentPage: response.data.page,
+            itemsPerPage: response.data.limit
+          });
         } else {
-          // If the response is not an array, check if it has a data property that is an array
-          if (response.data && Array.isArray(response.data.data)) {
-            setListings(response.data.data);
-          } else {
-            // If we can't find an array, set an empty array and log an error
-            console.error('API response is not in expected format:', response.data);
-            setListings([]);
-            setError('Received unexpected data format from server');
-          }
+          // Fallback if API doesn't return pagination info
+          setListings(Array.isArray(response.data) ? response.data : []);
+          setPaginationInfo({
+            totalItems: Array.isArray(response.data) ? response.data.length : 0,
+            totalPages: Math.ceil((Array.isArray(response.data) ? response.data.length : 0) / itemsPerPage),
+            currentPage: currentPage,
+            itemsPerPage: itemsPerPage
+          });
         }
+        
+        setFilteredListings(Array.isArray(response.data) ? response.data : 
+                           (response.data && response.data.items ? response.data.items : []));
+        
       } catch (err) {
         console.error('Error fetching listings:', err);
         setError('Failed to load listings. Please try again later.');
-        setListings([]); // Ensure listings is an empty array when there's an error
+        setListings([]); 
+        setFilteredListings([]);
       } finally {
         setLoading(false);
       }
@@ -100,57 +143,57 @@ const ListingsPagebyServiceId: React.FC = () => {
     if (serviceId) {
       fetchListings();
     }
-  }, [serviceId]);
+  }, [serviceId, currentPage, isFiltering]);
 
-  // Apply filters when listings or filter criteria change
+  // Apply client-side filtering when not using API filters
   useEffect(() => {
-    if (!listings || listings.length === 0) {
-      setFilteredListings([]);
-      return;
-    }
+    // Only apply client-side filtering if we're not using API filtering
+    if (!isFiltering && listings.length > 0) {
+      let results = [...listings];
 
-    let results = [...listings];
+      if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        results = results.filter(listing => 
+          (listing.title && listing.title.toLowerCase().includes(term)) ||
+          (listing.description && listing.description.toLowerCase().includes(term))
+        );
+      }
 
-    // Filter by price range
-    if (minPriceFilter !== null) {
-      results = results.filter(listing => listing.min_price >= minPriceFilter);
-    }
-    if (maxPriceFilter !== null) {
-      results = results.filter(listing => listing.max_price <= maxPriceFilter);
-    }
+      if (minPriceFilter !== null) {
+        results = results.filter(listing => listing.min_price >= minPriceFilter);
+      }
+      
+      if (maxPriceFilter !== null) {
+        results = results.filter(listing => listing.max_price <= maxPriceFilter);
+      }
+      
+      if (locationFilter) {
+        results = results.filter(listing => 
+          listing.location && listing.location.toLowerCase().includes(locationFilter.toLowerCase())
+        );
+      }
+      
+      if (availabilityFilter !== null) {
+        results = results.filter(listing => listing.available === availabilityFilter);
+      }
+      
+      if (minRatingFilter !== null) {
+        results = results.filter(listing => 
+          listing.profile && 
+          listing.profile.average_rating && 
+          listing.profile.average_rating >= minRatingFilter
+        );
+      }
 
-    // Filter by location
-    if (locationFilter) {
-      results = results.filter(listing => 
-        listing.location && listing.location.toLowerCase().includes(locationFilter.toLowerCase())
-      );
+      setFilteredListings(results);
     }
+  }, [listings, searchTerm, minPriceFilter, maxPriceFilter, locationFilter, availabilityFilter, minRatingFilter, isFiltering]);
 
-    // Filter by availability
-    if (availabilityFilter !== null) {
-      results = results.filter(listing => listing.available === availabilityFilter);
-    }
-
-    // Filter by minimum rating
-    if (minRatingFilter !== null) {
-      results = results.filter(listing => 
-        listing.profile && 
-        listing.profile.average_rating && 
-        listing.profile.average_rating >= minRatingFilter
-      );
-    }
-
-    // Filter by search term (in title or description)
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      results = results.filter(listing => 
-        (listing.title && listing.title.toLowerCase().includes(term)) ||
-        (listing.description && listing.description.toLowerCase().includes(term))
-      );
-    }
-
-    setFilteredListings(results);
-  }, [listings, minPriceFilter, maxPriceFilter, locationFilter, availabilityFilter, minRatingFilter, searchTerm]);
+  // Apply filters with API
+  const applyFilters = () => {
+    setIsFiltering(true);
+    setCurrentPage(1); // Reset to first page when filtering
+  };
 
   // Reset all filters
   const resetFilters = () => {
@@ -160,6 +203,15 @@ const ListingsPagebyServiceId: React.FC = () => {
     setAvailabilityFilter(null);
     setMinRatingFilter(null);
     setSearchTerm('');
+    setIsFiltering(false);
+    setCurrentPage(1); // Reset to first page
+  };
+
+  // Handle pagination
+  const goToPage = (page: number) => {
+    if (page < 1 || page > paginationInfo.totalPages) return;
+    setCurrentPage(page);
+    window.scrollTo(0, 0); // Scroll to top when changing page
   };
 
   // Format currency
@@ -185,7 +237,7 @@ const ListingsPagebyServiceId: React.FC = () => {
         <p className="text-gray-600">
           {loading ? <Skeleton className="h-6 w-96" /> : 
             listings.length > 0 
-            ? `Found ${filteredListings.length} of ${listings.length} listings in this category` 
+            ? `Showing ${filteredListings.length} of ${paginationInfo.totalItems} listings in this category (Page ${currentPage} of ${paginationInfo.totalPages})` 
             : 'No listings found for this service'}
         </p>
       </div>
@@ -292,6 +344,15 @@ const ListingsPagebyServiceId: React.FC = () => {
               </select>
             </div>
           </div>
+          
+          <div className="mt-6 flex justify-end">
+            <Button 
+              onClick={applyFilters}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white"
+            >
+              Apply Filters
+            </Button>
+          </div>
         </div>
       )}
 
@@ -323,49 +384,112 @@ const ListingsPagebyServiceId: React.FC = () => {
           </Button>
         </div>
       ) : filteredListings.length > 0 ? (
-        // Listings grid - now showing filtered listings
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredListings.map((listing) => (
-            <Card key={listing.id} className="hover:shadow-md transition-shadow duration-300">
-              <CardHeader>
-                <CardTitle className="text-xl">{listing.title}</CardTitle>
-                {listing.profile && (
-                  <div className="flex items-center text-sm text-gray-500">
-                    <UserIcon className="h-4 w-4 mr-1" />
-                    <span>{listing.profile.full_name}</span>
-                    {listing.profile.average_rating && (
-                      <div className="flex items-center ml-2">
-                        <StarIcon className="h-4 w-4 text-yellow-500 mr-1" />
-                        <span>{listing.profile.average_rating}</span>
-                      </div>
+        <>
+          {/* Listings grid - now showing filtered listings */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredListings.map((listing) => (
+              <Card key={listing.id} className="hover:shadow-md transition-shadow duration-300">
+                <CardHeader>
+                  <CardTitle className="text-xl">{listing.title}</CardTitle>
+                  {listing.profile && (
+                    <div className="flex items-center text-sm text-gray-500">
+                      <UserIcon className="h-4 w-4 mr-1" />
+                      <span>{listing.profile.full_name}</span>
+                      {listing.profile.average_rating && (
+                        <div className="flex items-center ml-2">
+                          <StarIcon className="h-4 w-4 text-yellow-500 mr-1" />
+                          <span>{listing.profile.average_rating}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 mb-4 line-clamp-2">
+                    {listing.description || 'No description provided.'}
+                  </p>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                      {formatPrice(listing.min_price)} - {formatPrice(listing.max_price)}
+                    </Badge>
+                    {listing.location && (
+                      <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200 flex items-center">
+                        <MapPinIcon className="h-3 w-3 mr-1" />
+                        {listing.location}
+                      </Badge>
                     )}
                   </div>
-                )}
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-4 line-clamp-2">
-                  {listing.description || 'No description provided.'}
-                </p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                    {formatPrice(listing.min_price)} - {formatPrice(listing.max_price)}
-                  </Badge>
-                  {listing.location && (
-                    <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200 flex items-center">
-                      <MapPinIcon className="h-3 w-3 mr-1" />
-                      {listing.location}
-                    </Badge>
-                  )}
+                </CardContent>
+                <CardFooter>
+                  <Link to={`/listings/${listing.id}`} className="w-full">
+                    <Button variant="outline" className="w-full">View Details</Button>
+                  </Link>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+          
+          {/* Pagination controls */}
+          {paginationInfo.totalPages > 1 && (
+            <div className="flex justify-center mt-8">
+              <nav className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => goToPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="flex items-center"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  <span className="sr-only">Previous Page</span>
+                </Button>
+                
+                {/* Page numbers */}
+                <div className="flex items-center gap-1">
+                  {[...Array(paginationInfo.totalPages)].map((_, i) => {
+                    const pageNum = i + 1;
+                    // Show first page, last page, current page, and pages around current page
+                    if (
+                      pageNum === 1 || 
+                      pageNum === paginationInfo.totalPages ||
+                      (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                    ) {
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={pageNum === currentPage ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => goToPage(pageNum)}
+                          className="w-8 h-8"
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    } else if (
+                      (pageNum === 2 && currentPage > 3) ||
+                      (pageNum === paginationInfo.totalPages - 1 && currentPage < paginationInfo.totalPages - 2)
+                    ) {
+                      // Show ellipsis for skipped pages
+                      return <span key={pageNum} className="px-2">...</span>;
+                    }
+                    return null;
+                  })}
                 </div>
-              </CardContent>
-              <CardFooter>
-                <Link to={`/listings/${listing.id}`} className="w-full">
-                  <Button variant="outline" className="w-full">View Details</Button>
-                </Link>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => goToPage(currentPage + 1)}
+                  disabled={currentPage === paginationInfo.totalPages}
+                  className="flex items-center"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                  <span className="sr-only">Next Page</span>
+                </Button>
+              </nav>
+            </div>
+          )}
+        </>
       ) : listings.length > 0 ? (
         // No results after filtering
         <div className="bg-gray-50 dark:bg-gray-900 p-10 rounded-lg text-center">
