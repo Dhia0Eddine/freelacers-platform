@@ -1,39 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthContext } from '@/context/AuthContext';
 import { dashboardService } from '@/services/api';
-import { 
-  Calendar, 
-  DollarSign, 
-  FileText, 
-  Inbox, 
-  Loader2, 
-  MessageSquare, 
-  RefreshCw,
-  Send,
-  ShoppingBag,
-  Star,
-  Users,
-  AlertCircle
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuthContext } from '@/context/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { DashboardStatsCard } from '@/components/dashboard/DashboardStatsCard';
-import { DashboardRequestsCard } from '../components/dashboard/DashboardRequestsCard';
-import { DashboardQuotesCard } from '../components/dashboard/DashboardQuotesCard';
-import { DashboardBookingsCard } from '../components/dashboard/DashboardBookingsCard';
-import { DashboardListingsCard } from '../components/dashboard/DashboardListingsCard';
-import { CircularProgressIndicator } from '../components/dashboard/CircularProgressIndicator';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { 
+  BarChart3, Home, Users, Calendar, ClipboardList, MessageSquare, 
+  Star, FileText, CheckCircle, Clock, CreditCard, LayoutDashboard, 
+  AlertTriangle, Send, ShoppingBag
+} from 'lucide-react';
+import { DashboardStatsCards } from '../components/dashboard/DashboardStatsCards';
+import { DashboardActivity } from '../components/dashboard/DashboardActivity';
+import { DashboardRequestsCard } from '@/components/dashboard/DashboardRequestsCard';
+import { DashboardQuotesCard } from '@/components/dashboard/DashboardQuotesCard';
+import { DashboardBookingsCard } from '@/components/dashboard/DashboardBookingsCard';
+import { DashboardReviewsCard } from '../components/dashboard/DashboardReviewsCard';
+import { DashboardListingsCard } from '@/components/dashboard/DashboardListingsCard';
+import { DashboardClientStatsCard } from '../components/dashboard/DashboardClientStatsCard';
 
 export default function DashboardPage() {
+  const [dashboardData, setDashboardData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [dashboardData, setDashboardData] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('overview');
-  const { isAuthenticated, isProvider, isCustomer } = useAuthContext();
+
+  const { isAuthenticated, isCustomer, isProvider } = useAuthContext();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,54 +35,29 @@ export default function DashboardPage() {
       return;
     }
 
-    fetchDashboardData();
-  }, [isAuthenticated, navigate]);
+    const fetchDashboard = async () => {
+      setLoading(true);
+      setError(null);
 
-  const fetchDashboardData = async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      let data;
-      if (isProvider) {
-        data = await dashboardService.getProviderDashboard();
-      } else {
-        data = await dashboardService.getCustomerDashboard();
+      try {
+        // Fetch the appropriate dashboard data based on user role
+        if (isProvider) {
+          const data = await dashboardService.getProviderDashboard();
+          setDashboardData(data);
+        } else if (isCustomer) {
+          const data = await dashboardService.getCustomerDashboard();
+          setDashboardData(data);
+        }
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        setError('Failed to load dashboard data. Please try again.');
+      } finally {
+        setLoading(false);
       }
-      
-      setDashboardData(data);
-    } catch (err) {
-      console.error('Error fetching dashboard data:', err);
-      setError('Failed to load dashboard data. Please try again later.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
-        <Loader2 className="h-10 w-10 text-blue-500 animate-spin mb-4" />
-        <p className="text-gray-600 dark:text-gray-400">Loading dashboard data...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Alert variant="destructive" className="mb-6">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-        <Button onClick={fetchDashboardData}>
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Retry
-        </Button>
-      </div>
-    );
-  }
+    fetchDashboard();
+  }, [isAuthenticated, isCustomer, isProvider, navigate]);
 
   // Extract dashboard stats
   const stats = dashboardData?.stats || {
@@ -112,237 +80,181 @@ export default function DashboardPage() {
       </p>
 
       <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-        <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="requests">Requests</TabsTrigger>
-          <TabsTrigger value="quotes">Quotes</TabsTrigger>
-          <TabsTrigger value="bookings">Bookings</TabsTrigger>
-          {isProvider && <TabsTrigger value="listings">Listings</TabsTrigger>}
+        <TabsList className="bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+          <TabsTrigger value="overview" className="rounded-md">
+            <LayoutDashboard className="h-4 w-4 mr-2" />
+            Overview
+          </TabsTrigger>
+          
+          <TabsTrigger value="requests" className="rounded-md">
+            <ClipboardList className="h-4 w-4 mr-2" />
+            Requests
+          </TabsTrigger>
+          
+          <TabsTrigger value="quotes" className="rounded-md">
+            <FileText className="h-4 w-4 mr-2" />
+            Quotes
+          </TabsTrigger>
+          
+          <TabsTrigger value="bookings" className="rounded-md">
+            <Calendar className="h-4 w-4 mr-2" />
+            Bookings
+          </TabsTrigger>
+
+          {isProvider && (
+            <TabsTrigger value="clients" className="rounded-md">
+              <Users className="h-4 w-4 mr-2" />
+              Clients
+            </TabsTrigger>
+          )}
+          
+          {isCustomer && (
+            <TabsTrigger value="reviews" className="rounded-md">
+              <Star className="h-4 w-4 mr-2" />
+              Reviews
+            </TabsTrigger>
+          )}
         </TabsList>
-        
-        {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <DashboardStatsCard 
-              title="Requests"
-              value={stats.totalRequests}
-              description={isProvider ? "Received requests" : "Sent requests"}
-              icon={<MessageSquare className="h-6 w-6 text-blue-500" />}
-            />
-            
-            <DashboardStatsCard 
-              title="Quotes"
-              value={stats.totalQuotes}
-              description={isProvider ? "Sent quotes" : "Received quotes"}
-              icon={<FileText className="h-6 w-6 text-indigo-500" />}
-            />
-            
-            <DashboardStatsCard 
-              title="Bookings"
-              value={stats.totalBookings}
-              description="Scheduled services"
-              icon={<Calendar className="h-6 w-6 text-green-500" />}
-            />
-            
-            {isProvider ? (
-              <DashboardStatsCard 
-                title="Listings"
-                value={stats.totalListings || 0}
-                description="Active service listings"
-                icon={<ShoppingBag className="h-6 w-6 text-orange-500" />}
-              />
-            ) : (
-              <DashboardStatsCard 
-                title="Rating"
-                value={stats.averageRating?.toFixed(1) || "N/A"}
-                description="Your average rating"
-                icon={<Star className="h-6 w-6 text-yellow-500" />}
-                valuePrefix=""
-                isRating={true}
-              />
-            )}
+
+        {loading ? (
+          <div className="space-y-4">
+            <Skeleton className="h-[180px] w-full rounded-lg" />
+            <Skeleton className="h-[400px] w-full rounded-lg" />
           </div>
-
-          {/* Recent Activity */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <ActivityIcon className="h-5 w-5 mr-2" />
-                Recent Activity
-              </CardTitle>
-              <CardDescription>Your latest account activity</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {dashboardData?.recentActivity?.length > 0 ? (
-                <div className="space-y-4">
-                  {dashboardData.recentActivity.map((activity: any, index: number) => (
-                    <div key={index} className="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                      <div className={`rounded-full p-2 ${getActivityIconBackground(activity.type)}`}>
-                        {getActivityIcon(activity.type)}
-                      </div>
-                      <div>
-                        <p className="font-medium">{activity.message}</p>
-                        <p className="text-sm text-gray-500">{formatDate(activity.timestamp)}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-6">
-                  <p className="text-gray-500">No recent activity to display</p>
-                </div>
-              )}
-            </CardContent>
-            <CardFooter className="flex justify-center">
-              <Button variant="outline" size="sm">View All Activity</Button>
-            </CardFooter>
-          </Card>
-
-          {/* Quick Stats Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Provider-specific cards */}
-            {isProvider && (
-              <>
-                <Card className="col-span-1">
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <DollarSign className="h-5 w-5 mr-2" />
-                      Revenue
-                    </CardTitle>
-                    <CardDescription>Total earnings this month</CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex flex-col items-center">
-                    <div className="text-3xl font-bold mb-2">${stats.totalRevenue || 0}</div>
-                    <CircularProgressIndicator 
-                      percentage={75} 
-                      size={120} 
-                      strokeWidth={10}
-                    />
-                    <p className="text-sm text-gray-500 mt-4">75% of your monthly goal</p>
-                  </CardContent>
-                </Card>
+        ) : error ? (
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
+            <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-red-800 dark:text-red-300 mb-2">Failed to load dashboard</h3>
+            <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
+            <Button onClick={() => window.location.reload()}>Retry</Button>
+          </div>
+        ) : (
+          <>
+            <TabsContent value="overview" className="space-y-6">
+              <DashboardStatsCards stats={stats} isProvider={isProvider} />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <DashboardActivity activities={dashboardData?.recentActivity || []} />
                 
-                <Card className="col-span-1">
+                {isProvider && (
+                  <DashboardClientStatsCard 
+                    clientStats={dashboardData?.clientStats || {new: 0, returning: 0}}
+                    responseRate={dashboardData?.responseRate || 0}
+                    avgResponseTime={dashboardData?.avgResponseTime || '0 hours'}
+                  />
+                )}
+                
+                {isCustomer && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <ClipboardList className="h-5 w-5 mr-2" />
+                        Request Status
+                      </CardTitle>
+                      <CardDescription>
+                        Current status of your service requests
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {dashboardData?.requestStats ? (
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                            <div className="text-xl font-medium text-blue-600 dark:text-blue-400">
+                              {dashboardData.requestStats.pending}
+                            </div>
+                            <div className="text-sm text-gray-500">Pending</div>
+                          </div>
+                          <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg">
+                            <div className="text-xl font-medium text-amber-600 dark:text-amber-400">
+                              {dashboardData.requestStats.quoted}
+                            </div>
+                            <div className="text-sm text-gray-500">Quoted</div>
+                          </div>
+                          <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                            <div className="text-xl font-medium text-green-600 dark:text-green-400">
+                              {dashboardData.requestStats.booked}
+                            </div>
+                            <div className="text-sm text-gray-500">Booked</div>
+                          </div>
+                          <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                            <div className="text-xl font-medium text-purple-600 dark:text-purple-400">
+                              {dashboardData.requestStats.completed}
+                            </div>
+                            <div className="text-sm text-gray-500">Completed</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          No request data available
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+              
+              {isProvider && (
+                <DashboardListingsCard 
+                  listings={dashboardData?.listings || []} 
+                  onAddListing={() => navigate('/listings/new')}
+                />
+              )}
+            </TabsContent>
+            
+            <TabsContent value="requests" className="space-y-6">
+              <DashboardRequestsCard 
+                requests={dashboardData?.requests || []} 
+                isProvider={isProvider}
+              />
+            </TabsContent>
+            
+            <TabsContent value="quotes" className="space-y-6">
+              <DashboardQuotesCard 
+                quotes={dashboardData?.quotes || []} 
+                isProvider={isProvider}
+              />
+            </TabsContent>
+            
+            <TabsContent value="bookings" className="space-y-6">
+              <DashboardBookingsCard 
+                bookings={dashboardData?.bookings || []} 
+                isProvider={isProvider}
+              />
+            </TabsContent>
+            
+            {isProvider && (
+              <TabsContent value="clients" className="space-y-6">
+                <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center">
                       <Users className="h-5 w-5 mr-2" />
-                      Client Breakdown
+                      Client Management
                     </CardTitle>
-                    <CardDescription>Customer distribution</CardDescription>
+                    <CardDescription>
+                      View and manage your clients
+                    </CardDescription>
                   </CardHeader>
-                  <CardContent className="flex flex-col items-center">
-                    <div className="w-full grid grid-cols-2 gap-4 mb-4">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold mb-1">{dashboardData?.clientStats?.new || 0}</div>
-                        <p className="text-sm text-gray-500">New Clients</p>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold mb-1">{dashboardData?.clientStats?.returning || 0}</div>
-                        <p className="text-sm text-gray-500">Returning</p>
-                      </div>
-                    </div>
-                    <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-blue-500" 
-                        style={{ width: `${(dashboardData?.clientStats?.new || 0) / ((dashboardData?.clientStats?.new || 0) + (dashboardData?.clientStats?.returning || 0)) * 100}%` }}
-                      ></div>
+                  <CardContent>
+                    <div className="text-center py-12 text-gray-500">
+                      Client management features coming soon
                     </div>
                   </CardContent>
                 </Card>
-              </>
+              </TabsContent>
             )}
-
-            {/* Common for both roles */}
-            <Card className={isProvider ? "col-span-1" : "col-span-full"}>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Inbox className="h-5 w-5 mr-2" />
-                  {isProvider ? "Response Rate" : "Service Requests"}
-                </CardTitle>
-                <CardDescription>
-                  {isProvider ? "Request response performance" : "Your current service requests"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isProvider ? (
-                  <div className="flex flex-col items-center">
-                    <CircularProgressIndicator 
-                      percentage={dashboardData?.responseRate || 0} 
-                      size={120} 
-                      strokeWidth={10}
-                      color={getResponseRateColor(dashboardData?.responseRate || 0)}
-                    />
-                    <p className="text-lg font-semibold mt-4">{dashboardData?.responseRate || 0}% Response Rate</p>
-                    <p className="text-sm text-gray-500">Average response time: {dashboardData?.avgResponseTime || 'N/A'}</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Pending</span>
-                      <span className="font-semibold">{dashboardData?.requestStats?.pending || 0}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Quoted</span>
-                      <span className="font-semibold">{dashboardData?.requestStats?.quoted || 0}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Booked</span>
-                      <span className="font-semibold">{dashboardData?.requestStats?.booked || 0}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span>Completed</span>
-                      <span className="font-semibold">{dashboardData?.requestStats?.completed || 0}</span>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline" className="w-full" onClick={() => setActiveTab(isProvider ? 'requests' : 'bookings')}>
-                  {isProvider ? 'View All Requests' : 'Manage Requests'}
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
-        </TabsContent>
-        
-        {/* Requests Tab */}
-        <TabsContent value="requests">
-          <DashboardRequestsCard 
-            requests={dashboardData?.requests || []}
-            isProvider={isProvider}
-          />
-        </TabsContent>
-        
-        {/* Quotes Tab */}
-        <TabsContent value="quotes">
-          <DashboardQuotesCard 
-            quotes={dashboardData?.quotes || []}
-            isProvider={isProvider}
-          />
-        </TabsContent>
-        
-        {/* Bookings Tab */}
-        <TabsContent value="bookings">
-          <DashboardBookingsCard 
-            bookings={dashboardData?.bookings || []}
-            isProvider={isProvider}
-          />
-        </TabsContent>
-        
-        {/* Listings Tab (Provider Only) */}
-        {isProvider && (
-          <TabsContent value="listings">
-            <DashboardListingsCard 
-              listings={dashboardData?.listings || []}
-              onAddListing={() => navigate('/listings/new')}
-            />
-          </TabsContent>
+            
+            {isCustomer && (
+              <TabsContent value="reviews" className="space-y-6">
+                <DashboardReviewsCard />
+              </TabsContent>
+            )}
+          </>
         )}
       </Tabs>
     </div>
   );
 }
+
 
 // Helper functions
 const ActivityIcon = ({ className }: { className?: string }) => (

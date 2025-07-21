@@ -4,19 +4,22 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Clock, Filter, MapPin, MessageSquare, Search, Send, User } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Calendar, Clock, Filter, MapPin, Search, User } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface Request {
   id: number;
   listing_id: number;
   listing_title: string;
-  description: string;
+  description?: string;
   preferred_date: string;
   status: string;
   created_at: string;
   customer_name?: string;
+  customer_id?: number;
   provider_name?: string;
+  provider_id?: number;
+  location?: string;
 }
 
 interface DashboardRequestsCardProps {
@@ -28,7 +31,9 @@ export function DashboardRequestsCard({ requests, isProvider }: DashboardRequest
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-
+  const navigate = useNavigate();
+  
+  // Filter and sort requests
   const filteredRequests = requests
     .filter(request => {
       // Status filter
@@ -38,10 +43,11 @@ export function DashboardRequestsCard({ requests, isProvider }: DashboardRequest
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
         return (
-          request.listing_title.toLowerCase().includes(searchLower) ||
-          request.description.toLowerCase().includes(searchLower) ||
+          (request.listing_title && request.listing_title.toLowerCase().includes(searchLower)) ||
+          (request.description && request.description.toLowerCase().includes(searchLower)) ||
           (request.customer_name && request.customer_name.toLowerCase().includes(searchLower)) ||
-          (request.provider_name && request.provider_name.toLowerCase().includes(searchLower))
+          (request.provider_name && request.provider_name.toLowerCase().includes(searchLower)) ||
+          (request.location && request.location.toLowerCase().includes(searchLower))
         );
       }
       return true;
@@ -57,13 +63,11 @@ export function DashboardRequestsCard({ requests, isProvider }: DashboardRequest
       case 'open':
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
       case 'quoted':
-        return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300';
+        return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300';
       case 'booked':
         return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
       case 'closed':
         return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
-      case 'declined':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
     }
@@ -83,13 +87,12 @@ export function DashboardRequestsCard({ requests, isProvider }: DashboardRequest
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           <div>
             <CardTitle className="flex items-center">
-              <MessageSquare className="h-5 w-5 mr-2" />
-              {isProvider ? 'Received Requests' : 'Sent Requests'}
+              {isProvider ? 'Service Requests' : 'My Requests'}
             </CardTitle>
             <CardDescription>
               {isProvider 
-                ? 'Requests from customers for your services'
-                : 'Your requests to service providers'
+                ? 'Review and respond to customer service requests'
+                : 'Track the status of your service requests'
               }
             </CardDescription>
           </div>
@@ -109,12 +112,11 @@ export function DashboardRequestsCard({ requests, isProvider }: DashboardRequest
                 <SelectValue placeholder="Filter" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="open">Open</SelectItem>
                 <SelectItem value="quoted">Quoted</SelectItem>
                 <SelectItem value="booked">Booked</SelectItem>
                 <SelectItem value="closed">Closed</SelectItem>
-                <SelectItem value="declined">Declined</SelectItem>
               </SelectContent>
             </Select>
             <Button 
@@ -128,6 +130,7 @@ export function DashboardRequestsCard({ requests, isProvider }: DashboardRequest
           </div>
         </div>
       </CardHeader>
+      
       <CardContent>
         {filteredRequests.length > 0 ? (
           <div className="space-y-4">
@@ -150,18 +153,46 @@ export function DashboardRequestsCard({ requests, isProvider }: DashboardRequest
                       {isProvider ? (
                         <div className="flex items-center">
                           <User className="h-3.5 w-3.5 mr-1" />
-                          <span>{request.customer_name || 'Anonymous Customer'}</span>
+                          {request.customer_id ? (
+                            <Link 
+                              to={`/profile/${request.customer_id}`}
+                              className="text-blue-600 hover:text-blue-800 hover:underline"
+                            >
+                              {request.customer_name || 'Anonymous Customer'}
+                            </Link>
+                          ) : (
+                            <span>{request.customer_name || 'Anonymous Customer'}</span>
+                          )}
                         </div>
                       ) : (
                         <div className="flex items-center">
                           <User className="h-3.5 w-3.5 mr-1" />
-                          <span>{request.provider_name || 'Service Provider'}</span>
+                          {request.provider_id ? (
+                            <Link 
+                              to={`/profile/${request.provider_id}`}
+                              className="text-blue-600 hover:text-blue-800 hover:underline"
+                            >
+                              {request.provider_name || 'Service Provider'}
+                            </Link>
+                          ) : (
+                            <span>{request.provider_name || 'Service Provider'}</span>
+                          )}
                         </div>
                       )}
                       <div className="flex items-center">
-                        <Clock className="h-3.5 w-3.5 mr-1" />
-                        <span>{formatDate(request.created_at)}</span>
+                        <Calendar className="h-3.5 w-3.5 mr-1" />
+                        <span>Preferred: {formatDate(request.preferred_date)}</span>
                       </div>
+                      <div className="flex items-center">
+                        <Clock className="h-3.5 w-3.5 mr-1" />
+                        <span>Requested: {formatDate(request.created_at)}</span>
+                      </div>
+                      {request.location && (
+                        <div className="flex items-center">
+                          <MapPin className="h-3.5 w-3.5 mr-1" />
+                          <span>{request.location}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <Badge className={getStatusBadgeColor(request.status)}>
@@ -170,36 +201,28 @@ export function DashboardRequestsCard({ requests, isProvider }: DashboardRequest
                 </div>
                 
                 <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
-                  {request.description || 'No description provided.'}
+                  {request.description || 'No description provided'}
                 </p>
                 
-                <div className="flex flex-wrap gap-3 mt-2 text-sm">
-                  <div className="flex items-center text-gray-500">
-                    <Calendar className="h-3.5 w-3.5 mr-1" />
-                    <span>Preferred: {formatDate(request.preferred_date)}</span>
-                  </div>
-                </div>
-                
-                <div className="flex justify-end mt-4">
-                  <Link to={`/requests/${request.id}`}>
-                    <Button size="sm">
-                      {isProvider ? (
-                        <>
-                          <Send className="h-3.5 w-3.5 mr-1" />
-                          {request.status === 'open' ? 'Send Quote' : 'View Details'}
-                        </>
-                      ) : (
-                        'View Details'
-                      )}
-                    </Button>
-                  </Link>
+                <div className="flex justify-end mt-2">
+                  <Button 
+                    size="sm"
+                    onClick={() => navigate(isProvider ? `/request/${request.id}` : `/my-requests/${request.id}`)}
+                  >
+                    {isProvider && request.status === 'open' ? 'Send Quote' : 'View Details'}
+                  </Button>
                 </div>
               </div>
             ))}
           </div>
         ) : (
           <div className="text-center py-12">
-            <MessageSquare className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+            <div className="h-12 w-12 mx-auto text-gray-400 mb-4">
+              {statusFilter !== 'all' 
+                ? <Filter className="h-12 w-12 mx-auto" />
+                : isProvider ? <User className="h-12 w-12 mx-auto" /> : <Calendar className="h-12 w-12 mx-auto" />
+              }
+            </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               {statusFilter !== 'all' 
                 ? `No ${statusFilter} requests found` 
@@ -207,15 +230,13 @@ export function DashboardRequestsCard({ requests, isProvider }: DashboardRequest
             </h3>
             <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
               {isProvider
-                ? "You haven't received any service requests yet."
-                : "You haven't sent any service requests yet."}
+                ? "You don't have any service requests to review at the moment."
+                : "You haven't submitted any service requests yet."}
             </p>
             {!isProvider && (
-              <Link to="/listings">
-                <Button>
-                  Browse Services
-                </Button>
-              </Link>
+              <Button onClick={() => navigate('/listings')}>
+                Browse Services
+              </Button>
             )}
           </div>
         )}

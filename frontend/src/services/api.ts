@@ -477,7 +477,91 @@ export const requestService = {
       }
       throw new Error('Failed to get requests due to network issue');
     }
-  }
+  },
+
+  // Add method to get a specific request by ID
+  getRequestById: async (requestId: number) => {
+    try {
+      const response = await api.get(`/requests/${requestId}`);
+      console.log('Request details response:', response.data);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error fetching request details:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to get request details');
+      }
+      throw new Error('Failed to get request details due to network issue');
+    }
+  },
+
+  // Add method to get quotes for a specific request
+  getQuotesForRequest: async (requestId: number) => {
+    try {
+      const response = await api.get(`/quotes/request/${requestId}`);
+      console.log('Quotes for request response:', response.data);
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error fetching quotes for request:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to get quotes');
+      }
+      throw new Error('Failed to get quotes due to network issue');
+    }
+  },
+
+  // Add method to update quote status (accept/reject)
+  updateQuoteStatus: async (quoteId: number, status: string) => {
+    try {
+      const response = await api.patch(`/quotes/${quoteId}/status`, { status });
+      console.log('Quote status update response:', response.data);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error updating quote status:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to update quote status');
+      }
+      throw new Error('Failed to update quote status due to network issue');
+    }
+  },
+  
+  // Add method to create a booking from an accepted quote
+  createBooking: async (bookingData: {
+    quote_id: number;
+    scheduled_time: string;
+  }) => {
+    try {
+      const response = await api.post('/bookings/', bookingData);
+      console.log('Booking creation response:', response.data);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error creating booking:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to create booking');
+      }
+      throw new Error('Failed to create booking due to network issue');
+    }
+  },
+
+  // Add method to submit a quote for a request
+  submitQuote: async (quoteData: {
+    request_id: number;
+    listing_id: number;
+    price: number;
+    message?: string;
+  }) => {
+    try {
+      console.log('Submitting quote with data:', quoteData);
+      const response = await api.post('/quotes/', quoteData);
+      console.log('Quote submission response:', response.data);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error submitting quote:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to submit quote');
+      }
+      throw new Error('Failed to submit quote due to network issue');
+    }
+  },
 };
 
 // Booking related API calls

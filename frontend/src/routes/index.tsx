@@ -15,6 +15,8 @@ import ServiceBrowsingPage from "../pages/ServiceBrowsingPage";
 import ListingsPagebyServiceId from "../pages/ListingsPagebyServiceId";
 import CreateListingPage from "../pages/CreateListingPage";
 import DashboardPage from "../pages/DashboardPage";
+import RequestDetailPage from "../pages/RequestDetailPage";
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -32,6 +34,7 @@ export const router = createBrowserRouter([
       { path: "listings/service/:serviceId", element: <ListingsPagebyServiceId /> },
       { path: "listings/:listingId", element: <ServiceListingDetailPage /> },
       { path: "dashboard", element: <DashboardPage /> },
+      { path: "request/:requestId", element: <RequestDetailPage /> },
     ],
   },
 ])

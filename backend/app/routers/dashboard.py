@@ -148,7 +148,9 @@ async def get_provider_dashboard(db: Session = Depends(get_db), current_user: Us
             "preferred_date": req.preferred_date,
             "status": req.status,
             "created_at": req.created_at,
-            "customer_name": customer_name
+            "customer_id": req.user_id,  # Include the customer_id
+            "customer_name": customer_name,
+            "location": req.location
         })
     
     # Format quotes for response
