@@ -138,9 +138,8 @@ export default function UserProfilePage() {
     );
   }
 
-  // Add explicit debug information
-  // Improve the isFreelancer logic to handle undefined role
-  const isFreelancer = user?.role === 'provider' || user?.role === 'freelancer' || (listings && listings.length > 0);
+  // Update the isFreelancer logic to not use "freelancer" string
+  const isFreelancer = user?.role === 'provider' || (listings && listings.length > 0);
 
   // Mock data for testimonials
   const testimonials = [
@@ -218,7 +217,7 @@ export default function UserProfilePage() {
                 
                 <div className="flex items-center mt-4 md:mt-0 space-x-3 animate-fadeIn" style={{ animationDelay: '0.3s' }}>
                   <span className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 hover:shadow-md">
-                    {isFreelancer ? 'Freelancer' : 'Client'}
+                    {isFreelancer ? 'Provider' : 'Customer'}
                   </span>
                   
                   {profile?.average_rating && (

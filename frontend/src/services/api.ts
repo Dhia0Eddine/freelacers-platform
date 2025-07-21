@@ -1,4 +1,5 @@
 import axios from 'axios';
+import {jwtDecode} from 'jwt-decode';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -49,6 +50,20 @@ export const authService = {
       });
       
       console.log('Login response:', response.data);
+      
+      // Log token information for debugging
+      if (response.data.access_token) {
+        console.log('Token received, length:', response.data.access_token.length);
+        try {
+          const decoded = jwtDecode(response.data.access_token);
+          console.log('Decoded token in API service:', decoded);
+        } catch (decodeError) {
+          console.error('Failed to decode token in API service:', decodeError);
+        }
+      } else {
+        console.error('No token in response!');
+      }
+      
       localStorage.setItem('token', response.data.access_token);
       return response.data;
     } catch (error) {
@@ -216,9 +231,10 @@ export const listingService = {
     max_price: number;
     location: string;
     available: boolean;
+    service_id: number;
   }) => {
     try {
-      const response = await api.post('/listings/', listingData);
+      const response = await api.post('/listings', listingData);
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
@@ -430,13 +446,65 @@ export const requestService = {
   getMyRequests: async () => {
     try {
       const response = await api.get('/requests/me');
-      return response.data;
+      console.log('My requests response data:', response.data);
+      return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         console.error('Error fetching requests:', error.response.data);
         throw new Error(error.response.data.detail || 'Failed to get requests');
       }
       throw new Error('Failed to get requests due to network issue');
+    }
+  }
+};
+
+// Booking related API calls
+export const bookingService = {
+  getMyBookings: async () => {
+    try {
+      const response = await api.get('/bookings');
+      console.log('My bookings response data:', response.data);
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error fetching bookings:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to get bookings');
+      }
+      throw new Error('Failed to get bookings due to network issue');
+    }
+  }
+};
+
+// Review related API calls
+export const reviewService = {
+  getMyReviews: async () => {
+    try {
+      const response = await api.get('/reviews/me');
+      console.log('My reviews response data:', response.data);
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error fetching reviews:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to get reviews');
+      }
+      throw new Error('Failed to get reviews due to network issue');
+    }
+  },
+  
+  createReview: async (reviewData: {
+    booking_id: number;
+    rating: number;
+    comment?: string;
+  }) => {
+    try {
+      const response = await api.post('/reviews', reviewData);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Review creation error details:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to create review');
+      }
+      throw new Error('Failed to create review due to network issue');
     }
   }
 };

@@ -11,6 +11,8 @@ import {
 import { toast } from 'react-hot-toast';
 import { RequestFormModal } from '@/components/request-form-modal';
 import { requestService } from '@/services/api';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle, Check } from 'lucide-react';
 
 interface Profile {
   id: number;
@@ -43,6 +45,8 @@ export default function ServiceListingDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   
   const { isAuthenticated, isCustomer } = useAuthContext();
   const navigate = useNavigate();
@@ -82,13 +86,33 @@ export default function ServiceListingDetailPage() {
     fetchListingData();
   }, [listingId, navigate]);
 
+  // Clear error message after 5 seconds
+  useEffect(() => {
+    if (errorMessage) {
+      const timer = setTimeout(() => {
+        setErrorMessage(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorMessage]);
+
+  // Clear success message after 5 seconds
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        setSuccessMessage(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+
   const handleRequestSubmit = async (formData: {
     description: string;
     location: string;
     preferred_date: string;
   }) => {
     if (!isAuthenticated || !isCustomer) {
-      toast.error('Only customers can send service requests');
+      setErrorMessage('Only customers can send service requests');
       return;
     }
     
@@ -96,7 +120,7 @@ export default function ServiceListingDetailPage() {
     
     try {
       if (!listing?.id) {
-        toast.error('Listing ID is missing. Cannot send request.');
+        setErrorMessage('Listing ID is missing. Cannot send request.');
         return;
       }
 
@@ -109,11 +133,11 @@ export default function ServiceListingDetailPage() {
 
       await requestService.createRequest(requestData);
       
-      toast.success('Request sent successfully!');
+      setSuccessMessage('Request sent successfully!');
       setShowRequestModal(false);
     } catch (error) {
       console.error('Error submitting request:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to send request');
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to send request. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -168,6 +192,32 @@ export default function ServiceListingDetailPage() {
   return (
     <div className="bg-gray-50 dark:bg-gray-900 py-12 px-4">
       <div className="container mx-auto max-w-4xl">
+        {/* Error Alert */}
+        {errorMessage && (
+          <Alert variant="destructive" className="mb-6 animate-fade-in">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{errorMessage}</AlertDescription>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="absolute right-2 top-2" 
+              onClick={() => setErrorMessage(null)}
+            >
+              <XCircle className="h-4 w-4" />
+            </Button>
+          </Alert>
+        )}
+
+        {/* Success Alert */}
+        {successMessage && (
+          <Alert className="mb-6 bg-green-50 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 animate-fade-in">
+            <Check className="h-4 w-4" />
+            <AlertTitle>Success</AlertTitle>
+            <AlertDescription>{successMessage}</AlertDescription>
+          </Alert>
+        )}
+        
         {/* Back button */}
         <div className="mb-6">
           <Button 

@@ -15,6 +15,7 @@ interface AuthContextType {
     logout: () => void;
     initialized: boolean;
     isCustomer: boolean;  // New helper property
+    isProvider: boolean;  // Add this property to fix the TypeScript error
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,11 +28,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Function to decode JWT and extract user role
     const parseToken = (token: string) => {
         try {
+            // Add more detailed logging for token debugging
+            console.log("Attempting to decode token:", token.substring(0, 20) + "...");
+            
             const decoded = jwtDecode<UserInfo>(token);
-            setUserRole(decoded.role);
+            console.log("Token decoded successfully:", decoded);
+            
+            if (!decoded.role) {
+                console.error("Token decoded but no role found:", decoded);
+                setUserRole("customer"); // Default to customer if no role found
+            } else {
+                // Normalize role names to match backend (only 'customer' or 'provider')
+                const normalizedRole = decoded.role === "freelancer" ? "provider" : decoded.role;
+                console.log(`Setting normalized user role to: ${normalizedRole}`);
+                setUserRole(normalizedRole);
+            }
         } catch (error) {
             console.error("Failed to decode token:", error);
-            setUserRole(null);
+            console.error("Token content:", token.substring(0, 20) + "...");
+            // Default to customer when token decoding fails
+            console.log("Setting default role to customer due to decoding failure");
+            setUserRole("customer");
         }
     };
 
@@ -39,8 +56,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
             const storedToken = localStorage.getItem("token");
             if (storedToken) {
+                console.log("Found token in storage, length:", storedToken.length);
                 setToken(storedToken);
                 parseToken(storedToken);
+            } else {
+                console.log("No token found in storage");
             }
         } catch (error) {
             console.error("Failed to access localStorage:", error);
@@ -69,7 +89,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const isAuthenticated = !!token;
-    const isCustomer = userRole === 'customer';
+    const isCustomer = userRole === 'customer' || userRole === null || userRole === undefined;
+    const isProvider = userRole === 'provider';
 
     return (
         <AuthContext.Provider value={{ 
@@ -79,7 +100,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             login, 
             logout, 
             initialized,
-            isCustomer
+            isCustomer,
+            isProvider
         }}>
             {initialized ? children : <div>Loading...</div>}
         </AuthContext.Provider>
