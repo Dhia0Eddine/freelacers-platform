@@ -14,6 +14,7 @@ import ServiceListingDetailPage from "../pages/ServiceListingDetailPage";
 import ServiceBrowsingPage from "../pages/ServiceBrowsingPage";
 import ListingsPagebyServiceId from "../pages/ListingsPagebyServiceId";
 import CreateListingPage from "../pages/CreateListingPage";
+import DashboardPage from "../pages/DashboardPage";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -30,6 +31,7 @@ export const router = createBrowserRouter([
       { path: "listings/new", element: <CreateListingPage /> }, // Move this before the variable route
       { path: "listings/service/:serviceId", element: <ListingsPagebyServiceId /> },
       { path: "listings/:listingId", element: <ServiceListingDetailPage /> },
+      { path: "dashboard", element: <DashboardPage /> },
     ],
   },
 ])

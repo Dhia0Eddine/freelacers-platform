@@ -509,4 +509,35 @@ export const reviewService = {
   }
 };
 
+// Dashboard related API calls
+export const dashboardService = {
+  getProviderDashboard: async () => {
+    try {
+      const response = await api.get('/dashboard/provider');
+      console.log('Provider dashboard data:', response.data);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Dashboard fetch error details:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to get dashboard data');
+      }
+      throw new Error('Failed to get dashboard data due to network issue');
+    }
+  },
+  
+  getCustomerDashboard: async () => {
+    try {
+      const response = await api.get('/dashboard/customer');
+      console.log('Customer dashboard data:', response.data);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Dashboard fetch error details:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to get dashboard data');
+      }
+      throw new Error('Failed to get dashboard data due to network issue');
+    }
+  }
+};
+
 export default api;
