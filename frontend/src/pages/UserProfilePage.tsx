@@ -139,7 +139,7 @@ export default function UserProfilePage() {
   }
 
   // Update the isFreelancer logic to not use "freelancer" string
-  const isFreelancer = user?.role === 'provider' || (listings && listings.length > 0);
+  const isFreelancer = user?.role === 'freelancer' || user?.role === 'provider' || (listings && listings.length > 0);
 
   // Mock data for testimonials
   const testimonials = [

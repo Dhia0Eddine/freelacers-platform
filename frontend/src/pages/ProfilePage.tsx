@@ -95,7 +95,7 @@ export default function ProfilePage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   
-  const { isAuthenticated, isCustomer, isProvider } = useAuthContext();
+  const { isAuthenticated, isCustomer, isProvider,userRole } = useAuthContext();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -126,24 +126,37 @@ export default function ProfilePage() {
         // After potential fixes, set the state
         setProfile(profileData);
         
-        // Fetch the user data separately if needed
-        // This might be included in the profile response or might need a separate call
-        if (profileData.user) {
-          // If the user data is included in the profile response
-          setUser(profileData.user);
-        } else {
-          // You might need to add an API endpoint to get current user data
-          // For now, create a basic user object from the profile data
+        // Handle user data - we need to ensure we have the correct email and role
+        // Try to get user data directly from the backend - add this endpoint if needed
+        try {
+          const userData = await profileService.getCurrentUser();
+          if (userData) {
+            console.log("Got current user data:", userData);
+            setUser({
+              id: userData.id,
+              email: userData.email,
+              role: userData.role
+            });
+          } else if (profileData.user) {
+            // If we already have user data in the profile response
+            setUser(profileData.user);
+            console.log("Using user data from profile:", profileData.user);
+          } else {
+            // Fallback to what we know from the profile data
+            console.log("Creating minimal user object from profile data");
+            setUser({
+              id: profileData.user_id,
+              email: "Unknown email", // Placeholder
+              role: isProvider ? "provider" : "customer" // Use context values as fallback
+            });
+          }
+        } catch (userErr) {
+          console.error("Failed to get user data:", userErr);
+          // Fallback to basic user info
           setUser({
             id: profileData.user_id,
-            email: "user@example.com", // We might need to get this from elsewhere
-            role: "freelancer" // Default to freelancer, adjust based on your needs
-          });
-          
-          // Log this workaround for debugging
-          console.log("Created user object from profile data:", {
-            id: profileData.user_id,
-            role: "freelancer"
+            email: "Unknown email", // Placeholder
+            role: isProvider ? "provider" : "customer" // Use context values as fallback
           });
         }
         

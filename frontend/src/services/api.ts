@@ -141,6 +141,28 @@ export const profileService = {
     }
   },
 
+  // Add a new method to get current user data including role and email
+  getCurrentUser: async () => {
+    try {
+      console.log('Fetching current user data from:', `${API_URL}/users/me`);
+      
+      const response = await api.get('/users/me');
+      
+      // Log the raw response for debugging
+      console.log('Raw user response data:', JSON.stringify(response.data, null, 2));
+      
+      return response.data;
+    } catch (error) {
+      console.error('User data fetch error details:', error);
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Response status:', error.response.status);
+        console.error('Response data:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to get user data');
+      }
+      throw new Error('Failed to get user data due to network issue');
+    }
+  },
+
   getProfileById: async (userId: string) => {
     try {
       console.log(`Fetching profile for user ${userId} from: ${API_URL}/profiles/${userId}`);

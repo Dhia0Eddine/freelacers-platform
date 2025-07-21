@@ -1,21 +1,30 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import  { jwtDecode } from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
+import axios from "axios";
+import { API_URL } from "@/config";
 
 interface UserInfo {
     sub: string;
-    role: string;
+    role?: string;
     exp: number;
+}
+
+interface UserData {
+    id: number;
+    email: string;
+    role: string;
 }
 
 interface AuthContextType {
     isAuthenticated: boolean;
     token: string | null;
     userRole: string | null;
+    userData: UserData | null;
     login: (token: string) => void;
     logout: () => void;
     initialized: boolean;
-    isCustomer: boolean;  // New helper property
-    isProvider: boolean;  // Add this property to fix the TypeScript error
+    isCustomer: boolean;
+    isProvider: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,58 +32,87 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [token, setToken] = useState<string | null>(null);
     const [userRole, setUserRole] = useState<string | null>(null);
+    const [userData, setUserData] = useState<UserData | null>(null);
     const [initialized, setInitialized] = useState(false);
 
-    // Function to decode JWT and extract user role
-    const parseToken = (token: string) => {
+    // Function to fetch user data from the server
+    const fetchUserData = async (authToken: string) => {
         try {
-            // Add more detailed logging for token debugging
-            console.log("Attempting to decode token:", token.substring(0, 20) + "...");
+            const response = await axios.get(`${API_URL}/users/me`, {
+                headers: {
+                    Authorization: `Bearer ${authToken}`
+                }
+            });
             
-            const decoded = jwtDecode<UserInfo>(token);
+            console.log("User data fetched:", response.data);
+            
+            setUserData(response.data);
+            setUserRole(response.data.role);
+            
+            return response.data;
+        } catch (error) {
+            console.error("Failed to fetch user data:", error);
+            return null;
+        }
+    };
+
+    // Function to decode JWT - only used as fallback
+    const parseToken = (tokenToParse: string) => {
+        try {
+            console.log("Attempting to decode token:", tokenToParse.substring(0, 20) + "...");
+            
+            const decoded = jwtDecode<UserInfo>(tokenToParse);
             console.log("Token decoded successfully:", decoded);
             
-            if (!decoded.role) {
-                console.error("Token decoded but no role found:", decoded);
-                setUserRole("customer"); // Default to customer if no role found
-            } else {
-                // Normalize role names to match backend (only 'customer' or 'provider')
-                const normalizedRole = decoded.role === "freelancer" ? "provider" : decoded.role;
-                console.log(`Setting normalized user role to: ${normalizedRole}`);
-                setUserRole(normalizedRole);
+            // We'll use this role only temporarily until we fetch the actual user data
+            if (decoded.role) {
+                console.log(`Setting temporary role from token: ${decoded.role}`);
+                setUserRole(decoded.role);
             }
         } catch (error) {
             console.error("Failed to decode token:", error);
-            console.error("Token content:", token.substring(0, 20) + "...");
-            // Default to customer when token decoding fails
-            console.log("Setting default role to customer due to decoding failure");
-            setUserRole("customer");
         }
     };
 
     useEffect(() => {
-        try {
-            const storedToken = localStorage.getItem("token");
-            if (storedToken) {
-                console.log("Found token in storage, length:", storedToken.length);
-                setToken(storedToken);
-                parseToken(storedToken);
-            } else {
-                console.log("No token found in storage");
+        const initializeAuth = async () => {
+            try {
+                const storedToken = localStorage.getItem("token");
+                
+                if (storedToken) {
+                    console.log("Found token in storage, length:", storedToken.length);
+                    setToken(storedToken);
+                    
+                    // First do a quick parse of the token for immediate UI feedback
+                    parseToken(storedToken);
+                    
+                    // Then fetch the actual user data from the server
+                    await fetchUserData(storedToken);
+                } else {
+                    console.log("No token found in storage");
+                }
+            } catch (error) {
+                console.error("Failed to initialize auth:", error);
+            } finally {
+                setInitialized(true);
             }
-        } catch (error) {
-            console.error("Failed to access localStorage:", error);
-        }
-        setInitialized(true);
+        };
+
+        initializeAuth();
     }, []);
 
-    const login = (newToken: string) => {
+    const login = async (newToken: string) => {
         try {
             localStorage.setItem("token", newToken);
             setToken(newToken);
+            
+            // First do a quick parse of the token for immediate UI feedback
             parseToken(newToken);
+            
+            // Then fetch the actual user data from the server
+            await fetchUserData(newToken);
         } catch (error) {
-            console.error("Failed to save token to localStorage:", error);
+            console.error("Failed to process login:", error);
         }
     };
 
@@ -83,20 +121,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             localStorage.removeItem("token");
             setToken(null);
             setUserRole(null);
+            setUserData(null);
         } catch (error) {
-            console.error("Failed to remove token from localStorage:", error);
+            console.error("Failed to logout:", error);
         }
     };
 
     const isAuthenticated = !!token;
-    const isCustomer = userRole === 'customer' || userRole === null || userRole === undefined;
+    
+    // Determine user role based on userData first, then fallback to token-parsed role
     const isProvider = userRole === 'provider';
+    const isCustomer = userRole === 'customer';
+
+    console.log("Auth context state:", { isAuthenticated, userRole, isProvider, isCustomer });
 
     return (
         <AuthContext.Provider value={{ 
             isAuthenticated, 
             token, 
             userRole, 
+            userData,
             login, 
             logout, 
             initialized,
