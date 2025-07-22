@@ -2,6 +2,12 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import os
+
+# Ensure the static directory exists before mounting
+os.makedirs("static/uploads/profile_pics", exist_ok=True)
+
+from fastapi.staticfiles import StaticFiles
 from app.routers import auth, profile, category, service, listing, request, booking, quote, review, payment, dashboard, user
 app = FastAPI()
 origins = [
@@ -15,6 +21,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Serve static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(auth.router, prefix="", tags=["Auth"])
 app.include_router(profile.router)

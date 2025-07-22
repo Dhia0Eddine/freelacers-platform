@@ -6,12 +6,17 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import axios from "axios";
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 interface ProfileFormData {
   fullName: string;
   location: string;
   bio: string;
   phone: string;
+  profile_picture?: string;
 }
 
 export default function EditProfilePage() {
@@ -20,12 +25,14 @@ export default function EditProfilePage() {
     location: '',
     bio: '',
     phone: '',
+    profile_picture: undefined,
   });
   
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [uploading, setUploading] = useState(false);
   
   const { isAuthenticated } = useAuthContext();
   const navigate = useNavigate();
@@ -49,6 +56,7 @@ export default function EditProfilePage() {
           location: profileData.location || '',
           bio: profileData.bio || '',
           phone: profileData.phone || '',
+          profile_picture: profileData.profile_picture || undefined,
         });
       } catch (err) {
         console.error('Error fetching profile:', err);
@@ -68,6 +76,26 @@ export default function EditProfilePage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const data = new FormData();
+      data.append("file", file);
+      // Use the backend API URL for uploads
+      const res = await axios.post(`${API_URL}/profiles/upload-picture`, data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setFormData(prev => ({ ...prev, profile_picture: res.data.url }));
+      toast.success("Profile picture uploaded!");
+    } catch (err) {
+      toast.error("Failed to upload image");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -79,7 +107,8 @@ export default function EditProfilePage() {
         full_name: formData.fullName,
         location: formData.location,
         bio: formData.bio,
-        phone: formData.phone
+        phone: formData.phone,
+        profile_picture: formData.profile_picture,
       });
       setSuccess(true);
 
@@ -127,6 +156,27 @@ export default function EditProfilePage() {
           </div>
           
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {/* Avatar and upload */}
+            <div className="flex items-center gap-4">
+              <Avatar className="w-20 h-20">
+                <AvatarImage src={formData.profile_picture ? `${API_URL}${formData.profile_picture}` : undefined} alt="Profile" />
+                <AvatarFallback>
+                  {formData.fullName
+                    ? formData.fullName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
+                    : "U"}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  disabled={uploading}
+                />
+                {uploading && <span className="ml-2 text-sm text-gray-500">Uploading...</span>}
+              </div>
+            </div>
+            
             {error && (
               <div className="bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 p-4 rounded-lg text-sm">
                 {error}

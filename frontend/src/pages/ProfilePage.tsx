@@ -8,6 +8,9 @@ import {
   CheckCircle, XCircle, Home, BarChart2, Calendar, Users, Settings,
   FileText, MessageSquare, Code, ArrowLeft, ArrowRight, Menu, X, Clock, Badge, ChevronRight
 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 // Update interface to match actual API response
 interface Profile {
@@ -18,6 +21,7 @@ interface Profile {
   location: string;
   phone: string;
   average_rating?: number;
+  profile_picture?: string; // Add this line
   // Backend might not include the user object directly
 }
 
@@ -98,6 +102,8 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [listingToDelete, setListingToDelete] = useState<Listing | null>(null);
   
   const { isAuthenticated, isCustomer, isProvider,userRole } = useAuthContext();
   const navigate = useNavigate();
@@ -265,6 +271,38 @@ export default function ProfilePage() {
 
   const profileCompleteness = 65; // Mock value, calculate based on filled profile fields
 
+  // Handler for editing a listing
+  const handleEditListing = (listingId: number) => {
+    navigate(`/listing/edit/${listingId}`); // Or use a dedicated edit page if you have one
+  };
+
+  // Handler for delete button click (opens confirmation dialog)
+  const handleDeleteListing = (listing: Listing) => {
+    setListingToDelete(listing);
+    setDeleteDialogOpen(true);
+  };
+
+  // Handler for confirming deletion
+  const confirmDeleteListing = async () => {
+    if (!listingToDelete) return;
+    try {
+      await listingService.deleteListing(listingToDelete.id);
+      setListings((prev) => prev.filter((l) => l.id !== listingToDelete.id));
+      toast.success('Listing deleted successfully');
+    } catch (err) {
+      toast.error('Failed to delete listing');
+    } finally {
+      setDeleteDialogOpen(false);
+      setListingToDelete(null);
+    }
+  };
+
+  // Handler for canceling deletion
+  const cancelDeleteListing = () => {
+    setDeleteDialogOpen(false);
+    setListingToDelete(null);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-all duration-300">
       {/* Mobile menu toggle */}
@@ -313,8 +351,14 @@ export default function ProfilePage() {
                   
                   {/* Avatar with pulsing animation on hover */}
                   <div className="absolute -bottom-12 left-8">
-                    <div className="bg-white dark:bg-gray-700 border-4 border-white dark:border-gray-800 rounded-full size-24 flex items-center justify-center shadow-lg transition-transform duration-300 hover:scale-105 group">
-                      {isFreelancer ? (
+                    <div className="bg-white dark:bg-gray-700 border-4 border-white dark:border-gray-800 rounded-full size-24 flex items-center justify-center shadow-lg transition-transform duration-300 hover:scale-105 group overflow-hidden">
+                      {profile?.profile_picture ? (
+                        <img
+                          src={profile.profile_picture.startsWith('http') ? profile.profile_picture : `${API_URL}${profile.profile_picture}`}
+                          alt={profile.full_name}
+                          className="object-cover w-full h-full rounded-full"
+                        />
+                      ) : isFreelancer ? (
                         <Briefcase className="h-10 w-10 text-indigo-500 dark:text-indigo-400 transition-all duration-300 group-hover:text-indigo-600" />
                       ) : (
                         <User className="h-10 w-10 text-blue-500 dark:text-blue-400 transition-all duration-300 group-hover:text-blue-600" />
@@ -443,7 +487,7 @@ export default function ProfilePage() {
                         {tab.charAt(0).toUpperCase() + tab.slice(1)}
                       </button>
                     ))
-                  )}
+                 ) }
                 </div>
               </div>
               
@@ -581,6 +625,7 @@ export default function ProfilePage() {
                                     variant="outline" 
                                     size="sm"
                                     className="transition-all duration-300 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-900/30 dark:hover:text-blue-300"
+                                    onClick={() => handleEditListing(listing.id)}
                                   >
                                     Edit
                                   </Button>
@@ -588,6 +633,7 @@ export default function ProfilePage() {
                                     variant="ghost" 
                                     size="sm" 
                                     className="text-red-600 dark:text-red-400 hover:text-red-800 transition-all duration-300"
+                                    onClick={() => handleDeleteListing(listing)}
                                   >
                                     Delete
                                   </Button>
@@ -964,6 +1010,26 @@ export default function ProfilePage() {
           scrollbar-width: none;
         }
       `}</style>
+      
+      {/* Delete Confirmation Dialog */}
+      {deleteDialogOpen && listingToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 max-w-md w-full">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Delete Listing</h2>
+            <p className="mb-6 text-gray-700 dark:text-gray-300">
+              Are you sure you want to delete <span className="font-bold">{listingToDelete.title}</span>? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={cancelDeleteListing}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={confirmDeleteListing}>
+                Delete
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

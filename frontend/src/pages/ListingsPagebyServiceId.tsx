@@ -29,6 +29,7 @@ interface Profile {
   full_name: string;
   location: string | null;
   average_rating: number | null;
+  profile_picture?: string; // Add this line
 }
 
 interface Listing {
@@ -392,14 +393,27 @@ const ListingsPagebyServiceId: React.FC = () => {
                 <CardHeader>
                   <CardTitle className="text-xl">{listing.title}</CardTitle>
                   {listing.profile && (
-                    <div className="flex items-center text-sm text-gray-500">
-                      <UserIcon className="h-4 w-4 mr-1" />
-                      <span>{listing.profile.full_name}</span>
+                    <div className="flex items-center text-sm text-gray-500 gap-2">
+                      {/* Avatar */}
+                      <Link to={`/profile/${listing.profile.user_id}`} className="flex items-center">
+                        <span className="flex items-center justify-center rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700" style={{ width: 32, height: 32 }}>
+                          {listing.profile.profile_picture ? (
+                            <img
+                              src={listing.profile.profile_picture.startsWith('http') ? listing.profile.profile_picture : `${API_URL}${listing.profile.profile_picture}`}
+                              alt={listing.profile.full_name}
+                              className="object-cover w-8 h-8 rounded-full"
+                            />
+                          ) : (
+                            <UserIcon className="h-5 w-5 text-gray-400" />
+                          )}
+                        </span>
+                        <span className="ml-2 hover:underline text-blue-700 dark:text-blue-300">{listing.profile.full_name}</span>
+                      </Link>
                       {listing.profile.average_rating && (
-                        <div className="flex items-center ml-2">
+                        <span className="flex items-center ml-2">
                           <StarIcon className="h-4 w-4 text-yellow-500 mr-1" />
                           <span>{listing.profile.average_rating}</span>
-                        </div>
+                        </span>
                       )}
                     </div>
                   )}

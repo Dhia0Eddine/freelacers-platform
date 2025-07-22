@@ -32,6 +32,7 @@ class ProfileInfo(BaseModel):
     full_name: str
     location: Optional[str] = None
     average_rating: Optional[float] = None
+    profile_picture: Optional[str] = None  # Add this line
 
     class Config:
         from_attributes = True

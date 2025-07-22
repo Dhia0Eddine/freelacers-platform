@@ -12,6 +12,7 @@ class Profile(Base):
     location = Column(String)
     phone = Column(String)
     average_rating = Column(Float, default=0.0)
+    profile_picture = Column(String, nullable=True)  # New field
 
     user = relationship("User", back_populates="profile")
     user = relationship("User", back_populates="profile")
