@@ -13,6 +13,12 @@ import ServiceListingsPage from "../pages/ServiceListingsPage";
 import ServiceListingDetailPage from "../pages/ServiceListingDetailPage";
 import ServiceBrowsingPage from "../pages/ServiceBrowsingPage";
 import ListingsPagebyServiceId from "../pages/ListingsPagebyServiceId";
+import CreateListingPage from "../pages/CreateListingPage";
+import DashboardPage from "../pages/DashboardPage";
+import RequestDetailPage from "../pages/RequestDetailPage";
+import QuoteDetailPage from "../pages/QuoteDetailPage";
+import BookingDetailPage from "../pages/BookingDetailPage";
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -26,9 +32,15 @@ export const router = createBrowserRouter([
       { path: "profile/edit", element: <EditProfilePage /> },
       { path: "profile/:userId", element: <UserProfilePage /> },
       { path: "services", element: <ServiceBrowsingPage /> },
-      { path: "listings/service/:serviceId", element: <ListingsPagebyServiceId /> }, // Add this new route
+      { path: "listings/new", element: <CreateListingPage /> }, // Move this before the variable route
+      { path: "listings/service/:serviceId", element: <ListingsPagebyServiceId /> },
       { path: "listings/:listingId", element: <ServiceListingDetailPage /> },
-      
+      { path: "dashboard", element: <DashboardPage /> },
+      { path: "request/:requestId", element: <RequestDetailPage /> },
+      { path: "quote/:quoteId", element: <QuoteDetailPage /> },
+      { path: "quotes/:quoteId", element: <QuoteDetailPage /> }, // Add this line for plural URL support
+      { path: "booking/:bookingId", element: <BookingDetailPage /> },
+      { path: "my-bookings/:bookingId", element: <BookingDetailPage /> },
     ],
   },
 ])

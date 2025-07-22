@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { profileService, listingService } from '@/services/api';
+import { profileService, listingService, requestService, bookingService, reviewService } from '@/services/api';
 import { useAuthContext } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { 
   MapPin, Phone, Mail, Globe, Star, Edit, Plus, Briefcase, User, 
   CheckCircle, XCircle, Home, BarChart2, Calendar, Users, Settings,
-  FileText, MessageSquare, Code, ArrowLeft, ArrowRight, Menu, X
+  FileText, MessageSquare, Code, ArrowLeft, ArrowRight, Menu, X, Clock, Badge, ChevronRight
 } from 'lucide-react';
 
 // Update interface to match actual API response
@@ -37,17 +37,69 @@ interface Listing {
   available: boolean;
 }
 
+// Add interfaces for customer-specific data
+interface Request {
+  id: number;
+  listing_id: number;
+  description?: string;
+  location?: string;
+  preferred_date: string;
+  status: string;
+  created_at: string;
+  listing?: {
+    title: string;
+    profile?: {
+      full_name: string;
+    }
+  };
+}
+
+interface Booking {
+  id: number;
+  quote_id: number;
+  customer_id: number;
+  provider_id: number;
+  scheduled_time: string;
+  status: string;
+  created_at: string;
+  has_review?: boolean; // Added this property
+  provider?: {
+    profile?: {
+      full_name: string;
+    }
+  };
+  listing?: {
+    title: string;
+  };
+}
+
+interface Review {
+  id: number;
+  booking_id: number;
+  reviewer_id: number;
+  reviewee_id: number;
+  rating: number;
+  comment?: string;
+  created_at: string;
+  // Additional fields to display listing info
+  service_title?: string; 
+  listing_id?: number;
+}
+
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
+  const [requests, setRequests] = useState<Request[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, isCustomer, isProvider,userRole } = useAuthContext();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -78,37 +130,74 @@ export default function ProfilePage() {
         // After potential fixes, set the state
         setProfile(profileData);
         
-        // Fetch the user data separately if needed
-        // This might be included in the profile response or might need a separate call
-        if (profileData.user) {
-          // If the user data is included in the profile response
-          setUser(profileData.user);
-        } else {
-          // You might need to add an API endpoint to get current user data
-          // For now, create a basic user object from the profile data
+        // Handle user data - we need to ensure we have the correct email and role
+        // Try to get user data directly from the backend - add this endpoint if needed
+        try {
+          const userData = await profileService.getCurrentUser();
+          if (userData) {
+            console.log("Got current user data:", userData);
+            setUser({
+              id: userData.id,
+              email: userData.email,
+              role: userData.role
+            });
+          } else if (profileData.user) {
+            // If we already have user data in the profile response
+            setUser(profileData.user);
+            console.log("Using user data from profile:", profileData.user);
+          } else {
+            // Fallback to what we know from the profile data
+            console.log("Creating minimal user object from profile data");
+            setUser({
+              id: profileData.user_id,
+              email: "Unknown email", // Placeholder
+              role: isProvider ? "provider" : "customer" // Use context values as fallback
+            });
+          }
+        } catch (userErr) {
+          console.error("Failed to get user data:", userErr);
+          // Fallback to basic user info
           setUser({
             id: profileData.user_id,
-            email: "user@example.com", // We might need to get this from elsewhere
-            role: "freelancer" // Default to freelancer, adjust based on your needs
-          });
-          
-          // Log this workaround for debugging
-          console.log("Created user object from profile data:", {
-            id: profileData.user_id,
-            role: "freelancer"
+            email: "Unknown email", // Placeholder
+            role: isProvider ? "provider" : "customer" // Use context values as fallback
           });
         }
         
-        // Always try to fetch listings regardless of role
-        console.log("Always attempting to fetch listings for current user...");
-        try {
-          const listingsData = await listingService.getMyListings();
-          console.log("Current user listings data received:", listingsData);
-          console.log("Number of listings:", listingsData?.length || 0);
-          setListings(Array.isArray(listingsData) ? listingsData : []);
-        } catch (listingErr) {
-          console.error("Error fetching listings for current user:", listingErr);
-          setListings([]);
+        // If the user is a customer, fetch their requests, bookings, and reviews they've written
+        if (isCustomer) {
+          try {
+            const requestsData = await requestService.getMyRequests();
+            setRequests(Array.isArray(requestsData) ? requestsData : []);
+            console.log("Customer requests:", requestsData);
+            
+            // This would need to be implemented in the API service
+            const bookingsData = await bookingService.getMyBookings();
+            setBookings(Array.isArray(bookingsData) ? bookingsData : []);
+            console.log("Customer bookings:", bookingsData);
+            
+            // Use the appropriate method for customer reviews (reviews written by them)
+            const reviewsData = await reviewService.getReviewsWrittenByMe();
+            setReviews(Array.isArray(reviewsData) ? reviewsData : []);
+            console.log("Customer reviews written:", reviewsData);
+          } catch (customerErr) {
+            console.error("Error fetching customer data:", customerErr);
+          }
+        } 
+        // If the user is a provider, fetch their listings and reviews about them
+        else if (isProvider) {
+          try {
+            const listingsData = await listingService.getMyListings();
+            setListings(Array.isArray(listingsData) ? listingsData : []);
+            console.log("Provider listings:", listingsData);
+            
+            // Use the appropriate method for provider reviews (reviews about them)
+            const reviewsData = await reviewService.getReviewsAboutMe();
+            setReviews(Array.isArray(reviewsData) ? reviewsData : []);
+            console.log("Provider reviews received:", reviewsData);
+          } catch (providerErr) {
+            console.error("Error fetching provider data:", providerErr);
+          }
         }
       } catch (err) {
         console.error('Error fetching profile data:', err);
@@ -119,11 +208,11 @@ export default function ProfilePage() {
     };
 
     fetchData();
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isCustomer, isProvider, navigate]);
 
   // Add additional debugging for render conditions
   if (loading) {
-    console.log("Rendering loading state");
+    console.log("Rendering loading state:", { isAuthenticated, isCustomer });
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-xl text-gray-600 dark:text-gray-300">Loading profile...</div>
@@ -154,10 +243,10 @@ export default function ProfilePage() {
   // Log what we're about to render
   console.log("Rendering profile page with data:", { profile, user, listings });
 
-  // Update the role check to handle both provider and freelancer
-  const isFreelancer = user?.role === 'freelancer' || user?.role === 'provider';
-  
-  console.log("User is freelancer:", isFreelancer, "Role:", user?.role);
+  // Replace isFreelancer with isProvider from context
+  const isFreelancer = isProvider;
+
+  console.log("User is provider:", isProvider, "Role:", user?.role);
 
   // Mock data for the dashboard
   const mockActivities = [
@@ -254,7 +343,7 @@ export default function ProfilePage() {
                           {profile?.full_name}
                         </h1>
                         <span className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 hover:shadow-md">
-                          {isFreelancer ? 'Freelancer' : 'Client'}
+                          {isProvider ? 'Provider' : 'Customer'}
                         </span>
                         {profile?.average_rating && (
                           <div className="flex items-center bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 px-3 py-1 rounded-full">
@@ -321,208 +410,488 @@ export default function ProfilePage() {
                 </div>
               </div>
               
-              {/* Tabs Navigation with animation */}
+              {/* Tabs Navigation with animation - Role-specific tabs */}
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 mb-6 transition-all duration-300 hover:shadow-md">
                 <div className="flex space-x-4 border-b border-gray-200 dark:border-gray-700 pb-4 overflow-x-auto scrollbar-hide">
-                  {['overview', 'services', 'activities'].map((tab) => (
-                    <button 
-                      key={tab}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                        activeTab === tab 
-                          ? 'bg-gradient-to-r from-blue-500 to-blue-700 text-white shadow-md' 
-                          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
-                      }`}
-                      onClick={() => setActiveTab(tab)}
-                    >
-                      {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                    </button>
-                  ))}
+                  {isProvider ? (
+                    // Provider tabs
+                    ['overview', 'services', 'activities'].map((tab) => (
+                      <button 
+                        key={tab}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                          activeTab === tab 
+                            ? 'bg-gradient-to-r from-blue-500 to-blue-700 text-white shadow-md' 
+                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                        }`}
+                        onClick={() => setActiveTab(tab)}
+                      >
+                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                      </button>
+                    ))
+                  ) : (
+                    // Customer tabs
+                    ['requests', 'bookings', 'reviews'].map((tab) => (
+                      <button 
+                        key={tab}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                          activeTab === tab 
+                            ? 'bg-gradient-to-r from-blue-500 to-blue-700 text-white shadow-md' 
+                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                        }`}
+                        onClick={() => setActiveTab(tab)}
+                      >
+                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                      </button>
+                    ))
+                  )}
                 </div>
               </div>
               
-              {/* Tab Content with animation */}
+              {/* Tab Content with animation - Role-specific content */}
               <div className="transition-all duration-500 ease-in-out animate-fadeIn">
-                {activeTab === 'overview' && (
-                  <div className="flex flex-col lg:flex-row gap-6">
-                    <div className="w-full lg:w-2/3 space-y-6">
-                      {/* Bio Section */}
-                      {(isFreelancer || profile?.bio) && (
-                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
-                          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">About Me</h2>
-                          <p className="text-gray-600 dark:text-gray-300 whitespace-pre-line leading-relaxed">
-                            {profile?.bio || "I'm a professional developer with expertise in web and mobile applications. I have over 5 years of experience working with various technologies and frameworks."}
-                          </p>
-                        </div>
-                      )}
-                      
-                      {/* Skills Section with animation */}
-                      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Skills</h2>
-                        <div className="flex flex-wrap gap-2">
-                          {skills.map((skill, index) => (
-                            <span 
-                              key={skill} 
-                              className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-lg text-sm transition-all duration-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-700 dark:hover:text-blue-300"
-                              style={{ animationDelay: `${index * 0.1}s` }}
-                            >
-                              {skill}
-                            </span>
-                          ))}
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="rounded-lg transition-all duration-300 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-900/30 dark:hover:text-blue-300"
-                          >
-                            <Plus className="h-4 w-4 mr-1" />
-                            Add Skill
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="w-full lg:w-1/3 space-y-6">
-                      {/* Latest Updates */}
-                      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
-                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Latest Updates</h2>
-                        <div className="space-y-4">
-                          <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg transition-all duration-300 hover:shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <h3 className="font-medium text-gray-900 dark:text-white">Platform v2.0</h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">Released 2 days ago</p>
-                              </div>
-                              <Button size="sm" variant="outline" className="text-xs h-8">
-                                View
-                              </Button>
+                {/* Provider content - only shown for providers */}
+                {isProvider && (
+                  <>
+                    {activeTab === 'overview' && (
+                      <div className="flex flex-col lg:flex-row gap-6">
+                        <div className="w-full lg:w-2/3 space-y-6">
+                          {/* Bio Section */}
+                          {(isFreelancer || profile?.bio) && (
+                            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
+                              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">About Me</h2>
+                              <p className="text-gray-600 dark:text-gray-300 whitespace-pre-line leading-relaxed">
+                                {profile?.bio || "I'm a professional developer with expertise in web and mobile applications. I have over 5 years of experience working with various technologies and frameworks."}
+                              </p>
                             </div>
-                          </div>
+                          )}
                           
-                          <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg transition-all duration-300 hover:shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <h3 className="font-medium text-gray-900 dark:text-white">Mobile App</h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">Coming soon</p>
-                              </div>
-                              <Button size="sm" variant="outline" className="text-xs h-8">
-                                Preview
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {activeTab === 'services' && (
-                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
-                    <div className="flex justify-between items-center mb-6">
-                      <h2 className="text-xl font-semibold text-gray-900 dark:text-white">My Services</h2>
-                      <Button 
-                        className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-300 hover:shadow-lg"
-                        onClick={() => console.log("Would create new listing with data:", { user })}
-                      >
-                        <Plus className="h-4 w-4 mr-1" />
-                        Add New Service
-                      </Button>
-                    </div>
-                    
-                    {/* Show listings if we have them */}
-                    {listings && listings.length > 0 ? (
-                      <div className="space-y-4">
-                        {listings.map((listing, index) => (
-                          <div 
-                            key={listing.id} 
-                            className="border border-gray-200 dark:border-gray-700 rounded-lg p-5 transition-all duration-300 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700"
-                            style={{ animationDelay: `${index * 0.1}s` }}
-                          >
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{listing.title}</h3>
-                                <p className="text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">{listing.description}</p>
-                              </div>
-                              <div className="flex items-center">
-                                {listing.available ? (
-                                  <span className="flex items-center text-green-600 dark:text-green-400 text-sm bg-green-50 dark:bg-green-900/30 px-3 py-1 rounded-full">
-                                    <CheckCircle className="h-4 w-4 mr-1" />
-                                    Available
-                                  </span>
-                                ) : (
-                                  <span className="flex items-center text-red-600 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/30 px-3 py-1 rounded-full">
-                                    <XCircle className="h-4 w-4 mr-1" />
-                                    Unavailable
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                            
-                            <div className="flex flex-wrap gap-3 mt-3">
-                              <div className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-sm">
-                                ${listing.min_price} - ${listing.max_price}
-                              </div>
-                              <div className="bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full text-sm flex items-center text-gray-700 dark:text-gray-300">
-                                <MapPin className="h-3 w-3 mr-1" />
-                                {listing.location}
-                              </div>
-                            </div>
-                            
-                            <div className="flex justify-end mt-4 space-x-2">
+                          {/* Skills Section with animation */}
+                          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
+                            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Skills</h2>
+                            <div className="flex flex-wrap gap-2">
+                              {skills.map((skill, index) => (
+                                <span 
+                                  key={skill} 
+                                  className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-lg text-sm transition-all duration-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-700 dark:hover:text-blue-300"
+                                  style={{ animationDelay: `${index * 0.1}s` }}
+                                >
+                                  {skill}
+                                </span>
+                              ))}
                               <Button 
                                 variant="outline" 
-                                size="sm"
-                                className="transition-all duration-300 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-900/30 dark:hover:text-blue-300"
-                              >
-                                Edit
-                              </Button>
-                              <Button 
-                                variant="ghost" 
                                 size="sm" 
-                                className="text-red-600 dark:text-red-400 hover:text-red-800 transition-all duration-300"
+                                className="rounded-lg transition-all duration-300 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-900/30 dark:hover:text-blue-300"
                               >
-                                Delete
+                                <Plus className="h-4 w-4 mr-1" />
+                                Add Skill
                               </Button>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg transition-all duration-300">
-                        <Briefcase className="h-12 w-12 mx-auto text-gray-400 mb-3 animate-bounce" />
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No services listed yet</h3>
-                        <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-4">
-                          Start offering your services by creating your first listing.
-                        </p>
-                        <Button className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-300 hover:shadow-lg">
-                          Create Your First Service
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                {activeTab === 'activities' && (
-                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Recent Activities</h2>
-                    <div className="space-y-4">
-                      {mockActivities.map((activity, index) => (
-                        <div 
-                          key={activity.id} 
-                          className="flex items-start p-3 rounded-lg transition-all duration-300 hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                          style={{ animationDelay: `${index * 0.1}s` }}
-                        >
-                          <div className="bg-gradient-to-r from-blue-500 to-blue-700 rounded-full p-2 mr-4 shadow-md">
-                            <div className="text-white">
-                              <Calendar className="h-5 w-5" />
-                            </div>
-                          </div>
-                          <div>
-                            <p className="text-gray-900 dark:text-white font-medium">{activity.action}</p>
-                            <p className="text-gray-500 dark:text-gray-400 text-sm">{activity.date}</p>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
+                        
+                        <div className="w-full lg:w-1/3 space-y-6">
+                          {/* Latest Updates */}
+                          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Latest Updates</h2>
+                            <div className="space-y-4">
+                              <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg transition-all duration-300 hover:shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <h3 className="font-medium text-gray-900 dark:text-white">Platform v2.0</h3>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">Released 2 days ago</p>
+                                  </div>
+                                  <Button size="sm" variant="outline" className="text-xs h-8">
+                                    View
+                                  </Button>
+                                </div>
+                              </div>
+                              
+                              <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg transition-all duration-300 hover:shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <h3 className="font-medium text-gray-900 dark:text-white">Mobile App</h3>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">Coming soon</p>
+                                  </div>
+                                  <Button size="sm" variant="outline" className="text-xs h-8">
+                                    Preview
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {activeTab === 'services' && (
+                      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
+                        <div className="flex justify-between items-center mb-6">
+                          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">My Services</h2>
+                          <Button 
+                            className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-300 hover:shadow-lg"
+                            onClick={() => navigate('/listings/new')}
+                          >
+                            <Plus className="h-4 w-4 mr-1" />
+                            Add New listing
+                          </Button>
+                        </div>
+                        
+                        {/* Show listings if we have them */}
+                        {listings && listings.length > 0 ? (
+                          <div className="space-y-4">
+                            {listings.map((listing, index) => (
+                              <div 
+                                key={listing.id} 
+                                className="border border-gray-200 dark:border-gray-700 rounded-lg p-5 transition-all duration-300 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700"
+                                style={{ animationDelay: `${index * 0.1}s` }}
+                              >
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{listing.title}</h3>
+                                    <p className="text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">{listing.description}</p>
+                                  </div>
+                                  <div className="flex items-center">
+                                    {listing.available ? (
+                                      <span className="flex items-center text-green-600 dark:text-green-400 text-sm bg-green-50 dark:bg-green-900/30 px-3 py-1 rounded-full">
+                                        <CheckCircle className="h-4 w-4 mr-1" />
+                                        Available
+                                      </span>
+                                    ) : (
+                                      <span className="flex items-center text-red-600 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/30 px-3 py-1 rounded-full">
+                                        <XCircle className="h-4 w-4 mr-1" />
+                                        Unavailable
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                
+                                <div className="flex flex-wrap gap-3 mt-3">
+                                  <div className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-sm">
+                                    ${listing.min_price} - ${listing.max_price}
+                                  </div>
+                                  <div className="bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full text-sm flex items-center text-gray-700 dark:text-gray-300">
+                                    <MapPin className="h-3 w-3 mr-1" />
+                                    {listing.location}
+                                  </div>
+                                </div>
+                                
+                                <div className="flex justify-end mt-4 space-x-2">
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    className="transition-all duration-300 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-900/30 dark:hover:text-blue-300"
+                                  >
+                                    Edit
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="text-red-600 dark:text-red-400 hover:text-red-800 transition-all duration-300"
+                                  >
+                                    Delete
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg transition-all duration-300">
+                            <Briefcase className="h-12 w-12 mx-auto text-gray-400 mb-3 animate-bounce" />
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No services listed yet</h3>
+                            <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-4">
+                              Start offering your services by creating your first listing.
+                            </p>
+                            <Button 
+                              className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-300 hover:shadow-lg"
+                              onClick={() => navigate('/listings/new')}
+                            >
+                              Create Your First Service
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {activeTab === 'activities' && (
+                      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
+                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Recent Activities</h2>
+                        <div className="space-y-4">
+                          {mockActivities.map((activity, index) => (
+                            <div 
+                              key={activity.id} 
+                              className="flex items-start p-3 rounded-lg transition-all duration-300 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                              style={{ animationDelay: `${index * 0.1}s` }}
+                            >
+                              <div className="bg-gradient-to-r from-blue-500 to-blue-700 rounded-full p-2 mr-4 shadow-md">
+                                <div className="text-white">
+                                  <Calendar className="h-5 w-5" />
+                                </div>
+                              </div>
+                              <div>
+                                <p className="text-gray-900 dark:text-white font-medium">{activity.action}</p>
+                                <p className="text-gray-500 dark:text-gray-400 text-sm">{activity.date}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+                
+                {/* Customer content - only shown for customers */}
+                {isCustomer && (
+                  <>
+                    {activeTab === 'requests' && (
+                      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
+                        <div className="flex justify-between items-center mb-6">
+                          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">My Service Requests</h2>
+                          <Button 
+                            className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-300 hover:shadow-lg"
+                            onClick={() => navigate('/listings')}
+                          >
+                            <Plus className="h-4 w-4 mr-1" />
+                            Find Services
+                          </Button>
+                        </div>
+                        
+                        {/* Show requests if we have them */}
+                        {requests && requests.length > 0 ? (
+                          <div className="space-y-4">
+                            {requests.map((request, index) => (
+                              <div 
+                                key={request.id} 
+                                className="border border-gray-200 dark:border-gray-700 rounded-lg p-5 transition-all duration-300 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700"
+                                style={{ animationDelay: `${index * 0.1}s` }}
+                              >
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                      {request.listing?.title || 'Service Request'}
+                                    </h3>
+                                    <p className="text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
+                                      {request.description || 'No description provided'}
+                                    </p>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <span className={`badge ${getStatusBadgeVariant(request.status)}`}>
+                                      {request.status.toUpperCase()}
+                                    </span>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex flex-wrap gap-3 mt-3">
+                                  <div className="bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full text-sm flex items-center text-gray-700 dark:text-gray-300">
+                                    <Calendar className="h-3 w-3 mr-1" />
+                                    {new Date(request.preferred_date).toLocaleDateString()}
+                                  </div>
+                                  {request.location && (
+                                    <div className="bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full text-sm flex items-center text-gray-700 dark:text-gray-300">
+                                      <MapPin className="h-3 w-3 mr-1" />
+                                      {request.location}
+                                    </div>
+                                  )}
+                                  <div className="bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full text-sm flex items-center text-gray-700 dark:text-gray-300">
+                                    <Clock className="h-3 w-3 mr-1" />
+                                    {formatTimeAgo(request.created_at)}
+                                  </div>
+                                </div>
+                                
+                                <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
+                                  <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                                    <User className="h-4 w-4 mr-2" />
+                                    Provider: {request.listing?.profile?.full_name || 'Unknown Provider'}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg transition-all duration-300">
+                            <MessageSquare className="h-12 w-12 mx-auto text-gray-400 mb-3 animate-bounce" />
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No service requests yet</h3>
+                            <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-4">
+                              Browse our listings and send requests to service providers.
+                            </p>
+                            <Button 
+                              className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-300 hover:shadow-lg"
+                              onClick={() => navigate('/listings')}
+                            >
+                              Find Services
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {activeTab === 'bookings' && (
+                      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
+                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">My Bookings</h2>
+                        
+                        {bookings && bookings.length > 0 ? (
+                          <div className="space-y-6">
+                            {bookings.map((booking, index) => (
+                              <div 
+                                key={booking.id} 
+                                className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden shadow-sm transition-all duration-300 hover:shadow-md"
+                                style={{ animationDelay: `${index * 0.1}s` }}
+                              >
+                                <div className="p-5">
+                                  <div className="flex justify-between items-start">
+                                    <div>
+                                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                        {booking.listing?.title || 'Service Booking'}
+                                      </h3>
+                                      <p className="text-gray-600 dark:text-gray-300 mt-1">
+                                        Provider: {booking.provider?.profile?.full_name || 'Unknown Provider'}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <span className={`badge ${getBookingStatusBadgeVariant(booking.status)}`}>
+                                        {booking.status.toUpperCase()}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="flex flex-wrap gap-3 mt-4">
+                                    <div className="bg-gray-100 dark:bg-gray-600 px-3 py-1 rounded-full text-sm flex items-center text-gray-700 dark:text-gray-300">
+                                      <Calendar className="h-3 w-3 mr-1" />
+                                      {new Date(booking.scheduled_time).toLocaleDateString()}
+                                    </div>
+                                    <div className="bg-gray-100 dark:bg-gray-600 px-3 py-1 rounded-full text-sm flex items-center text-gray-700 dark:text-gray-300">
+                                      <Clock className="h-3 w-3 mr-1" />
+                                      {new Date(booking.scheduled_time).toLocaleTimeString()}
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="bg-gray-50 dark:bg-gray-750 px-5 py-3 border-t border-gray-200 dark:border-gray-600">
+                                  <div className="flex justify-between items-center">
+                                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                                      Booked on {new Date(booking.created_at).toLocaleDateString()}
+                                    </div>
+                                    <div className="flex gap-2">
+                                      {booking.status === 'completed' && (
+                                        <>
+                                          {hasReviewedBooking(booking) ? (
+                                            <Button size="sm" variant="outline" disabled className="text-gray-500">
+                                              <CheckCircle className="h-4 w-4 mr-1" />
+                                              Review Submitted
+                                            </Button>
+                                          ) : (
+                                            <Button size="sm">
+                                              Leave Review
+                                            </Button>
+                                          )}
+                                        </>
+                                      )}
+                                      <Button size="sm">
+                                        View Details
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg transition-all duration-300">
+                            <Calendar className="h-12 w-12 mx-auto text-gray-400 mb-3 animate-bounce" />
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No bookings yet</h3>
+                            <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-4">
+                              When you book services, they'll appear here.
+                            </p>
+                            <Button 
+                              className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-300 hover:shadow-lg"
+                              onClick={() => navigate('/listings')}
+                            >
+                              Find Services
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {activeTab === 'reviews' && (
+                      <div className="bg-white dark:bg-gray-800 rounded-md shadow-md p-6 transition-all duration-300 hover:shadow-md">
+                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">My Reviews</h2>
+                        
+                        {reviews && reviews.length > 0 ? (
+                          <div className="space-y-6">
+                            {reviews.map((review, index) => (
+                              <div 
+                                key={review.id} 
+                                className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-5 transition-all duration-300 hover:shadow-md"
+                                style={{ animationDelay: `${index * 0.1}s` }}
+                              >
+                                <div className="flex justify-between items-start mb-3">
+                                  <div>
+                                    {review.service_title && (
+                                      <h3 className="font-medium text-lg text-gray-900 dark:text-white mb-1">
+                                        {review.listing_id ? (
+                                          <Link 
+                                            to={`/listings/${review.listing_id}`}
+                                            className="text-blue-600 dark:text-blue-400 hover:underline"
+                                          >
+                                            {review.service_title}
+                                          </Link>
+                                        ) : (
+                                          review.service_title
+                                        )}
+                                      </h3>
+                                    )}
+                                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                                      Posted on {new Date(review.created_at).toLocaleDateString()}
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="flex items-center gap-2">
+                                    {[...Array(5)].map((_, i) => (
+                                      <Star 
+                                        key={i} 
+                                        className={`h-5 w-5 ${i < review.rating ? 'text-yellow-500 fill-current' : 'text-gray-300'}`} 
+                                      />
+                                    ))}
+                                    <span className="text-gray-600 dark:text-gray-300 ml-2">
+                                      {review.rating}/5
+                                    </span>
+                                  </div>
+                                </div>
+                                
+                                {review.comment && (
+                                  <div className="bg-gray-50 dark:bg-gray-750 p-4 rounded-md">
+                                    <p className="text-gray-700 dark:text-gray-300 italic">"{review.comment}"</p>
+                                  </div>
+                                )}
+                                
+                                {review.listing_id && (
+                                  <div className="mt-4 flex justify-end">
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline"
+                                      onClick={() => navigate(`/listings/${review.listing_id}`)}
+                                    >
+                                      View Service
+                                      <ChevronRight className="h-4 w-4 ml-1" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg transition-all duration-300">
+                            <MessageSquare className="h-12 w-12 mx-auto text-gray-400 mb-3 animate-bounce" />
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No reviews yet</h3>
+                            <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                              After completing a service, you can leave reviews for your service providers.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
               
@@ -682,4 +1051,63 @@ function SidebarContent({ collapsed }: { collapsed: boolean }) {
       )}
     </div>
   );
+}
+
+// Helper functions for status badges
+function getStatusBadgeVariant(status: string) {
+  switch (status.toLowerCase()) {
+    case 'open':
+      return 'default';
+    case 'quoted':
+      return 'outline';
+    case 'booked':
+      return 'secondary';
+    case 'closed':
+      return 'destructive';
+    default:
+      return 'default';
+  }
+}
+
+function getBookingStatusBadgeVariant(status: string) {
+  switch (status.toLowerCase()) {
+    case 'scheduled':
+      return 'outline';
+    case 'completed':
+      return 'success';
+    case 'cancelled':
+      return 'destructive';
+    default:
+      return 'default';
+  }
+}
+
+// Format time ago helper function
+function formatTimeAgo(dateString: string) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  
+  if (seconds < 60) return 'just now';
+  
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+  
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days} day${days > 1 ? 's' : ''} ago`;
+  
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months} month${months > 1 ? 's' : ''} ago`;
+  
+  const years = Math.floor(months / 12);
+  return `${years} year${years > 1 ? 's' : ''} ago`;
+}
+
+// Check if user has already reviewed a booking
+function hasReviewedBooking(booking: Booking): boolean {
+  // Just check the has_review flag on the booking
+  return booking.has_review === true;
 }

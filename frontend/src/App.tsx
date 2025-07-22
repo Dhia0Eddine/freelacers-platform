@@ -12,3 +12,5 @@ export default function App() {
         </>
     );
 }
+
+// Add this route within your Routes component

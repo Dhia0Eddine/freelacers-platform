@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import auth, profile, category, service,listing, request, booking,quote, review,payment
+from app.routers import auth, profile, category, service, listing, request, booking, quote, review, payment, dashboard, user
 app = FastAPI()
 origins = [
     "http://localhost:5173",
@@ -26,3 +26,5 @@ app.include_router(booking.router)
 app.include_router(quote.router)
 app.include_router(review.router)
 app.include_router(payment.router)
+app.include_router(dashboard.router)
+app.include_router(user.router)  # Add the user router

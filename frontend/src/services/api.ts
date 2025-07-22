@@ -1,4 +1,5 @@
 import axios from 'axios';
+import {jwtDecode} from 'jwt-decode';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -49,6 +50,20 @@ export const authService = {
       });
       
       console.log('Login response:', response.data);
+      
+      // Log token information for debugging
+      if (response.data.access_token) {
+        console.log('Token received, length:', response.data.access_token.length);
+        try {
+          const decoded = jwtDecode(response.data.access_token);
+          console.log('Decoded token in API service:', decoded);
+        } catch (decodeError) {
+          console.error('Failed to decode token in API service:', decodeError);
+        }
+      } else {
+        console.error('No token in response!');
+      }
+      
       localStorage.setItem('token', response.data.access_token);
       return response.data;
     } catch (error) {
@@ -123,6 +138,28 @@ export const profileService = {
         throw new Error(error.response.data.detail || 'Failed to get profile');
       }
       throw new Error('Failed to get profile due to network issue');
+    }
+  },
+
+  // Add a new method to get current user data including role and email
+  getCurrentUser: async () => {
+    try {
+      console.log('Fetching current user data from:', `${API_URL}/users/me`);
+      
+      const response = await api.get('/users/me');
+      
+      // Log the raw response for debugging
+      console.log('Raw user response data:', JSON.stringify(response.data, null, 2));
+      
+      return response.data;
+    } catch (error) {
+      console.error('User data fetch error details:', error);
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Response status:', error.response.status);
+        console.error('Response data:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to get user data');
+      }
+      throw new Error('Failed to get user data due to network issue');
     }
   },
 
@@ -216,9 +253,10 @@ export const listingService = {
     max_price: number;
     location: string;
     available: boolean;
+    service_id: number;
   }) => {
     try {
-      const response = await api.post('/listings/', listingData);
+      const response = await api.post('/listings', listingData);
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
@@ -430,13 +468,335 @@ export const requestService = {
   getMyRequests: async () => {
     try {
       const response = await api.get('/requests/me');
-      return response.data;
+      console.log('My requests response data:', response.data);
+      return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         console.error('Error fetching requests:', error.response.data);
         throw new Error(error.response.data.detail || 'Failed to get requests');
       }
       throw new Error('Failed to get requests due to network issue');
+    }
+  },
+
+  // Add method to get a specific request by ID
+  getRequestById: async (requestId: number) => {
+    try {
+      const response = await api.get(`/requests/${requestId}`);
+      console.log('Request details response:', response.data);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error fetching request details:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to get request details');
+      }
+      throw new Error('Failed to get request details due to network issue');
+    }
+  },
+
+  // Add method to get quotes for a specific request
+  getQuotesForRequest: async (requestId: number) => {
+    try {
+      const response = await api.get(`/quotes/request/${requestId}`);
+      console.log('Quotes for request response:', response.data);
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error fetching quotes for request:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to get quotes');
+      }
+      throw new Error('Failed to get quotes due to network issue');
+    }
+  },
+
+  // Add method to update quote status (accept/reject)
+  updateQuoteStatus: async (quoteId: number, status: string) => {
+    try {
+      const response = await api.patch(`/quotes/${quoteId}/status`, { status });
+      console.log('Quote status update response:', response.data);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error updating quote status:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to update quote status');
+      }
+      throw new Error('Failed to update quote status due to network issue');
+    }
+  },
+  
+  // Add method to create a booking from an accepted quote
+  createBooking: async (bookingData: {
+    quote_id: number;
+    scheduled_time: string;
+  }) => {
+    try {
+      const response = await api.post('/bookings/', bookingData);
+      console.log('Booking creation response:', response.data);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error creating booking:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to create booking');
+      }
+      throw new Error('Failed to create booking due to network issue');
+    }
+  },
+
+  // Add method to submit a quote for a request
+  submitQuote: async (quoteData: {
+    request_id: number;
+    listing_id: number;
+    price: number;
+    message?: string;
+  }) => {
+    try {
+      console.log('Submitting quote with data:', quoteData);
+      const response = await api.post('/quotes/', quoteData);
+      console.log('Quote submission response:', response.data);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error submitting quote:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to submit quote');
+      }
+      throw new Error('Failed to submit quote due to network issue');
+    }
+  },
+
+  getQuoteById: async (quoteId: number) => {
+    try {
+      const response = await api.get(`/quotes/${quoteId}`);
+      console.log('Quote details response:', response.data);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error fetching quote details:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to get quote details');
+      }
+      throw new Error('Failed to get quote details due to network issue');
+    }
+  },
+};
+
+// Booking related API calls
+export const bookingService = {
+  getMyBookings: async () => {
+    try {
+      const response = await api.get('/bookings');
+      console.log('My bookings response data:', response.data);
+      
+      // Process the data to ensure has_review is a proper boolean
+      const processedBookings = Array.isArray(response.data) 
+        ? response.data.map(booking => ({
+            ...booking,
+            // Explicitly convert has_review to boolean if it exists, default to false if not
+            has_review: booking.has_review === true || booking.has_review === 'true' || false
+          }))
+        : [];
+      
+      console.log('Processed bookings with has_review:', processedBookings);
+      return processedBookings;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error fetching bookings:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to get bookings');
+      }
+      throw new Error('Failed to get bookings due to network issue');
+    }
+  },
+
+  updateBookingStatus: async (bookingId: number, status: string) => {
+    try {
+      const response = await api.patch(`/bookings/${bookingId}`, { status });
+      console.log('Booking status update response:', response.data);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error updating booking status:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to update booking status');
+      }
+      throw new Error('Failed to update booking status due to network issue');
+    }
+  },
+
+  getBookingById: async (bookingId: number) => {
+    try {
+      const response = await api.get(`/bookings/${bookingId}`);
+      console.log('Booking details response:', response.data);
+      
+      // Ensure has_review is a proper boolean
+      const processedBooking = {
+        ...response.data,
+        has_review: response.data.has_review === true || response.data.has_review === 'true' || false
+      };
+      
+      console.log('Processed booking with has_review:', processedBooking);
+      return processedBooking;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error fetching booking details:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to get booking details');
+      }
+      throw new Error('Failed to get booking details due to network issue');
+    }
+  },
+};
+
+// Review related API calls
+export const reviewService = {
+  // Update method for clarity - gets reviews ABOUT the current user (for providers)
+  getReviewsAboutMe: async () => {
+    try {
+      const response = await api.get('/reviews/me/received');
+      console.log('Reviews about me response data:', response.data);
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error fetching reviews about me:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to get reviews');
+      }
+      throw new Error('Failed to get reviews due to network issue');
+    }
+  },
+  
+  // New method for reviews WRITTEN by the current user (for customers)
+  getReviewsWrittenByMe: async () => {
+    try {
+      const response = await api.get('/reviews/me/written');
+      console.log('Reviews written by me response data:', response.data);
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error fetching reviews written by me:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to get reviews');
+      }
+      throw new Error('Failed to get reviews due to network issue');
+    }
+  },
+  
+  // Keep original method for backward compatibility, but make it role-aware
+  getMyReviews: async (role?: string) => {
+    try {
+      // If role is specified, use the appropriate endpoint
+      if (role === 'provider') {
+        return await reviewService.getReviewsAboutMe();
+      } else if (role === 'customer') {
+        return await reviewService.getReviewsWrittenByMe();
+      }
+      
+      // Otherwise use the generic endpoint which will be role-aware on the server
+      const response = await api.get('/reviews/me');
+      console.log('My reviews response data:', response.data);
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error fetching reviews:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to get reviews');
+      }
+      throw new Error('Failed to get reviews due to network issue');
+    }
+  },
+  
+  createReview: async (reviewData: {
+    booking_id: number;
+    rating: number;
+    comment?: string;
+  }) => {
+    try {
+      const response = await api.post('/reviews', reviewData);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Review creation error details:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to create review');
+      }
+      throw new Error('Failed to create review due to network issue');
+    }
+  },
+  
+  getBookingReview: async (bookingId: number) => {
+    try {
+      const response = await api.get(`/reviews/booking/${bookingId}`);
+      console.log('Booking review response:', response.data);
+      
+      // Ensure we're returning an object and not void
+      if (response.data && typeof response.data === 'object') {
+        return response.data;
+      } else {
+        console.error('Invalid review data format received:', response.data);
+        return null;
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error fetching booking review:', error.response.data);
+        if (error.response.status === 404) {
+          // Not found is an expected case - return null rather than throwing
+          return null;
+        }
+        throw new Error(error.response.data.detail || 'Failed to get review');
+      }
+      throw new Error('Failed to get review due to network issue');
+    }
+  },
+  
+  // New method to get reviews about a specific user (for viewing provider profiles)
+  getReviewsAboutUser: async (userId: number) => {
+    try {
+      const response = await api.get(`/reviews/about/${userId}`);
+      console.log('Reviews about user response:', response.data);
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error fetching reviews about user:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to get reviews about user');
+      }
+      throw new Error('Failed to get reviews about user due to network issue');
+    }
+  },
+
+  // Add a new method to get reviews by a customer
+  getCustomerReviews: async (userId: number) => {
+    try {
+      const response = await api.get(`/reviews/customer/${userId}`);
+      console.log('Customer reviews response:', response.data);
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error fetching customer reviews:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to get customer reviews');
+      }
+      throw new Error('Failed to get customer reviews due to network issue');
+    }
+  },
+};
+
+// Dashboard related API calls
+export const dashboardService = {
+  getProviderDashboard: async () => {
+    try {
+      const response = await api.get('/dashboard/provider');
+      console.log('Provider dashboard data:', response.data);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Dashboard fetch error details:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to get dashboard data');
+      }
+      throw new Error('Failed to get dashboard data due to network issue');
+    }
+  },
+  
+  getCustomerDashboard: async () => {
+    try {
+      const response = await api.get('/dashboard/customer');
+      console.log('Customer dashboard data:', response.data);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Dashboard fetch error details:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to get dashboard data');
+      }
+      throw new Error('Failed to get dashboard data due to network issue');
     }
   }
 };
