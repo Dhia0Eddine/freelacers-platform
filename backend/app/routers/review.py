@@ -1,18 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from typing import List
-from datetime import datetime
-
+from typing import List  # already added
+from app.models.profile import Profile
+from app.models.booking import Booking
+from app.models.user import User
+from app.models.listing import Listing
 from app.models.review import Review
-from app.models.booking import Booking,BookingStatus
 from app.schemas.review import ReviewCreate, ReviewOut
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
 from app.dependencies.db import get_db
 from app.utils.auth import get_current_user
-from app.models.user import User
-from app.models.profile import Profile  # Import Profile model
-from app.models.listing import Listing  # Import Listing model
-from app.models.request import Request  # Import Request model
-from app.models.quote import Quote  # Import Quote model
+from app.models.quote import Quote  # already added
+from app.models.request import Request  # already added
+from app.models.booking import BookingStatus  # Add this import
+from datetime import datetime  # Add this import at the top
 
 router = APIRouter(prefix="/reviews", tags=["Reviews"])
 
@@ -49,15 +49,23 @@ def create_review(data: ReviewCreate, db: Session = Depends(get_db), current_use
     db.commit()
     db.refresh(review)
 
-    # Calculate and update provider's average rating
-    provider_reviews = db.query(Review).filter_by(reviewee_id=booking.provider_id).all()
-    if provider_reviews:
-        total_rating = sum(r.rating for r in provider_reviews)
-        avg_rating = total_rating / len(provider_reviews)
-        provider_profile = db.query(Profile).filter_by(user_id=booking.provider_id).first()
-        if provider_profile:
-            provider_profile.average_rating = round(avg_rating, 1)
-            db.commit()
+    # Update provider's average rating
+    # 1. Find the provider for this booking
+    booking = db.query(Booking).filter(Booking.id == data.booking_id).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    provider_id = booking.provider_id
+
+    # 2. Get the provider's profile
+    profile = db.query(Profile).filter(Profile.user_id == provider_id).first()
+    if profile:
+        # 3. Calculate new average: (old_avg + new_rating) / 2 if old_avg exists, else just new_rating
+        if profile.average_rating is not None:
+            profile.average_rating = (profile.average_rating + data.rating) / 2
+        else:
+            profile.average_rating = data.rating
+        db.commit()
+
     return review
 
 # 2. Get all reviews for me (as provider)
