@@ -808,6 +808,20 @@ export const reviewService = {
       throw new Error('Failed to get customer reviews due to network issue');
     }
   },
+
+  // Add updateReview method to reviewService for editing a review
+  updateReview: async (reviewId: number, reviewData: { rating: number; comment?: string }) => {
+    try {
+      const response = await api.put(`/reviews/${reviewId}`, reviewData);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Review update error details:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to update review');
+      }
+      throw new Error('Failed to update review due to network issue');
+    }
+  },
 };
 
 // Dashboard related API calls

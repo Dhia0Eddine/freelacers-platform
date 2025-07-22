@@ -5,6 +5,7 @@ from app.models.user import User
 from app.models.listing import Listing
 from app.models.review import Review
 from app.schemas.review import ReviewCreate, ReviewOut
+from pydantic import BaseModel  # Add this import if not present
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.dependencies.db import get_db
@@ -13,6 +14,10 @@ from app.models.quote import Quote  # already added
 from app.models.request import Request  # already added
 from app.models.booking import BookingStatus  # Add this import
 from datetime import datetime  # Add this import at the top
+
+class ReviewUpdate(BaseModel):
+    rating: int
+    comment: str | None = None
 
 router = APIRouter(prefix="/reviews", tags=["Reviews"])
 
@@ -238,3 +243,37 @@ def get_reviews_about_user(user_id: int, db: Session = Depends(get_db)):
                         review.listing_id = listing.id
     
     return reviews
+
+@router.put("/{review_id}", response_model=ReviewOut)
+def update_review(
+    review_id: int,
+    data: ReviewUpdate,  # Use ReviewUpdate instead of ReviewCreate
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    review = db.query(Review).filter(Review.id == review_id).first()
+    if not review:
+        raise HTTPException(status_code=404, detail="Review not found")
+    if review.reviewer_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to edit this review")
+    booking = db.query(Booking).filter(Booking.id == review.booking_id).first()
+    if not booking or booking.status != BookingStatus.completed:
+        raise HTTPException(status_code=400, detail="Can only edit review for completed bookings")
+
+    review.rating = data.rating
+    review.comment = data.comment
+    review.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(review)
+
+    provider_id = review.reviewee_id
+    profile = db.query(Profile).filter(Profile.user_id == provider_id).first()
+    if profile:
+        all_reviews = db.query(Review).filter(Review.reviewee_id == provider_id).all()
+        if all_reviews:
+            profile.average_rating = sum(r.rating for r in all_reviews) / len(all_reviews)
+        else:
+            profile.average_rating = None
+        db.commit()
+
+    return review

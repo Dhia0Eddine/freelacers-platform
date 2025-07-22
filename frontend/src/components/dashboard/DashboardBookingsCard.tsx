@@ -48,7 +48,9 @@ interface DashboardBookingsCardProps {
 export function DashboardBookingsCard({ bookings, isProvider }: DashboardBookingsCardProps) {
   const [activeFilter, setActiveFilter] = useState('all');
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [showEditReviewModal, setShowEditReviewModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [editingReview, setEditingReview] = useState<BookingReview | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [reviews, setReviews] = useState<BookingReview[]>([]);
   const navigate = useNavigate();
@@ -118,6 +120,31 @@ export function DashboardBookingsCard({ bookings, isProvider }: DashboardBooking
     }
   };
 
+  // Add update review handler
+  const handleUpdateReview = async (data: { rating: number; comment?: string }) => {
+    if (!editingReview) return;
+    setIsSubmitting(true);
+    try {
+      // Call your API to update the review (assumes reviewService.updateReview exists)
+      await reviewService.updateReview(editingReview.review.id, {
+        rating: data.rating,
+        comment: data.comment,
+      });
+      // Update local state
+      setReviews(reviews.map(r =>
+        r.bookingId === editingReview.bookingId
+          ? { ...r, review: { ...r.review, rating: data.rating, comment: data.comment } }
+          : r
+      ));
+      setShowEditReviewModal(false);
+      setEditingReview(null);
+    } catch (error) {
+      console.error('Error updating review:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const filteredBookings = activeFilter === 'all'
     ? bookings
     : bookings.filter(b => b.status.toLowerCase() === activeFilter.toLowerCase());
@@ -140,6 +167,15 @@ export function DashboardBookingsCard({ bookings, isProvider }: DashboardBooking
     }
     
     return hasReviewInState;
+  };
+
+  // Add edit review handler
+  const handleEditReview = (bookingId: number) => {
+    const reviewObj = reviews.find(r => r.bookingId === bookingId);
+    if (reviewObj) {
+      setEditingReview(reviewObj);
+      setShowEditReviewModal(true);
+    }
   };
 
   return (
@@ -240,6 +276,17 @@ export function DashboardBookingsCard({ bookings, isProvider }: DashboardBooking
                             {review.comment && (
                               <p className="italic mt-1 text-gray-600 dark:text-gray-300">"{review.comment}"</p>
                             )}
+                            {/* Edit Review Button */}
+                            {!isProvider && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="mt-2"
+                                onClick={() => handleEditReview(booking.id)}
+                              >
+                                Edit Review
+                              </Button>
+                            )}
                           </div>
                         )}
                       </div>
@@ -265,7 +312,6 @@ export function DashboardBookingsCard({ bookings, isProvider }: DashboardBooking
                                 <Button
                                   size="sm"
                                   onClick={() => {
-                                    console.log("Opening review modal for booking:", booking.id);
                                     setSelectedBooking(booking);
                                     setShowReviewModal(true);
                                   }}
@@ -307,13 +353,31 @@ export function DashboardBookingsCard({ bookings, isProvider }: DashboardBooking
           {selectedBooking && (
             <ReviewForm
               onSubmit={async (data) => {
-                console.log("Submitting review for booking:", selectedBooking.id, data);
                 await handleReviewSubmit(data);
-                // Force a refresh of the bookings data after successful submission
                 window.location.reload();
               }}
               providerName={selectedBooking.provider_name || 'the provider'}
               serviceName={selectedBooking.service_title || 'this service'}
+              disabled={isSubmitting}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Review Modal */}
+      <Dialog open={showEditReviewModal} onOpenChange={setShowEditReviewModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Your Review</DialogTitle>
+            <DialogDescription>
+              Update your review for this booking.
+            </DialogDescription>
+          </DialogHeader>
+          {editingReview && (
+            <ReviewForm
+              onSubmit={handleUpdateReview}
+              providerName={selectedBooking?.provider_name || 'the provider'}
+              serviceName={selectedBooking?.service_title || 'this service'}
               disabled={isSubmitting}
             />
           )}
@@ -337,3 +401,4 @@ function getStatusBadgeClass(status: string) {
       return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
   }
 }
+  
