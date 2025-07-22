@@ -1,13 +1,33 @@
 # app/routers/profile.py
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
 from app.dependencies.db import get_db
 from app.models.profile import Profile
 from app.schemas.profile import ProfileCreate, ProfileUpdate, ProfileOut
 from app.models.user import User
 from app.utils.auth import get_current_user
+import os
+from uuid import uuid4
+from fastapi.responses import JSONResponse
 
 router = APIRouter(prefix="/profiles", tags=["Profiles"])
+
+@router.post("/upload-picture")
+async def upload_profile_picture(
+    file: UploadFile = File(...),
+):
+    # Save image to disk (for demo; in prod use S3 or similar)
+    ext = os.path.splitext(file.filename)[1]
+    if ext.lower() not in [".jpg", ".jpeg", ".png", ".gif"]:
+        raise HTTPException(status_code=400, detail="Invalid image type")
+    upload_dir = "static/uploads/profile_pics"
+    os.makedirs(upload_dir, exist_ok=True)
+    filename = f"profile_{uuid4().hex}{ext}"
+    file_path = os.path.join(upload_dir, filename)
+    with open(file_path, "wb") as f:
+        f.write(await file.read())
+    url = f"/static/uploads/profile_pics/{filename}"
+    return {"url": url}
 
 @router.post("/", response_model=ProfileOut)
 def create_profile(

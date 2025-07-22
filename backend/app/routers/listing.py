@@ -84,7 +84,8 @@ def get_listings(
                 "user_id": listing.user.profile.user_id,
                 "full_name": listing.user.profile.full_name,
                 "location": listing.user.profile.location,
-                "average_rating": listing.user.profile.average_rating
+                "average_rating": listing.user.profile.average_rating,
+                "profile_picture": listing.user.profile.profile_picture  # Add this line
             }
             print(f"Added profile for listing {listing.id}: {listing_dict['profile']}")
         else:
@@ -115,7 +116,8 @@ def get_listing(listing_id: int, db: Session = Depends(get_db)):
             "user_id": listing.user.profile.user_id,
             "full_name": listing.user.profile.full_name,
             "location": listing.user.profile.location,
-            "average_rating": listing.user.profile.average_rating
+            "average_rating": listing.user.profile.average_rating,
+            "profile_picture": listing.user.profile.profile_picture  # Add this line
         }
     
     return result
@@ -266,7 +268,8 @@ def get_listings_by_service_id(
                 "user_id": listing.user.profile.user_id,
                 "full_name": listing.user.profile.full_name,
                 "location": listing.user.profile.location,
-                "average_rating": listing.user.profile.average_rating
+                "average_rating": listing.user.profile.average_rating,
+                "profile_picture": listing.user.profile.profile_picture  # Add this line
             }
         
         response_items.append(listing_dict)

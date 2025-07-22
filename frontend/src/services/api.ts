@@ -207,7 +207,8 @@ export const profileService = {
     full_name: string;
     bio?: string;
     location: string;
-    phone: string; // Changed from phone_number to phone
+    phone: string;
+    profile_picture?: string; // <-- Add this line
   }) => {
     try {
       console.log('Updating profile:', profileData);
@@ -362,6 +363,45 @@ export const listingService = {
       throw new Error('Failed to get listing due to network issue');
     }
   },
+
+  // Add deleteListing method
+  deleteListing: async (listingId: number) => {
+    try {
+      const response = await api.delete(`/listings/${listingId}`);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Listing delete error details:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to delete listing');
+      }
+      throw new Error('Failed to delete listing due to network issue');
+    }
+  },
+
+  // Add updateListing method
+  updateListing: async (
+    listingId: string | number,
+    listingData: {
+      title: string;
+      description: string;
+      min_price: number;
+      max_price: number;
+      location: string;
+      available: boolean;
+      service_id: number;
+    }
+  ) => {
+    try {
+      const response = await api.put(`/listings/${listingId}`, listingData);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Listing update error details:', error.response.data);
+        throw new Error(error.response.data.detail || 'Failed to update listing');
+      }
+      throw new Error('Failed to update listing due to network issue');
+    }
+  }
 };
 
 // Service related API calls

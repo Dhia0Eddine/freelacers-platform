@@ -9,6 +9,8 @@ import {
   Share2, Bookmark, Flag
 } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 // Same interfaces as ProfilePage
 
 interface Profile {
@@ -19,6 +21,7 @@ interface Profile {
   location: string;
   phone: string;
   average_rating?: number;
+  profile_picture?: string; // Add this line
 }
 
 
@@ -327,8 +330,14 @@ export default function UserProfilePage() {
           <div className="px-8 py-6 flex flex-col md:flex-row relative">
             {/* Profile Avatar */}
             <div className="flex-shrink-0 -mt-20 mb-6 md:mb-0">
-              <div className="bg-white dark:bg-gray-700 border-4 border-white dark:border-gray-800 rounded-full h-28 w-28 flex items-center justify-center shadow-lg transition-transform duration-300 hover:scale-105 group">
-                {isFreelancer ? (
+              <div className="bg-white dark:bg-gray-700 border-4 border-white dark:border-gray-800 rounded-full h-28 w-28 flex items-center justify-center shadow-lg transition-transform duration-300 hover:scale-105 group overflow-hidden">
+                {profile?.profile_picture ? (
+                  <img
+                    src={profile.profile_picture.startsWith('http') ? profile.profile_picture : `${API_URL}${profile.profile_picture}`}
+                    alt={profile.full_name}
+                    className="object-cover w-full h-full rounded-full"
+                  />
+                ) : isFreelancer ? (
                   <Briefcase className="h-12 w-12 text-blue-500 dark:text-blue-400 transition-all duration-300 group-hover:text-blue-600" />
                 ) : (
                   <User className="h-12 w-12 text-blue-500 dark:text-blue-400 transition-all duration-300 group-hover:text-blue-600" />

@@ -10,6 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 interface Profile {
   id: number;
   user_id: number;
@@ -18,6 +20,7 @@ interface Profile {
   location: string;
   phone: string;
   average_rating?: number;
+  profile_picture?: string; // Add this line
   user?: {
     id: number;
     email: string;
@@ -134,8 +137,14 @@ export default function UserProfilePageV2() {
         <div className="relative">
           <div className="h-32 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
           <div className="absolute -bottom-16 left-8">
-            <div className="bg-white dark:bg-gray-700 border-4 border-white dark:border-gray-800 rounded-full size-32 flex items-center justify-center">
-              {isProvider ? (
+            <div className="bg-white dark:bg-gray-700 border-4 border-white dark:border-gray-800 rounded-full size-32 flex items-center justify-center overflow-hidden">
+              {profile.profile_picture ? (
+                <img
+                  src={profile.profile_picture.startsWith('http') ? profile.profile_picture : `${API_URL}${profile.profile_picture}`}
+                  alt={profile.full_name}
+                  className="object-cover w-full h-full rounded-full"
+                />
+              ) : isProvider ? (
                 <Briefcase className="h-14 w-14 text-blue-500 dark:text-blue-400" />
               ) : (
                 <User className="h-14 w-14 text-blue-500 dark:text-blue-400" />

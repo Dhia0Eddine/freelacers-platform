@@ -21,6 +21,7 @@ interface Profile {
   location?: string;
   phone?: string;
   average_rating?: number;
+  profile_picture?: string;
 }
 
 interface Listing {
@@ -48,6 +49,8 @@ interface Review {
   reviewer_name?: string;
   service_name?: string;
 }
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export default function ServiceListingDetailPage() {
   const { listingId } = useParams<{ listingId: string }>();
@@ -348,8 +351,16 @@ export default function ServiceListingDetailPage() {
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Service Provider</h2>
           
           <div className="flex items-start gap-6">
-            <div className="bg-indigo-100 dark:bg-indigo-900/30 rounded-full size-16 flex-shrink-0 flex items-center justify-center">
-              <User className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
+            <div className="bg-indigo-100 dark:bg-indigo-900/30 rounded-full size-16 flex-shrink-0 flex items-center justify-center overflow-hidden">
+              {listing.profile?.profile_picture ? (
+                <img
+                  src={listing.profile.profile_picture.startsWith('http') ? listing.profile.profile_picture : `${API_URL}${listing.profile.profile_picture}`}
+                  alt={listing.profile.full_name}
+                  className="object-cover w-16 h-16 rounded-full"
+                />
+              ) : (
+                <User className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
+              )}
             </div>
             
             <div className="flex-1">

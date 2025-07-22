@@ -8,6 +8,7 @@ class ProfileBase(BaseModel):
     bio: Optional[str] = None
     location: str
     phone: Optional[str] = None  # Make phone optional to handle NULL values
+    profile_picture: Optional[str] = None  # New field
 
 # For creating a profile
 class ProfileCreate(ProfileBase):
@@ -19,6 +20,7 @@ class ProfileUpdate(BaseModel):
     bio: Optional[str] = None
     location: Optional[str] = None
     phone: Optional[str] = None  # Keep phone optional
+    profile_picture: Optional[str] = None  # New field
 
 # For returning profile data
 class ProfileOut(ProfileBase):
@@ -27,7 +29,7 @@ class ProfileOut(ProfileBase):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     average_rating: Optional[float] = None
+    profile_picture: Optional[str] = None  # Ensure always present
 
     class Config:
         from_attributes = True
-        from_attributes = True  # Updated from orm_mode=True which is deprecated
