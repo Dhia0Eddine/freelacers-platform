@@ -18,7 +18,7 @@ import DashboardPage from "../pages/DashboardPage";
 import RequestDetailPage from "../pages/RequestDetailPage";
 import QuoteDetailPage from "../pages/QuoteDetailPage";
 import BookingDetailPage from "../pages/BookingDetailPage";
-
+import AboutPage from "../pages/AboutPage";
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -41,6 +41,7 @@ export const router = createBrowserRouter([
       { path: "quotes/:quoteId", element: <QuoteDetailPage /> }, // Add this line for plural URL support
       { path: "booking/:bookingId", element: <BookingDetailPage /> },
       { path: "my-bookings/:bookingId", element: <BookingDetailPage /> },
+      { path: "about", element: <AboutPage /> },
     ],
   },
 ])
