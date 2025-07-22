@@ -5,6 +5,7 @@ import { useAuthContext } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 interface ProfileFormData {
   fullName: string;
@@ -74,20 +75,17 @@ export default function EditProfilePage() {
     setSuccess(false);
     
     try {
-      // The updateProfile method should be available in the profileService
       await profileService.updateProfile({
         full_name: formData.fullName,
         location: formData.location,
         bio: formData.bio,
         phone: formData.phone
       });
-      
       setSuccess(true);
-      
-      // Reset success message after 3 seconds
-      setTimeout(() => {
-        setSuccess(false);
-      }, 3000);
+
+      // Show toast and redirect
+      toast.success('Profile updated successfully!');
+      navigate('/profile/me');
     } catch (err) {
       console.error('Error updating profile:', err);
       setError(err instanceof Error ? err.message : 'Failed to update profile');
@@ -175,12 +173,12 @@ export default function EditProfilePage() {
             </div>
             
             <div>
-              <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Phone Number
               </label>
               <input
-                id="phoneNumber"
-                name="phoneNumber"
+                id="phone"
+                name="phone"
                 type="tel"
                 value={formData.phone}
                 onChange={handleChange}
