@@ -16,7 +16,12 @@ def create_service(data: ServiceCreate, db: Session = Depends(get_db)):
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
     
-    service = Service(name=data.name, description=data.description, category_id=data.category_id)
+    service = Service(
+        name=data.name,
+        description=data.description,
+        category_id=data.category_id,
+        photo=data.photo  # Add this line
+    )
     db.add(service)
     db.commit()
     db.refresh(service)
@@ -39,13 +44,19 @@ def update_service(service_id: int, data: ServiceUpdate, db: Session = Depends(g
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
     
-    category = db.query(Category).get(data.category_id)
-    if not category:
-        raise HTTPException(status_code=404, detail="Category not found")
+    if data.category_id is not None:
+        category = db.query(Category).get(data.category_id)
+        if not category:
+            raise HTTPException(status_code=404, detail="Category not found")
+        service.category_id = data.category_id
 
-    service.name = data.name
-    service.description = data.description
-    service.category_id = data.category_id
+    if data.name is not None:
+        service.name = data.name
+    if data.description is not None:
+        service.description = data.description
+    if data.photo is not None:
+        service.photo = data.photo  # Add this line
+
     db.commit()
     db.refresh(service)
     return service

@@ -10,6 +10,7 @@ class Service(Base):
 
     name = Column(String, nullable=False)
     description = Column(String)
+    photo = Column(String, nullable=True)  # Add this line
 
     category = relationship("Category", back_populates="services")
     listings = relationship("Listing", back_populates="service", cascade="all, delete")

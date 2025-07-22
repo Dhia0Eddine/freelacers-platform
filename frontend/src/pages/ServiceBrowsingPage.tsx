@@ -11,6 +11,7 @@ interface Service {
   name: string;
   description: string | null;
   category_id: number;
+  photo?: string; // Add this line to match backend schema
 }
 
 // Service card background colors based on index
@@ -103,37 +104,41 @@ export default function ServiceBrowsingPage() {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredServices.length > 0 ? (
               filteredServices.map((service, index) => (
                 <div 
                   key={service.id}
                   onClick={() => handleServiceClick(service.id)}
-                  className={`${cardColors[index % cardColors.length]} rounded-xl shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md hover:translate-y-[-4px] cursor-pointer animate-fadeIn`}
+                  className={`group relative rounded-xl shadow-lg overflow-hidden bg-white dark:bg-gray-800 hover:shadow-2xl transition-all duration-300 cursor-pointer animate-fadeIn border border-gray-100 dark:border-gray-700`}
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  <div className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="text-3xl">
-                        {serviceIcons[index % serviceIcons.length]}
-                      </div>
-                      <div className="text-xs font-medium bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-full">
-                        Category ID: {service.category_id}
-                      </div>
-                    </div>
-                    
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  {/* Rectangle photo or fallback */}
+                  <div className="relative w-full h-40 bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+                    {service.photo ? (
+                      <img
+                        src={service.photo.startsWith('http') ? service.photo : `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${service.photo}`}
+                        alt={service.name}
+                        className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <span className="text-6xl select-none">{serviceIcons[index % serviceIcons.length]}</span>
+                    )}
+                    <span className="absolute top-3 right-3 bg-white/80 dark:bg-gray-900/70 text-xs font-medium px-3 py-1 rounded shadow">
+                      Category ID: {service.category_id}
+                    </span>
+                  </div>
+                  <div className="p-6 flex flex-col h-[180px]">
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                       {service.name}
                     </h3>
-                    
-                    <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
+                    <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3 flex-1">
                       {service.description || "No description available."}
                     </p>
-                    
-                    <div className="flex justify-end">
+                    <div className="flex justify-end mt-2">
                       <div className="flex items-center text-blue-600 dark:text-blue-400 font-medium group">
                         <span>View Listings</span>
-                        <ArrowRightIcon className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                        <ArrowRightIcon className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
                       </div>
                     </div>
                   </div>
