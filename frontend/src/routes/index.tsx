@@ -16,6 +16,8 @@ import ListingsPagebyServiceId from "../pages/ListingsPagebyServiceId";
 import CreateListingPage from "../pages/CreateListingPage";
 import DashboardPage from "../pages/DashboardPage";
 import RequestDetailPage from "../pages/RequestDetailPage";
+import QuoteDetailPage from "../pages/QuoteDetailPage";
+import BookingDetailPage from "../pages/BookingDetailPage";
 
 export const router = createBrowserRouter([
   {
@@ -35,6 +37,10 @@ export const router = createBrowserRouter([
       { path: "listings/:listingId", element: <ServiceListingDetailPage /> },
       { path: "dashboard", element: <DashboardPage /> },
       { path: "request/:requestId", element: <RequestDetailPage /> },
+      { path: "quote/:quoteId", element: <QuoteDetailPage /> },
+      { path: "quotes/:quoteId", element: <QuoteDetailPage /> }, // Add this line for plural URL support
+      { path: "booking/:bookingId", element: <BookingDetailPage /> },
+      { path: "my-bookings/:bookingId", element: <BookingDetailPage /> },
     ],
   },
 ])

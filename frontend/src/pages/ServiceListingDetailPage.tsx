@@ -38,6 +38,17 @@ interface Listing {
   profile?: Profile;
 }
 
+interface Review {
+  id: number;
+  booking_id: number;
+  reviewer_id: number;
+  rating: number;
+  comment?: string;
+  created_at: string;
+  reviewer_name?: string;
+  service_name?: string;
+}
+
 export default function ServiceListingDetailPage() {
   const { listingId } = useParams<{ listingId: string }>();
   const [listing, setListing] = useState<Listing | null>(null);
@@ -47,6 +58,9 @@ export default function ServiceListingDetailPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewsError, setReviewsError] = useState<string | null>(null);
   
   const { isAuthenticated, isCustomer } = useAuthContext();
   const navigate = useNavigate();
@@ -105,6 +119,36 @@ export default function ServiceListingDetailPage() {
       return () => clearTimeout(timer);
     }
   }, [successMessage]);
+
+  // Add a new useEffect to fetch reviews for the listing
+  useEffect(() => {
+    const fetchReviews = async () => {
+      if (!listing?.id) return;
+      
+      setReviewsLoading(true);
+      setReviewsError(null);
+      
+      try {
+        // Fetch reviews for this listing
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/reviews/listing/${listing.id}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch reviews');
+        }
+        
+        const data = await response.json();
+        console.log("Listing reviews:", data);
+        setReviews(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Error fetching reviews:", err);
+        setReviewsError("Couldn't load reviews");
+      } finally {
+        setReviewsLoading(false);
+      }
+    };
+    
+    fetchReviews();
+  }, [listing?.id]);
 
   const handleRequestSubmit = async (formData: {
     description: string;
@@ -371,6 +415,88 @@ export default function ServiceListingDetailPage() {
               </div>
             </div>
           </div>
+        </div>
+        
+        {/* Reviews Section - Add this new section */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-8 mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Customer Reviews</h2>
+          
+          {reviewsLoading ? (
+            <div className="flex justify-center items-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+            </div>
+          ) : reviewsError ? (
+            <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+              {reviewsError}
+            </div>
+          ) : reviews.length > 0 ? (
+            <div className="space-y-6">
+              {reviews.map(review => (
+                <div key={review.id} className="border-b border-gray-200 dark:border-gray-700 pb-6 last:border-0">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex items-center">
+                      <div className="bg-gray-100 dark:bg-gray-700 rounded-full size-10 flex items-center justify-center mr-3">
+                        <User className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                      </div>
+                      <div>
+                        {review.reviewer_id ? (
+                          <Link 
+                            to={`/profile/${review.reviewer_id}`}
+                            className="font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                          >
+                            {review.reviewer_name || 'Customer'}
+                          </Link>
+                        ) : (
+                          <h3 className="font-medium text-gray-900 dark:text-white">
+                            {review.reviewer_name || 'Customer'}
+                          </h3>
+                        )}
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          {new Date(review.created_at).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star 
+                          key={star}
+                          className={`h-4 w-4 ${
+                            star <= review.rating
+                              ? 'text-yellow-500 fill-current'
+                              : 'text-gray-300'
+                          }`}
+                        />
+                      ))}
+                      <span className="ml-2 text-sm font-medium">{review.rating}/5</span>
+                    </div>
+                  </div>
+                  
+                  {review.service_name && (
+                    <div className="mb-2">
+                      <span className="inline-block bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs text-gray-600 dark:text-gray-300">
+                        {review.service_name}
+                      </span>
+                    </div>
+                  )}
+                  
+                  {review.comment && (
+                    <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-md">
+                      <p className="text-gray-700 dark:text-gray-300 italic">"{review.comment}"</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
+              <Star className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No reviews yet</h3>
+              <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                This service hasn't received any reviews yet. Be the first to book and review!
+              </p>
+            </div>
+          )}
         </div>
         
         {/* Similar Services */}

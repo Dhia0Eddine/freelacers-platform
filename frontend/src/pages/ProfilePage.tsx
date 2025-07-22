@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { 
   MapPin, Phone, Mail, Globe, Star, Edit, Plus, Briefcase, User, 
   CheckCircle, XCircle, Home, BarChart2, Calendar, Users, Settings,
-  FileText, MessageSquare, Code, ArrowLeft, ArrowRight, Menu, X, Clock,Badge
+  FileText, MessageSquare, Code, ArrowLeft, ArrowRight, Menu, X, Clock, Badge, ChevronRight
 } from 'lucide-react';
 
 // Update interface to match actual API response
@@ -62,6 +62,7 @@ interface Booking {
   scheduled_time: string;
   status: string;
   created_at: string;
+  has_review?: boolean; // Added this property
   provider?: {
     profile?: {
       full_name: string;
@@ -80,6 +81,9 @@ interface Review {
   rating: number;
   comment?: string;
   created_at: string;
+  // Additional fields to display listing info
+  service_title?: string; 
+  listing_id?: number;
 }
 
 export default function ProfilePage() {
@@ -160,7 +164,7 @@ export default function ProfilePage() {
           });
         }
         
-        // If the user is a customer, fetch their requests and bookings
+        // If the user is a customer, fetch their requests, bookings, and reviews they've written
         if (isCustomer) {
           try {
             const requestsData = await requestService.getMyRequests();
@@ -172,21 +176,27 @@ export default function ProfilePage() {
             setBookings(Array.isArray(bookingsData) ? bookingsData : []);
             console.log("Customer bookings:", bookingsData);
             
-            // Optional: Fetch reviews given by this customer
-            const reviewsData = await reviewService.getMyReviews();
+            // Use the appropriate method for customer reviews (reviews written by them)
+            const reviewsData = await reviewService.getReviewsWrittenByMe();
             setReviews(Array.isArray(reviewsData) ? reviewsData : []);
+            console.log("Customer reviews written:", reviewsData);
           } catch (customerErr) {
             console.error("Error fetching customer data:", customerErr);
           }
         } 
-        // If the user is a provider, fetch their listings
+        // If the user is a provider, fetch their listings and reviews about them
         else if (isProvider) {
           try {
             const listingsData = await listingService.getMyListings();
             setListings(Array.isArray(listingsData) ? listingsData : []);
             console.log("Provider listings:", listingsData);
-          } catch (listingErr) {
-            console.error("Error fetching listings:", listingErr);
+            
+            // Use the appropriate method for provider reviews (reviews about them)
+            const reviewsData = await reviewService.getReviewsAboutMe();
+            setReviews(Array.isArray(reviewsData) ? reviewsData : []);
+            console.log("Provider reviews received:", reviewsData);
+          } catch (providerErr) {
+            console.error("Error fetching provider data:", providerErr);
           }
         }
       } catch (err) {
@@ -762,10 +772,19 @@ export default function ProfilePage() {
                                       Booked on {new Date(booking.created_at).toLocaleDateString()}
                                     </div>
                                     <div className="flex gap-2">
-                                      {booking.status === 'completed' && !hasReviewedBooking(booking.id) && (
-                                        <Button size="sm" variant="outline">
-                                          Leave Review
-                                        </Button>
+                                      {booking.status === 'completed' && (
+                                        <>
+                                          {hasReviewedBooking(booking) ? (
+                                            <Button size="sm" variant="outline" disabled className="text-gray-500">
+                                              <CheckCircle className="h-4 w-4 mr-1" />
+                                              Review Submitted
+                                            </Button>
+                                          ) : (
+                                            <Button size="sm">
+                                              Leave Review
+                                            </Button>
+                                          )}
+                                        </>
                                       )}
                                       <Button size="sm">
                                         View Details
@@ -795,7 +814,7 @@ export default function ProfilePage() {
                     )}
                     
                     {activeTab === 'reviews' && (
-                      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
+                      <div className="bg-white dark:bg-gray-800 rounded-md shadow-md p-6 transition-all duration-300 hover:shadow-md">
                         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">My Reviews</h2>
                         
                         {reviews && reviews.length > 0 ? (
@@ -806,25 +825,58 @@ export default function ProfilePage() {
                                 className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-5 transition-all duration-300 hover:shadow-md"
                                 style={{ animationDelay: `${index * 0.1}s` }}
                               >
-                                <div className="flex items-center gap-2 mb-3">
-                                  {[...Array(5)].map((_, i) => (
-                                    <Star 
-                                      key={i} 
-                                      className={`h-5 w-5 ${i < review.rating ? 'text-yellow-500 fill-current' : 'text-gray-300'}`} 
-                                    />
-                                  ))}
-                                  <span className="text-gray-600 dark:text-gray-300 ml-2">
-                                    {review.rating}/5
-                                  </span>
+                                <div className="flex justify-between items-start mb-3">
+                                  <div>
+                                    {review.service_title && (
+                                      <h3 className="font-medium text-lg text-gray-900 dark:text-white mb-1">
+                                        {review.listing_id ? (
+                                          <Link 
+                                            to={`/listings/${review.listing_id}`}
+                                            className="text-blue-600 dark:text-blue-400 hover:underline"
+                                          >
+                                            {review.service_title}
+                                          </Link>
+                                        ) : (
+                                          review.service_title
+                                        )}
+                                      </h3>
+                                    )}
+                                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                                      Posted on {new Date(review.created_at).toLocaleDateString()}
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="flex items-center gap-2">
+                                    {[...Array(5)].map((_, i) => (
+                                      <Star 
+                                        key={i} 
+                                        className={`h-5 w-5 ${i < review.rating ? 'text-yellow-500 fill-current' : 'text-gray-300'}`} 
+                                      />
+                                    ))}
+                                    <span className="text-gray-600 dark:text-gray-300 ml-2">
+                                      {review.rating}/5
+                                    </span>
+                                  </div>
                                 </div>
                                 
-                                <p className="text-gray-700 dark:text-gray-300 mb-4">
-                                  {review.comment || 'No comment provided'}
-                                </p>
+                                {review.comment && (
+                                  <div className="bg-gray-50 dark:bg-gray-750 p-4 rounded-md">
+                                    <p className="text-gray-700 dark:text-gray-300 italic">"{review.comment}"</p>
+                                  </div>
+                                )}
                                 
-                                <div className="text-sm text-gray-500 dark:text-gray-400">
-                                  Posted on {new Date(review.created_at).toLocaleDateString()}
-                                </div>
+                                {review.listing_id && (
+                                  <div className="mt-4 flex justify-end">
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline"
+                                      onClick={() => navigate(`/listings/${review.listing_id}`)}
+                                    >
+                                      View Service
+                                      <ChevronRight className="h-4 w-4 ml-1" />
+                                    </Button>
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -1055,8 +1107,7 @@ function formatTimeAgo(dateString: string) {
 }
 
 // Check if user has already reviewed a booking
-function hasReviewedBooking(bookingId: number) {
-  // This would need access to the reviews array to check
-  // For now, we'll just return false
-  return false;
+function hasReviewedBooking(booking: Booking): boolean {
+  // Just check the has_review flag on the booking
+  return booking.has_review === true;
 }

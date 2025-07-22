@@ -15,6 +15,9 @@ class ReviewOut(BaseModel):
     rating: int
     comment: Optional[str]
     created_at: datetime
+    service_title: Optional[str] = None  # Add this field
+    listing_id: Optional[int] = None  # Add this field
+    reviewer_name: Optional[str] = None  # Keep this field from previous changes
 
     class Config:
         from_attributes = True

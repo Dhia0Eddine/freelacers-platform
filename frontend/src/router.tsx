@@ -9,6 +9,7 @@ import UserProfilePage from "@/pages/UserProfilePage";
 import ServiceBrowsingPage from "@/pages/ServiceBrowsingPage";
 import { Button } from "@/components/ui/button";
 import CreateListingPage from "@/pages/CreateListingPage";
+import QuoteDetailPage from "@/pages/QuoteDetailPage";
 export default function AppRouter() {
   console.log("Initializing router");
 
@@ -24,6 +25,7 @@ export default function AppRouter() {
           <Route path="profile" element={<ProfilePage />} />
           <Route path="profile/:userId" element={<UserProfilePage />} />
           <Route path="services" element={<ServiceBrowsingPage />} />
+          <Route path="quote/:quoteId" element={<QuoteDetailPage />} />
 
           {/* Redirect any unknown routes to HomePage */}
           <Route

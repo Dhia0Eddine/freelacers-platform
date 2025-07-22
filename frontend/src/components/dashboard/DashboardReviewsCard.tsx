@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Star, Search, ThumbsUp } from 'lucide-react';
+import { Star, User, Calendar, Filter } from 'lucide-react';
 import { reviewService } from '@/services/api';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface Review {
   id: number;
@@ -13,23 +15,22 @@ interface Review {
   comment?: string;
   created_at: string;
   provider_name?: string;
-  service_title?: string;
+  service_name?: string;
 }
 
 export function DashboardReviewsCard() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
     const fetchReviews = async () => {
       setLoading(true);
       try {
         const data = await reviewService.getMyReviews();
-        setReviews(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error('Error fetching reviews:', err);
-        setError('Failed to load reviews');
+        setReviews(data);
+      } catch (error) {
+        console.error('Error fetching reviews:', error);
       } finally {
         setLoading(false);
       }
@@ -38,78 +39,109 @@ export function DashboardReviewsCard() {
     fetchReviews();
   }, []);
 
+  const filteredReviews = filter === 'all' 
+    ? reviews 
+    : reviews.filter(review => {
+        const rating = review.rating;
+        if (filter === 'positive') return rating >= 4;
+        if (filter === 'neutral') return rating === 3;
+        if (filter === 'negative') return rating <= 2;
+        return true;
+      });
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <Star className="h-5 w-5 mr-2" />
-          My Reviews
-        </CardTitle>
-        <CardDescription>
-          Reviews you've left for service providers
-        </CardDescription>
+      <CardHeader className="pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <CardTitle className="text-xl">My Reviews</CardTitle>
+            <CardDescription>
+              Reviews you've given to service providers
+            </CardDescription>
+          </div>
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger className="w-[160px]">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Filter Reviews" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Reviews</SelectItem>
+              <SelectItem value="positive">Positive (4-5★)</SelectItem>
+              <SelectItem value="neutral">Neutral (3★)</SelectItem>
+              <SelectItem value="negative">Negative (1-2★)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </CardHeader>
       <CardContent>
         {loading ? (
-          <div className="text-center py-8">
-            <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
-            <p className="text-gray-500 mt-2">Loading reviews...</p>
-          </div>
-        ) : error ? (
-          <div className="text-center py-8 text-red-500">
-            {error}
-          </div>
-        ) : reviews.length > 0 ? (
+          <div className="text-center py-8">Loading reviews...</div>
+        ) : filteredReviews.length > 0 ? (
           <div className="space-y-6">
-            {reviews.map((review) => (
+            {filteredReviews.map(review => (
               <div key={review.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="font-medium">{review.service_title || 'Service Review'}</h3>
-                    <p className="text-sm text-gray-500">
-                      Provider: {review.provider_name || 'Unknown Provider'}
-                    </p>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                  <div className="flex items-center">
+                    <div className="bg-blue-100 dark:bg-blue-900/30 rounded-full size-10 flex items-center justify-center mr-3">
+                      <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <div className="font-medium">
+                        {review.provider_name || 'Service Provider'}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {review.service_name || 'Service'}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded">
-                    {[...Array(5)].map((_, i) => (
-                      <Star 
-                        key={i} 
-                        className={`h-4 w-4 ${i < review.rating ? 'fill-current' : 'text-gray-300 dark:text-gray-600'}`} 
-                      />
-                    ))}
+                  <div className="flex items-center space-x-2">
+                    <div className="flex items-center">
+                      {[...Array(5)].map((_, i) => (
+                        <Star 
+                          key={i} 
+                          className={`h-4 w-4 ${i < review.rating ? 'text-yellow-500 fill-current' : 'text-gray-300'}`} 
+                        />
+                      ))}
+                    </div>
+                    <Badge variant="outline" className="bg-gray-100 dark:bg-gray-800">
+                      {review.rating}/5
+                    </Badge>
                   </div>
                 </div>
-                
+
                 {review.comment && (
-                  <p className="text-gray-700 dark:text-gray-300 my-2 text-sm">
-                    "{review.comment}"
-                  </p>
+                  <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-md mb-3">
+                    <p className="text-gray-700 dark:text-gray-300 italic">"{review.comment}"</p>
+                  </div>
                 )}
-                
-                <div className="flex justify-between items-center mt-3 text-xs text-gray-500">
-                  <span>Posted on {formatDate(review.created_at)}</span>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center text-sm text-gray-500">
+                    <Calendar className="h-4 w-4 mr-1" />
+                    {formatDate(review.created_at)}
+                  </div>
+                  <Button variant="ghost" size="sm">
+                    View Booking
+                  </Button>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <Star className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+          <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+            <Star className="h-12 w-12 mx-auto text-gray-400 mb-3" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No reviews yet</h3>
             <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
-              After completing a service, you can leave reviews for providers.
+              When you leave reviews for services you've received, they'll appear here.
             </p>
-            <Button>
-              Browse Services
-            </Button>
           </div>
         )}
       </CardContent>

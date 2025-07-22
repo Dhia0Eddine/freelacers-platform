@@ -48,6 +48,24 @@ def get_quotes(db: Session = Depends(get_db)):
 def get_quotes_for_request(request_id: int, db: Session = Depends(get_db)):
     return db.query(Quote).filter_by(request_id=request_id).all()
 
+# GET a specific quote by ID
+@router.get("/{quote_id}", response_model=QuoteOut)
+def get_quote_by_id(quote_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    quote = db.query(Quote).filter_by(id=quote_id).first()
+    if not quote:
+        raise HTTPException(status_code=404, detail="Quote not found")
+    
+    # Check authorization - either the quote provider or the request owner can view it
+    request = db.query(Request).filter_by(id=quote.request_id).first()
+    if not request:
+        raise HTTPException(status_code=404, detail="Associated request not found")
+    
+    # Allow access if user is the provider who created the quote or the customer who owns the request
+    if current_user.id != quote.provider_id and current_user.id != request.user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to view this quote")
+    
+    return quote
+
 # UPDATE quote status (customer only)
 @router.patch("/{quote_id}/status", response_model=QuoteOut)
 def update_quote_status(quote_id: int, update: QuoteUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):

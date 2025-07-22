@@ -190,7 +190,8 @@ async def get_provider_dashboard(db: Session = Depends(get_db), current_user: Us
             "created_at": booking.created_at,
             "customer_name": customer_name,
             "service_title": listing_title,
-            "price": quote.price if quote else 0
+            "price": quote.price if quote else 0,
+            "has_review": booking.has_review  # Add this line to include has_review field
         })
     
     # Compile dashboard data
@@ -331,9 +332,9 @@ async def get_customer_dashboard(db: Session = Depends(get_db), current_user: Us
         provider = db.query(User).filter(User.id == booking.provider_id).first()
         provider_name = provider.profile.full_name if provider and provider.profile else "Unknown Provider"
         
-        # Get quote and associated listing/request
+        # Get quote and associated service info
         quote = db.query(Quote).filter(Quote.id == booking.quote_id).first()
-        listing_title = quote.request.listing.title if quote and quote.request and quote.request.listing else "Unknown Service"
+        service_title = quote.request.listing.title if quote and quote.request and quote.request.listing else "Unknown Service"
         
         formatted_bookings.append({
             "id": booking.id,
@@ -342,8 +343,9 @@ async def get_customer_dashboard(db: Session = Depends(get_db), current_user: Us
             "status": booking.status,
             "created_at": booking.created_at,
             "provider_name": provider_name,
-            "service_title": listing_title,
-            "price": quote.price if quote else 0
+            "service_title": service_title,
+            "price": quote.price if quote else 0,
+            "has_review": booking.has_review  # Add this line to include has_review field
         })
     
     # Compile dashboard data

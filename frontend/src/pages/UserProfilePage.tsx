@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { profileService, listingService } from '@/services/api';
+import { profileService, listingService, requestService, bookingService, reviewService } from '@/services/api';
 import { useAuthContext } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { 
@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 
 // Same interfaces as ProfilePage
+
 interface Profile {
   id: number;
   user_id: number;
@@ -19,6 +20,7 @@ interface Profile {
   phone: string;
   average_rating?: number;
 }
+
 
 interface User {
   id: number;
@@ -36,11 +38,26 @@ interface Listing {
   available: boolean;
 }
 
+// Add review interface
+interface Review {
+  id: number;
+  booking_id: number;
+  reviewer_id: number;
+  reviewee_id: number;
+  rating: number;
+  comment?: string;
+  created_at: string;
+  reviewer_name?: string;
+  service_title?: string;
+  listing_id?: number;
+}
+
 export default function UserProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState('services');
@@ -101,6 +118,28 @@ export default function UserProfilePage() {
           console.error("Error fetching listings:", listingErr);
           setListings([]);
         }
+        
+        // Fetch reviews based on actual user role from profile data
+        try {
+          // Get the user role directly from the profile data
+          const userRole = profileData.user?.role;
+          console.log("Determining user role for reviews:", userRole);
+          
+          if (userRole === "provider") {
+            // For providers, get reviews ABOUT them
+            const reviewsData = await reviewService.getReviewsAboutUser(parseInt(userId));
+            setReviews(reviewsData);
+            console.log("Provider reviews received:", reviewsData);
+          } else {
+            // For customers or unknown roles, get reviews WRITTEN BY them
+            const testimonials = await reviewService.getCustomerReviews(parseInt(userId));
+            setReviews(testimonials);
+            console.log("Customer testimonials received:", testimonials);
+          }
+        } catch (reviewErr) {
+          console.error("Error fetching reviews:", reviewErr);
+          setReviews([]);
+        }
       } catch (err) {
         console.error('Error fetching profile data:', err);
         setError(err instanceof Error ? err.message : 'Failed to load profile data');
@@ -146,6 +185,99 @@ export default function UserProfilePage() {
     { id: 1, name: 'Jane Cooper', role: 'Marketing Director', text: 'Exceptional service and attention to detail. Would highly recommend!', avatar: '👩🏽‍💼' },
     { id: 2, name: 'Robert Fox', role: 'CTO', text: 'Delivered above and beyond our expectations. Very professional.', avatar: '👨🏻‍💻' }
   ];
+
+  // Update the testimonials section to use actual reviews data
+  const renderTestimonialsSection = () => {
+    const isCustomer = !isFreelancer;
+    
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 transition-all duration-300 hover:shadow-md">
+        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+          {isFreelancer ? "Customer Reviews" : "Testimonials"}
+        </h2>
+        
+        {reviews.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {reviews.map((review, index) => (
+              <div 
+                key={review.id}
+                className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-6 transition-all duration-300 hover:shadow-md"
+                style={{ animationDelay: `${0.1 * index}s` }}
+              >
+                <div className="flex items-start mb-4">
+                  <div className="bg-gray-100 dark:bg-gray-700 rounded-full size-10 flex items-center justify-center">
+                    <User className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                  </div>
+                  <div className="ml-4">
+                    {isFreelancer ? (
+                      <>
+                        <Link 
+                          to={`/profile/${review.reviewer_id}`}
+                          className="font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
+                        >
+                          {review.reviewer_name || 'Customer'}
+                        </Link>
+                        <div className="flex mt-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star 
+                              key={star}
+                              className={`h-4 w-4 ${
+                                star <= review.rating
+                                  ? 'text-yellow-500 fill-current'
+                                  : 'text-gray-300'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <h3 className="font-semibold text-gray-900 dark:text-white">
+                          For: {review.service_title || 'Service'}
+                        </h3>
+                        <div className="flex mt-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star 
+                              key={star}
+                              className={`h-4 w-4 ${
+                                star <= review.rating
+                                  ? 'text-yellow-500 fill-current'
+                                  : 'text-gray-300'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+                {review.comment && (
+                  <p className="text-gray-600 dark:text-gray-300 italic">"{review.comment}"</p>
+                )}
+                
+                {/* Add link to listing for customer testimonials */}
+                {!isFreelancer && review.listing_id && (
+                  <div className="mt-4 flex justify-end">
+                    <Link to={`/listings/${review.listing_id}`}>
+                      <Button size="sm" variant="outline" className="flex items-center gap-1">
+                        View Service
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-500 dark:text-gray-400">
+              {isFreelancer ? "No reviews yet." : "No testimonials yet."}
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-12 px-4 transition-all duration-300">
@@ -434,37 +566,8 @@ export default function UserProfilePage() {
             </>
           )}
           
-          {/* Testimonials Section */}
-          {activeSection === 'testimonials' && (
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-8 transition-all duration-300 hover:shadow-md">
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">Testimonials</h2>
-              
-              {testimonials.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {testimonials.map((testimonial, index) => (
-                    <div 
-                      key={testimonial.id}
-                      className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-6 transition-all duration-300 hover:shadow-md"
-                      style={{ animationDelay: `${0.1 * index}s` }}
-                    >
-                      <div className="flex items-start mb-4">
-                        <div className="text-3xl">{testimonial.avatar}</div>
-                        <div className="ml-4">
-                          <h3 className="font-semibold text-gray-900 dark:text-white">{testimonial.name}</h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">{testimonial.role}</p>
-                        </div>
-                      </div>
-                      <p className="text-gray-600 dark:text-gray-300 italic">"{testimonial.text}"</p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <p className="text-gray-500 dark:text-gray-400">No testimonials yet.</p>
-                </div>
-              )}
-            </div>
-          )}
+          {/* Testimonials Section - Update to use the new function */}
+          {activeSection === 'testimonials' && renderTestimonialsSection()}
         </div>
       </div>
       

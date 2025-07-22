@@ -1,26 +1,33 @@
 from pydantic import BaseModel
 from typing import Optional
+from datetime import datetime
 
+# Base profile schema with common properties
 class ProfileBase(BaseModel):
-    full_name: str  # Note: Using snake_case here
+    full_name: str
     bio: Optional[str] = None
     location: str
-    phone: Optional[str] = None  # Changed to Optional to allow None values
-    average_rating: Optional[float] = None  # Add optional average_rating field
+    phone: Optional[str] = None  # Make phone optional to handle NULL values
 
+# For creating a profile
 class ProfileCreate(ProfileBase):
     pass
 
+# For updating a profile
 class ProfileUpdate(BaseModel):
     full_name: Optional[str] = None
     bio: Optional[str] = None
     location: Optional[str] = None
-    phone: Optional[str] = None  # Add optional phone field for updates
-    average_rating: Optional[float] = None  # Add optional average_rating field for updates
+    phone: Optional[str] = None  # Keep phone optional
 
+# For returning profile data
 class ProfileOut(ProfileBase):
     id: int
     user_id: int
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    average_rating: Optional[float] = None
 
     class Config:
+        from_attributes = True
         from_attributes = True  # Updated from orm_mode=True which is deprecated
