@@ -166,7 +166,7 @@ export default function ServiceBrowsingPage() {
                   <div
                     key={service.id}
                     onClick={() => handleServiceClick(service.id)}
-                    className="group relative bg-white dark:bg-gray-800 rounded-[10px] shadow transition-all duration-200 border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:scale-[1.015] cursor-pointer flex flex-col"
+                    className="group relative bg-white dark:bg-gray-800 rounded-[10px] shadow transition-all duration-200 border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:scale-[1.015] cursor-pointer flex flex-col w-80 max-w-xs"
                     style={{
                       animation: 'fadeInUp 0.25s ease-in both',
                       animationDelay: `${index * 0.05}s`
