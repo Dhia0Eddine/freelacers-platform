@@ -107,40 +107,60 @@ export default function ServiceBrowsingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredServices.length > 0 ? (
               filteredServices.map((service, index) => (
-                <div 
+                <div
                   key={service.id}
                   onClick={() => handleServiceClick(service.id)}
-                  className={`group relative rounded-xl shadow-lg overflow-hidden bg-white dark:bg-gray-800 hover:shadow-2xl transition-all duration-300 cursor-pointer animate-fadeIn border border-gray-100 dark:border-gray-700`}
-                  style={{ animationDelay: `${index * 0.1}s` }}
+                  className="group relative bg-white dark:bg-gray-800 rounded-[10px] shadow transition-all duration-200 border border-gray-100 dark:border-gray-700 hover:shadow-lg hover:scale-[1.015] cursor-pointer flex flex-col"
+                  style={{
+                    animation: 'fadeInUp 0.25s ease-in both',
+                    animationDelay: `${index * 0.05}s`
+                  }}
                 >
-                  {/* Rectangle photo or fallback */}
-                  <div className="relative w-full h-40 bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+                  {/* Top Zone: Image & Status */}
+                  <div className="relative w-full h-36 flex items-center justify-center overflow-hidden rounded-t-[10px] bg-gray-100 dark:bg-gray-700 border-b border-gray-100 dark:border-gray-700">
                     {service.photo ? (
                       <img
                         src={service.photo.startsWith('http') ? service.photo : `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${service.photo}`}
                         alt={service.name}
-                        className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                        className="object-cover w-full h-full transition-transform duration-200 group-hover:scale-105"
+                        style={{ borderTopLeftRadius: 10, borderTopRightRadius: 10 }}
                       />
                     ) : (
-                      <span className="text-6xl select-none">{serviceIcons[index % serviceIcons.length]}</span>
+                      <span className="text-4xl select-none">{serviceIcons[index % serviceIcons.length]}</span>
                     )}
-                    <span className="absolute top-3 right-3 bg-white/80 dark:bg-gray-900/70 text-xs font-medium px-3 py-1 rounded shadow">
-                      Category ID: {service.category_id}
+                    {/* Example status badge */}
+                    <span className="absolute top-3 left-3 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs font-medium px-3 py-1 rounded-full shadow-sm">
+                      Available
                     </span>
                   </div>
-                  <div className="p-6 flex flex-col h-[180px]">
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                      {service.name}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3 flex-1">
+                  {/* Main Zone */}
+                  <div className="flex-1 flex flex-col px-6 pt-4 pb-2">
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="font-semibold text-[18px] text-gray-900 dark:text-white truncate">
+                        {service.name}
+                      </h3>
+                      {/* Optionally, a price or rating badge could go here */}
+                    </div>
+                    <p className="text-[15px] text-gray-600 dark:text-gray-300 mb-2 truncate">
                       {service.description || "No description available."}
                     </p>
-                    <div className="flex justify-end mt-2">
-                      <div className="flex items-center text-blue-600 dark:text-blue-400 font-medium group">
-                        <span>View Listings</span>
-                        <ArrowRightIcon className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
-                      </div>
-                    </div>
+                  </div>
+                  {/* Bottom Zone */}
+                  <div className="flex items-center justify-between px-6 pb-4 pt-2">
+                    <span className="text-xs text-gray-400 dark:text-gray-500">
+                      Category ID: {service.category_id}
+                    </span>
+                    <Button
+                      variant="outline"
+                      className="rounded-md px-4 py-2 text-sm font-medium border-blue-600 text-blue-700 dark:text-blue-300 border hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
+                      tabIndex={-1}
+                      onClick={e => {
+                        e.stopPropagation();
+                        handleServiceClick(service.id);
+                      }}
+                    >
+                      View Details
+                    </Button>
                   </div>
                 </div>
               ))
@@ -152,16 +172,14 @@ export default function ServiceBrowsingPage() {
           </div>
         )}
       </div>
-      
       {/* CSS Animations */}
-      <style >{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
+      <style>{`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(12px);}
+          to { opacity: 1; transform: translateY(0);}
         }
-        
         .animate-fadeIn {
-          animation: fadeIn 0.6s ease-out forwards;
+          animation: fadeInUp 0.4s cubic-bezier(.4,0,.2,1) both;
         }
       `}</style>
     </div>

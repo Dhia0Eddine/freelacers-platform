@@ -1,6 +1,6 @@
 # app/routers/service.py
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from app.models.service import Service
 from app.schemas.service import ServiceCreate, ServiceUpdate, ServiceOut
@@ -10,17 +10,34 @@ from app.dependencies.db import get_db
 router = APIRouter(prefix="/services", tags=["Services"])
 
 @router.post("/", response_model=ServiceOut, status_code=status.HTTP_201_CREATED)
-def create_service(data: ServiceCreate, db: Session = Depends(get_db)):
+async def create_service(
+    name: str = Form(...),
+    category_id: int = Form(...),
+    description: str = Form(None),
+    photo: UploadFile = File(None),
+    db: Session = Depends(get_db)
+):
     # Ensure category exists
-    category = db.query(Category).get(data.category_id)
+    category = db.query(Category).get(category_id)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
-    
+
+    photo_path = None
+    if photo:
+        import os, shutil
+        upload_dir = "static/service_pics"
+        os.makedirs(upload_dir, exist_ok=True)
+        filename = f"{name.replace(' ', '_')}_{photo.filename}"
+        file_path = os.path.join(upload_dir, filename)
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(photo.file, buffer)
+        photo_path = f"/static/service_pics/{filename}"
+
     service = Service(
-        name=data.name,
-        description=data.description,
-        category_id=data.category_id,
-        photo=data.photo  # Add this line
+        name=name,
+        description=description,
+        category_id=category_id,
+        photo=photo_path
     )
     db.add(service)
     db.commit()
@@ -39,23 +56,38 @@ def get_service(service_id: int, db: Session = Depends(get_db)):
     return service
 
 @router.put("/{service_id}", response_model=ServiceOut)
-def update_service(service_id: int, data: ServiceUpdate, db: Session = Depends(get_db)):
+async def update_service(
+    service_id: int,
+    name: str = Form(None),
+    category_id: int = Form(None),
+    description: str = Form(None),
+    photo: UploadFile = File(None),
+    db: Session = Depends(get_db)
+):
     service = db.query(Service).get(service_id)
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
-    
-    if data.category_id is not None:
-        category = db.query(Category).get(data.category_id)
+
+    if category_id is not None:
+        category = db.query(Category).get(category_id)
         if not category:
             raise HTTPException(status_code=404, detail="Category not found")
-        service.category_id = data.category_id
+        service.category_id = category_id
 
-    if data.name is not None:
-        service.name = data.name
-    if data.description is not None:
-        service.description = data.description
-    if data.photo is not None:
-        service.photo = data.photo  # Add this line
+    if name is not None:
+        service.name = name
+    if description is not None:
+        service.description = description
+
+    if photo:
+        import os, shutil
+        upload_dir = "static/service_pics"
+        os.makedirs(upload_dir, exist_ok=True)
+        filename = f"{service.name.replace(' ', '_')}_{photo.filename}"
+        file_path = os.path.join(upload_dir, filename)
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(photo.file, buffer)
+        service.photo = f"/static/service_pics/{filename}"
 
     db.commit()
     db.refresh(service)

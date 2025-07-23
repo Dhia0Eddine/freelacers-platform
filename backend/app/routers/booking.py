@@ -29,10 +29,19 @@ def create_booking(data: BookingCreate, db: Session = Depends(get_db), current_u
     if request.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Cannot book this quote")
 
+    # Get the listing_id from the quote or request
+    listing_id = getattr(quote, "listing_id", None)
+    if not listing_id:
+        # fallback: try to get from request if not present on quote
+        listing_id = getattr(request, "listing_id", None)
+    if not listing_id:
+        raise HTTPException(status_code=400, detail="Listing ID not found for booking")
+
     booking = Booking(
         quote_id=quote.id,
         customer_id=current_user.id,
         provider_id=quote.provider_id,
+        listing_id=listing_id,
         scheduled_time=data.scheduled_time,
         status="scheduled"
     )

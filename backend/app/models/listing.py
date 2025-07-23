@@ -19,6 +19,7 @@ class Listing(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=True)
 
     user = relationship("User", back_populates="listings")
-    service = relationship("Service", back_populates="listings")
-    quotes = relationship("Quote", back_populates="listing", cascade="all, delete")
-    requests = relationship("Request", back_populates="listing", cascade="all, delete")
+    service = relationship("Service", back_populates="listings", passive_deletes=True)
+    quotes = relationship("Quote", back_populates="listing", cascade="all, delete-orphan", passive_deletes=True)
+    requests = relationship("Request", back_populates="listing", cascade="all, delete-orphan", passive_deletes=True)
+    bookings = relationship("Booking", back_populates="listing", cascade="all, delete-orphan", passive_deletes=True)

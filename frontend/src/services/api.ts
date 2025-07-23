@@ -855,4 +855,32 @@ export const dashboardService = {
   }
 };
 
+// Admin related API calls
+export const adminService = {
+  fetchAllUsers: async () => {
+    const res = await api.get('/admin/users');
+    return res.data;
+  },
+  deleteUser: async (userId: number) => {
+    return await api.delete(`/admin/users/${userId}`);
+  },
+  deactivateUser: async (userId: number) => {
+    return await api.patch(`/admin/users/${userId}/deactivate`);
+  },
+  fetchAllListings: async () => {
+    const res = await api.get('/admin/listings');
+    return res.data;
+  },
+  deleteListing: async (listingId: number) => {
+    return await api.delete(`/admin/listings/${listingId}`);
+  },
+  fetchAllRequests: async () => {
+    const res = await api.get('/admin/requests');
+    return res.data;
+  },
+  deleteRequest: async (requestId: number) => {
+    return await api.delete(`/admin/requests/${requestId}`);
+  },
+};
+
 export default api;

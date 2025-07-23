@@ -18,6 +18,7 @@ class Booking(Base, TimestampMixin):
     quote_id = Column(Integer, ForeignKey("quotes.id", ondelete="CASCADE"), nullable=False)
     customer_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     provider_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    listing_id = Column(Integer, ForeignKey("listings.id", ondelete="CASCADE"), nullable=False)
     scheduled_time = Column(DateTime, nullable=False)
     status = Column(Enum(BookingStatus), default=BookingStatus.scheduled)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -28,3 +29,4 @@ class Booking(Base, TimestampMixin):
     provider = relationship("User", foreign_keys=[provider_id], back_populates="bookings_as_provider")
     review = relationship("Review", uselist=False, back_populates="booking")
     payment = relationship("Payment", uselist=False, back_populates="booking")
+    listing = relationship("Listing", back_populates="bookings")

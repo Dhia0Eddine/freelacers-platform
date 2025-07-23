@@ -9,6 +9,8 @@ os.makedirs("static/uploads/profile_pics", exist_ok=True)
 
 from fastapi.staticfiles import StaticFiles
 from app.routers import auth, profile, category, service, listing, request, booking, quote, review, payment, dashboard, user
+from app.routers import admin  # Add this import
+
 app = FastAPI()
 origins = [
     "http://localhost:5173",
@@ -36,4 +38,5 @@ app.include_router(quote.router)
 app.include_router(review.router)
 app.include_router(payment.router)
 app.include_router(dashboard.router)
-app.include_router(user.router)  # Add the user router
+app.include_router(user.router)
+app.include_router(admin.router)  # Add this line

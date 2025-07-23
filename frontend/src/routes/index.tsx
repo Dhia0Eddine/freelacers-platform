@@ -20,6 +20,15 @@ import QuoteDetailPage from "../pages/QuoteDetailPage";
 import BookingDetailPage from "../pages/BookingDetailPage";
 import AboutPage from "../pages/AboutPage";
 import EditListingPage from "../pages/EditListingPage";
+import AdminDashboard from "../pages/admin/dashboard";
+import AdminUsersPage from "../pages/admin/users";
+import AdminListingsPage from "../pages/admin/listings";
+import AdminRequestsPage from "../pages/admin/requests";
+import AdminServicesPage from "../pages/admin/services";
+import AdminCategoriesPage from "../pages/admin/categories";
+import NotFoundPage from "../pages/NotFoundPage";
+
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -44,6 +53,14 @@ export const router = createBrowserRouter([
       { path: "my-bookings/:bookingId", element: <BookingDetailPage /> },
       { path: "about", element: <AboutPage /> },
       { path: "listing/edit/:listingId", element: <EditListingPage /> },
+
+      { path: "admin/dashboard", element: <AdminDashboard /> },
+      { path: "admin/users", element: <AdminUsersPage /> },
+      { path: "admin/listings", element: <AdminListingsPage /> },
+      { path: "admin/requests", element: <AdminRequestsPage /> },
+      { path: "admin/services", element: <AdminServicesPage /> },
+      { path: "admin/categories", element: <AdminCategoriesPage /> },
+      { path: "*", element: <NotFoundPage /> }, // 404 fallback route
     ],
   },
 ])
