@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 
 from app.dependencies.db import get_db
 from app.utils.auth import get_current_user
@@ -8,7 +8,7 @@ from app.models.user import User, UserRole
 from app.models.listing import Listing
 from app.models.request import Request as RequestModel
 from app.models.review import Review
-from app.schemas.user import UserOut
+from app.schemas.user import UserOut, UserStatusUpdate
 from app.schemas.listing import ListingOut
 from app.schemas.request import RequestOut
 from app.schemas.review import ReviewOut
@@ -22,8 +22,11 @@ router = APIRouter(prefix="/admin", tags=["Admin"])
 
 # USERS
 @router.get("/users", response_model=List[UserOut])
-def get_all_users(db: Session = Depends(get_db), _: User = Depends(admin_required)):
-    return db.query(User).all()
+def get_all_users(status: Optional[str] = None, db: Session = Depends(get_db), _: User = Depends(admin_required)):
+    query = db.query(User)
+    if status:
+        query = query.filter(User.status == status)
+    return query.all()
 
 @router.delete("/users/{user_id}", status_code=204)
 def delete_user(user_id: int, db: Session = Depends(get_db), _: User = Depends(admin_required)):
@@ -40,6 +43,16 @@ def deactivate_user(user_id: int, db: Session = Depends(get_db), _: User = Depen
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     user.role = "deactivated"
+    db.commit()
+    db.refresh(user)
+    return user
+
+@router.patch("/users/{user_id}/status", response_model=UserOut)
+def update_user_status(user_id: int, update: UserStatusUpdate, db: Session = Depends(get_db), _: User = Depends(admin_required)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    user.status = update.status
     db.commit()
     db.refresh(user)
     return user

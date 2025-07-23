@@ -8,9 +8,14 @@ class UserRole(str, Enum):
     provider = "provider"
     admin = "admin"
 
+class UserStatus(str, Enum):
+    enabled = "enabled"
+    disabled = "disabled"
+
 class UserBase(BaseModel):
     email: EmailStr
     role: UserRole
+    status: UserStatus = UserStatus.enabled
 
 class UserCreate(UserBase):
     password: str  # plain text input, hash on server
@@ -22,7 +27,7 @@ class UserOut(UserBase):
 
     class Config:
         from_attributes = True
-        # This allows Pydantic to read data as dictionaries from ORM models
-        # and convert them to Pydantic models.
-        # It is useful when you want to serialize SQLAlchemy models directly.
-        
+
+class UserStatusUpdate(BaseModel):
+    status: UserStatus
+

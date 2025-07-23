@@ -9,6 +9,10 @@ class UserRole(str, enum.Enum):
     provider = "provider"
     admin = "admin"
 
+class UserStatus(str, enum.Enum):
+    enabled = "enabled"
+    disabled = "disabled"
+
 class User(Base, TimestampMixin):
     __tablename__ = "users"
 
@@ -16,6 +20,7 @@ class User(Base, TimestampMixin):
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     role = Column(Enum(UserRole), nullable=False)
+    status = Column(Enum(UserStatus), nullable=False, default=UserStatus.enabled, server_default="enabled")
 
     # One-to-one
     profile = relationship("Profile", uselist=False, back_populates="user", cascade="all, delete")

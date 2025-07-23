@@ -30,6 +30,8 @@ def login_user(form: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     user = db.query(User).filter(User.email == form.username).first()
     if not user or not verify_password(form.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
+    if user.status != "enabled":
+        raise HTTPException(status_code=403, detail="Your account is disabled. Please contact support.")
     token = create_access_token({"sub": str(user.id)})
     return {"access_token": token, "token_type": "bearer"}
 
@@ -41,4 +43,4 @@ def get_me(current_user: User = Depends(get_current_user)):
 def delete_me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     db.delete(current_user)
     db.commit()
-    return None 
+    return None

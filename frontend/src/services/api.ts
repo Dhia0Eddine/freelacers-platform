@@ -889,6 +889,9 @@ export const adminService = {
   deleteReview: async (reviewId: number) => {
     return await api.delete(`/admin/reviews/${reviewId}`);
   },
+  updateUserStatus: async (userId: number, status: string) => {
+    return await api.patch(`/admin/users/${userId}/status`, { status });
+  },
 };
 
 export default api;
