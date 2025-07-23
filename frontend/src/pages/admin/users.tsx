@@ -5,6 +5,7 @@ import { adminService } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
+import { ArrowLeft } from "lucide-react";
 
 export default function AdminUsersPage() {
   const { userRole } = useAuthContext();
@@ -28,6 +29,14 @@ export default function AdminUsersPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <Button
+        variant="ghost"
+        className="mb-4 flex items-center"
+        onClick={() => navigate(-1)}
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Go Back
+      </Button>
       <h1 className="text-2xl font-bold mb-6">All Users</h1>
       <Table>
         <TableHeader>
@@ -69,14 +78,7 @@ export default function AdminUsersPage() {
                   >
                     Delete
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="ml-2"
-                    onClick={() => adminService.deactivateUser(user.id).then(() => setUsers(users.map(u => u.id === user.id ? { ...u, is_active: false } : u)))}
-                  >
-                    Deactivate
-                  </Button>
+   
                 </TableCell>
               </TableRow>
             ))

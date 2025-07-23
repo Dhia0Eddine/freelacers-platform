@@ -22,7 +22,7 @@ export const HeroHeader = () => {
     const [menuState, setMenuState] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
-    const { isAuthenticated, logout } = useAuthContext();
+    const { isAuthenticated, logout, userRole } = useAuthContext();
     const { theme, toggleTheme } = useTheme();
 
     useEffect(() => {
@@ -104,7 +104,7 @@ export const HeroHeader = () => {
                             </Button>
                             
                             {isAuthenticated ? (
-                                /* Profile Menu */
+                                /* Profile/Dashboard Menu */
                                 <div className="relative">
                                     <Button
                                         variant="ghost"
@@ -118,21 +118,34 @@ export const HeroHeader = () => {
                                         <div className="bg-gradient-to-r from-blue-500 to-blue-700 rounded-full p-1">
                                             <User className="text-white size-5" />
                                         </div>
-                                        <span className="text-gray-700 dark:text-gray-200">Profile</span>
+                                        <span className="text-gray-700 dark:text-gray-200">
+                                            {userRole === 'admin' ? 'Dashboard' : 'Profile'}
+                                        </span>
                                         <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${profileDropdownOpen ? 'rotate-180' : ''}`} />
                                     </Button>
                                     
                                     {/* Dropdown Menu */}
                                     {profileDropdownOpen && (
                                         <div className="absolute right-0 mt-2 w-48 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg py-2 z-50 animate-fadeIn">
-                                            <Link 
-                                                to="/profile/me" 
-                                                className="flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                                onClick={() => setProfileDropdownOpen(false)}
-                                            >
-                                                <User className="w-4 h-4" />
-                                                <span>My Profile</span>
-                                            </Link>
+                                            {userRole === 'admin' ? (
+                                                <Link 
+                                                    to="/admin/dashboard" 
+                                                    className="flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                    onClick={() => setProfileDropdownOpen(false)}
+                                                >
+                                                    <User className="w-4 h-4" />
+                                                    <span>Dashboard</span>
+                                                </Link>
+                                            ) : (
+                                                <Link 
+                                                    to="/profile/me" 
+                                                    className="flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                    onClick={() => setProfileDropdownOpen(false)}
+                                                >
+                                                    <User className="w-4 h-4" />
+                                                    <span>My Profile</span>
+                                                </Link>
+                                            )}
                                             <Link 
                                                 to="/settings" 
                                                 className="flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -234,14 +247,25 @@ export const HeroHeader = () => {
                             
                             {isAuthenticated ? (
                                 <div className="space-y-3">
-                                    <Link 
-                                        to="/profile" 
-                                        onClick={() => setMenuState(false)}
-                                        className="flex items-center gap-3 text-gray-700 dark:text-gray-200"
-                                    >
-                                        <User className="w-5 h-5" />
-                                        <span>My Profile</span>
-                                    </Link>
+                                    {userRole === 'admin' ? (
+                                        <Link 
+                                            to="/admin/dashboard" 
+                                            onClick={() => setMenuState(false)}
+                                            className="flex items-center gap-3 text-gray-700 dark:text-gray-200"
+                                        >
+                                            <User className="w-5 h-5" />
+                                            <span>Dashboard</span>
+                                        </Link>
+                                    ) : (
+                                        <Link 
+                                            to="/profile" 
+                                            onClick={() => setMenuState(false)}
+                                            className="flex items-center gap-3 text-gray-700 dark:text-gray-200"
+                                        >
+                                            <User className="w-5 h-5" />
+                                            <span>My Profile</span>
+                                        </Link>
+                                    )}
                                     <Link 
                                         to="/settings" 
                                         onClick={() => setMenuState(false)}

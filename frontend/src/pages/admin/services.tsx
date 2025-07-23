@@ -6,6 +6,7 @@ import { serviceService } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ArrowLeft } from "lucide-react";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -88,6 +89,14 @@ export default function AdminServicesPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <Button
+        variant="ghost"
+        className="mb-4 flex items-center"
+        onClick={() => navigate(-1)}
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Go Back
+      </Button>
       <h1 className="text-2xl font-bold mb-6">Manage Services</h1>
       <div className="mb-4 flex gap-2 items-center">
         <Input

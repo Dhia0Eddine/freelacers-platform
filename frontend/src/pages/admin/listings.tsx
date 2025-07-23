@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { adminService } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ArrowLeft } from "lucide-react";
 
 export default function AdminListingsPage() {
   const { userRole } = useAuthContext();
@@ -21,6 +22,14 @@ export default function AdminListingsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <Button
+        variant="ghost"
+        className="mb-4 flex items-center"
+        onClick={() => navigate(-1)}
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Go Back
+      </Button>
       <h1 className="text-2xl font-bold mb-6">All Listings</h1>
       <Table>
         <TableHeader>
