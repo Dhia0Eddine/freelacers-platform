@@ -27,7 +27,7 @@ import AdminRequestsPage from "../pages/admin/requests";
 import AdminServicesPage from "../pages/admin/services";
 import AdminCategoriesPage from "../pages/admin/categories";
 import NotFoundPage from "../pages/NotFoundPage";
-
+import AdminReviewsPage from "../pages/admin/reviews"; // Assuming you have an AdminReviewsPage component
 
 export const router = createBrowserRouter([
   {
@@ -60,6 +60,7 @@ export const router = createBrowserRouter([
       { path: "admin/requests", element: <AdminRequestsPage /> },
       { path: "admin/services", element: <AdminServicesPage /> },
       { path: "admin/categories", element: <AdminCategoriesPage /> },
+      {path: "admin/reviews", element: <AdminReviewsPage />}, // Assuming you have an AdminReviewsPage component
       { path: "*", element: <NotFoundPage /> }, // 404 fallback route
     ],
   },

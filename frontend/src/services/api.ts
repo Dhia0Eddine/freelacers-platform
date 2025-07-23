@@ -881,6 +881,14 @@ export const adminService = {
   deleteRequest: async (requestId: number) => {
     return await api.delete(`/admin/requests/${requestId}`);
   },
+  // --- Add these for reviews ---
+  fetchAllReviews: async () => {
+    const res = await api.get('/admin/reviews');
+    return res.data;
+  },
+  deleteReview: async (reviewId: number) => {
+    return await api.delete(`/admin/reviews/${reviewId}`);
+  },
 };
 
 export default api;

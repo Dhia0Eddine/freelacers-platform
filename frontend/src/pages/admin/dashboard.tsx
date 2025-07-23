@@ -25,6 +25,7 @@ export default function AdminDashboard() {
             <Button onClick={() => navigate("/admin/requests")}>Manage Requests</Button>
             <Button onClick={() => navigate("/admin/services")}>Manage Services</Button>
             <Button onClick={() => navigate("/admin/categories")}>Manage Categories</Button>
+            <Button onClick={() => navigate("/admin/reviews")}>Manage Reviews</Button>
           </div>
         </CardContent>
       </Card>
