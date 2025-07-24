@@ -13,7 +13,6 @@ const Logo = () => (
 
 const menuItems = [
     { name: 'Home', href: '/' },
-    { name: 'Listings', href: '/listings' },
     { name: 'Services', href: '/services' },
     { name: 'About', href: '/about' },
 ];

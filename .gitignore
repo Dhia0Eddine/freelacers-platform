@@ -49,3 +49,9 @@ Thumbs.db
 *.iml
 *.bak
 *.tmp
+
+# Ignore uploaded pictures and static images
+frontend/public/static/
+backend/static/
+backend/static/service_pics/
+backend/static/profile_pics/

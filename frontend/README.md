@@ -1,69 +1,61 @@
-# React + TypeScript + Vite
+# Freelance Platform Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the frontend for the Freelance Platform, built with React, TypeScript, and Vite. It provides a modern, responsive interface for customers, providers, and admins to interact with the platform.
 
-Currently, two official plugins are available:
+## Structure
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **src/**
+  - **components/**: Reusable UI components (cards, forms, navigation, modals, etc.)
+  - **context/**: React context providers for authentication and theme.
+  - **pages/**: Main route pages (Home, Listings, Profile, Dashboard, Admin, etc.)
+  - **services/**: API service modules for backend communication.
+  - **styles/**: Global and custom CSS files.
+  - **routes/**: App routing configuration.
+  - **layout/**: App layout and header/footer components.
+  - **config.ts**: Environment and API configuration.
 
-## Expanding the ESLint configuration
+## Key Features
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Authentication**: JWT-based login/register, role-based access (customer, provider, admin).
+- **Service Marketplace**: Browse, search, and filter services and listings.
+- **Profile Management**: Edit profile, upload profile picture, view reviews.
+- **Booking & Requests**: Request services, receive quotes, book and review providers.
+- **Admin Dashboard**: Manage users, listings, requests, services, categories, and reviews.
+- **Responsive Design**: Mobile-friendly layouts and navigation.
+- **Modern UI**: Uses Tailwind CSS and Lucide icons for a clean look.
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Getting Started
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+1. Install dependencies:
+   ```
+   npm install
+   ```
+2. Start the development server:
+   ```
+   npm run dev
+   ```
+3. The app will run at `http://localhost:5173` by default.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Environment
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- Requires a running backend API (see backend README).
+- API URL is configured via `VITE_API_URL` in `.env`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Customization
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- Update styles in `src/styles/` and `src/index.css`.
+- Add new pages in `src/pages/`.
+- Extend API services in `src/services/api.ts`.
+
+## Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run lint` - Run ESLint
+
+## Notes
+
+- Static images and uploads are ignored via `.gitignore`.
+- For advanced ESLint config, see the comments in this README and `eslint.config.js`.
+
+---
