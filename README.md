@@ -1,161 +1,315 @@
 # Freelance Platform
 
-A modern service marketplace platform connecting customers with skilled providers for home services, tech help, tutoring, and more. Built with FastAPI (backend) and React + TypeScript (frontend).
+> A modern service marketplace connecting customers with skilled service providers across home services, technical support, tutoring, and more.
+
+[![Tech Stack](https://img.shields.io/badge/FastAPI-Backend-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![Tech Stack](https://img.shields.io/badge/React-Frontend-61DAFB?style=flat-square&logo=react)](https://reactjs.org/)
+[![Tech Stack](https://img.shields.io/badge/TypeScript-Language-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Tech Stack](https://img.shields.io/badge/PostgreSQL-Database-336791?style=flat-square&logo=postgresql)](https://www.postgresql.org/)
 
 ---
 
-## Project Structure
+## 📋 Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [Project Structure](#project-structure)
+- [Screenshots](#screenshots)
+- [Quick Start](#quick-start)
+- [Installation](#installation)
+- [API Documentation](#api-documentation)
+- [Contributing](#contributing)
+- [Roadmap](#roadmap)
+- [License](#license)
+
+---
+
+## 🎯 Overview
+
+The Freelance Platform is a comprehensive service marketplace that bridges the gap between customers seeking services and skilled providers. Built with modern web technologies, it offers a seamless experience for service discovery, booking, and management.
+
+### Key Highlights
+- **Role-based Architecture**: Separate interfaces for customers, providers, and administrators
+- **Secure Transactions**: End-to-end secure booking and payment processing
+- **Quality Assurance**: Verified reviews and ratings system
+- **Scalable Design**: Built with microservices architecture for future growth
+
+---
+
+## ✨ Features
+
+### For Customers
+- 🔍 **Service Discovery**: Browse services by category with advanced filtering
+- 📝 **Custom Requests**: Submit detailed service requirements
+- 💰 **Quote Comparison**: Receive and compare multiple provider quotes
+- 📅 **Easy Booking**: Secure booking system with calendar integration
+- ⭐ **Review System**: Leave reviews for completed services
+
+### For Providers
+- 👤 **Professional Profiles**: Comprehensive profiles with average rating and reviews history 
+- 📊 **Dashboard**: Track performance and earnings, Respond to customer requests efficiently.
+
+
+### For Administrators
+- 🛠 **Content Management**: Manage categories, services, and users
+- 🔐 **User Management**: Role-based access control
+- 🛡 **Review Moderation**: Ensure quality and authenticity
+
+---
+
+## 🛠 Technology Stack
+
+### Backend
+- **Framework**: FastAPI (Python)
+- **Database**: PostgreSQL with SQLAlchemy ORM
+- **Authentication**: JWT with OAuth2
+- **Migration**: Alembic
+- **Documentation**: OpenAPI/Swagger
+
+### Frontend
+- **Framework**: React  with TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS
+- **Icons**: Lucide React
+- **State Management**: React Hooks
+
+### Infrastructure
+- **API Documentation**: FastAPI automatic docs
+- **File Storage**: Local storage with planned cloud migration
+- **Development**: Hot reload for both frontend and backend
+
+---
+
+## 📁 Project Structure
 
 ```
-freelacers platform/
-├── backend/      # FastAPI backend (API, database, auth, business logic)
-├── frontend/     # React + Vite frontend (UI, routing, API calls)
-├── .gitignore    # Ignore files/folders (including uploads/static)
-├── README.md     # Project documentation (this file)
+freelance-platform/
+├── 📂 backend/                 # FastAPI backend application
+│   ├── 📂 app/
+│   │   ├── 📂 api/            # API routes and endpoints
+│   │   ├── 📂 core/           # Core configuration and security
+│   │   ├── 📂 models/         # Database models
+│   │   ├── 📂 schemas/        # Pydantic schemas
+│   │   └── 📂 services/       # Business logic
+│   ├── 📂 alembic/            # Database migrations
+│   └── 📄 requirements.txt    # Python dependencies
+├── 📂 frontend/               # React frontend application
+│   ├── 📂 src/
+│   │   ├── 📂 components/     # Reusable components
+│   │   ├── 📂 pages/          # Page components
+│   │   ├── 📂 hooks/          # Custom React hooks
+│   │   ├── 📂 services/       # API service calls
+│   │   └── 📂 utils/          # Utility functions
+│   ├── 📂 public/
+│   │   └── 📂 static/         # Static assets and screenshots
+│   └── 📄 package.json        # Node.js dependencies
+├── 📄 .gitignore             # Git ignore rules
+└── 📄 README.md              # Project documentation
 ```
 
 ---
 
-## Backend (`backend/`)
-
-- **Framework:** FastAPI
-- **Database:** PostgreSQL (via SQLAlchemy ORM)
-- **Features:**
-  - User authentication (JWT, OAuth2)
-  - Profiles, services, categories, listings, requests, quotes, bookings, reviews
-  - Admin APIs for managing users, listings, requests, reviews
-  - Alembic for migrations
-- **Docs:** See [`backend/README.md`](./backend/README.md) for setup, API docs, and structure.
-
----
-
-## Frontend (`frontend/`)
-
-- **Framework:** React + TypeScript + Vite
-- **Features:**
-  - Modern UI with Tailwind CSS and Lucide icons
-  - Role-based dashboards (customer, provider, admin)
-  - Service/category navigation, search, filtering
-  - Profile management, booking, reviews
-  - Responsive and mobile-friendly
-- **Docs:** See [`frontend/README.md`](./frontend/README.md) for structure, setup, and customization.
-
----
-## Pictures
-
-Below are screenshots of the most important pages and functions of the platform:
+## 📸 Screenshots
 
 ### Home Page
+*Clean, modern interface with intuitive navigation*
+
 ![Home Page](frontend/public/static/screenshots/Screenshot%202025-07-24%20143435.png)
----
-![Home Page](frontend/public/static/screenshots/Screenshot%202025-07-24%20172207.png)
----
-- Hero section, category navigation, trending services, and call-to-action buttons.
----
-### Service Browsing
----
+
+### Service Discovery
+*Advanced filtering and search capabilities*
+
 ![Service Browsing](frontend/public/static/screenshots/Screenshot%202025-07-24%20172330.png)
----
-- Browse all services, filter by category, search, and view service cards.
----
-### Service Listings
----
+
+### Provider Listings
+*Detailed provider profiles with ratings and reviews*
+
 ![Service Listings](frontend/public/static/screenshots/Screenshot%202025-07-24%20172409.png)
----
-- Listings for a selected service, with filters, pagination, and provider info.
----
-### Listing Detail
----
-![Listing Detail](frontend/public/static/screenshots/Screenshot%202025-07-24%20172442.png)
----
-- Full details of a service listing, provider profile, reviews, and booking/request actions.
----
-### User Profile
----
-![User Profile](frontend/public/static/screenshots/Screenshot%202025-07-24%20172553.png)
----
-- Provider/customer profile, bio, contact info, listings, reviews, and testimonials.
----
-### Request & Quote Flow
----
-![Request & Quote](frontend/public/static/screenshots/Screenshot%202025-07-24%20173611.png)
----
-![Request & Quote](frontend/public/static/screenshots/Screenshot%202025-07-24%20173500.png)
----
-- Request service, receive quotes, accept/decline, and schedule booking.
----
-### Booking Flow
----
+
+### Booking System
+*Streamlined booking process with calendar integration*
+
 ![Booking Flow](frontend/public/static/screenshots/Screenshot%202025-07-24%20172647.png)
----
-- Booking form modal, calendar/time selection, booking confirmation.
----
+
 ### Admin Dashboard
----
+*Comprehensive admin panel for platform management*
+
 ![Admin Dashboard](frontend/public/static/screenshots/Screenshot%202025-07-24%20172746.png)
----
-- Manage users, listings, requests, services, categories, and reviews.
----
-### Review System
----
-![Review System](frontend/public/static/screenshots/Screenshot%202025-07-24%20172647.png)
----
-- Leave reviews for completed bookings, view ratings and comments.
----
-> All screenshots are located in `frontend/public/static/screenshots/`. Add new screenshots as features are updated.
+
+> 📁 All screenshots are available in `frontend/public/static/screenshots/`
 
 ---
 
-## Getting Started
+## 🚀 Quick Start
 
-### 1. Backend
+### Prerequisites
+- Python 3.8+
+- Node.js 16+
+- PostgreSQL 12+
+- Git
 
-- Install Python dependencies: `pip install -r requirements.txt`
-- Set up `.env` with DB and JWT secret
-- Run migrations: `alembic upgrade head`
-- Start server: `uvicorn app.main:app --reload`
-- API docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+### Development Setup
+```bash
+# Clone the repository
+git clone <repository-url>
+cd freelance-platform
 
-### 2. Frontend
+# Backend setup
+cd backend
+pip install -r requirements.txt
+cp .env.example .env  # Configure your environment
+alembic upgrade head
+uvicorn app.main:app --reload
 
-- Install Node dependencies: `npm install`
-- Start dev server: `npm run dev`
-- App runs at [http://localhost:5173](http://localhost:5173)
+# Frontend setup (new terminal)
+cd frontend
+npm install
+npm run dev
+```
 
----
-
-## Environment
-
-- Backend API URL is set in frontend `.env` as `VITE_API_URL`
-- Static uploads (profile/service pictures) are ignored via `.gitignore`
-
----
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make changes and commit
-4. Submit a pull request
-
----
-
-## License
-
-MIT (or specify your license)
+Access the application:
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:8000
+- **API Documentation**: http://localhost:8000/docs
 
 ---
 
-## Authors
+## 📦 Installation
 
-- Dhia0Eddine (and contributors)
+### Backend Installation
+
+1. **Environment Setup**
+   ```bash
+   cd backend
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
+
+2. **Database Configuration**
+   ```bash
+   # Create .env file with your database credentials
+   echo "DATABASE_URL=postgresql://user:password@localhost/dbname" > .env
+   echo "SECRET_KEY=your-secret-key-here" >> .env
+   ```
+
+3. **Database Migration**
+   ```bash
+   alembic upgrade head
+   ```
+
+4. **Start Backend Server**
+   ```bash
+   uvicorn app.main:app --reload 
+   ```
+
+### Frontend Installation
+
+1. **Dependencies**
+   ```bash
+   cd frontend
+   npm install
+   ```
+
+2. **Environment Configuration**
+   ```bash
+   echo "VITE_API_URL=http://localhost:8000" > .env
+   ```
+
+3. **Start Development Server**
+   ```bash
+   npm run dev
+   ```
 
 ---
 
-## Notes
+## 📚 API Documentation
 
-- For advanced linting, see `frontend/README.md` and `eslint.config.js`
-- For database migrations, see `backend/alembic/`
-- For API schemas, see `backend/app/schemas/`
+The platform provides comprehensive API documentation through FastAPI's automatic documentation system.
+
+- **Interactive Docs**: http://localhost:8000/docs (Swagger UI)
+- **Alternative Docs**: http://localhost:8000/redoc (ReDoc)
+- **OpenAPI Schema**: http://localhost:8000/openapi.json
+
+### Key API Endpoints
+- `POST /auth/login` - User authentication
+- `GET /services` - List all services
+- `POST /bookings` - Create new booking
+- `GET /users/profile` - Get user profile
+- `POST /reviews` - Submit service review
 
 ---
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
+
+### Development Guidelines
+- Follow existing code style and conventions
+- Write tests for new features
+- Update documentation as needed
+- Ensure all tests pass before submitting PR
+
+---
+
+## 🗺 Roadmap
+
+### Phase 1: Core Platform (✅ Completed)
+- [x] User authentication and profiles
+- [x] Service listings and discovery
+- [x] Booking system
+- [x] Review and rating system
+- [x] Admin dashboard
+
+### Phase 2: Enhanced Features (🚧 In Progress)
+- [ ] **Payment Integration**: Stripe/PayPal integration
+- [ ] **Real-time Notifications**: WebSocket-based updates
+- [ ] **Mobile App**: React Native applications
+- [ ] **Advanced Analytics**: Provider performance metrics
+
+### Phase 3: Advanced Features (📋 Planned)
+- [ ] **AI Matching**: Machine learning-based service recommendations
+- [ ] **Multi-language Support**: Internationalization with RTL support
+- [ ] **Live Chat**: Real-time messaging system
+- [ ] **Geolocation Services**: Location-based service discovery
+- [ ] **Dispute Resolution**: Built-in conflict resolution system
+
+---
+
+## 👨‍💻 Author
+
+**GUERFI Dhia Eddine**  
+*Artificial Intelligence student*
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🆘 Support
+
+If you encounter any issues or have questions:
+
+1. Check the [Issues](../../issues) page for existing solutions
+2. Create a new issue with detailed information
+3. Join our community discussions
+
+---
+
+<div align="center">
+
+**Built with ❤️ using FastAPI and React**
+
+[⭐ Star this repository](../../stargazers) | [🐛 Report Bug](../../issues) | [✨ Request Feature](../../issues)
+
+</div>
