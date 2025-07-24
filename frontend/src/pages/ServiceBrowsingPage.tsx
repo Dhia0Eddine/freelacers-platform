@@ -212,9 +212,7 @@ export default function ServiceBrowsingPage() {
                     </div>
                     {/* Bottom Zone */}
                     <div className="flex items-center justify-between px-6 pb-4 pt-2">
-                      <span className="text-xs text-gray-400 dark:text-gray-500">
-                        Category ID: {service.category_id}
-                      </span>
+                   
                       <Button
                         variant="outline"
                         className="rounded-md px-4 py-2 text-sm font-medium border-blue-600 text-blue-700 dark:text-blue-300 border hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
