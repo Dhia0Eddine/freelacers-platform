@@ -8,32 +8,32 @@ interface FAQ {
   answer: string;
 }
 
-export default function FAQSection() {
+export default function FAQSection({ t }: { t: any }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   
   const faqs: FAQ[] = [
     {
-      question: "How do I find freelancers for my project?",
+      question: t("faq_how_find_freelancers"),
       answer: "You can post a project request detailing your requirements, budget, and timeline. Our matching system will help connect you with qualified freelancers, or you can browse through profiles and invite specific freelancers to bid on your project."
     },
     {
-      question: "How does payment processing work?",
+      question: t("faq_how_payment_processing"),
       answer: "We use a secure escrow system. Funds are held safely until you approve the completed work. You can set up milestones for larger projects, releasing payment as each phase is completed to your satisfaction."
     },
     {
-      question: "What fees do freelancers pay?",
+      question: t("faq_fees_freelancers"),
       answer: "Freelancers pay a 5-10% service fee based on their lifetime earnings on the platform. The fee decreases as you earn more, rewarding long-term platform users with lower rates."
     },
     {
-      question: "Can I work with the same client long-term?",
+      question: t("faq_long_term_clients"),
       answer: "Absolutely! Many freelancers build long-term relationships with clients. After the initial project, you can set up ongoing contracts or retainer agreements through our platform to maintain the relationship."
     },
     {
-      question: "How do I handle disputes with clients or freelancers?",
+      question: t("faq_disputes"),
       answer: "We offer a mediation service for disputes. If an issue arises, both parties can request mediation through our support team, who will review communications, deliverables, and the original contract to help reach a fair resolution."
     },
     {
-      question: "Are there any guarantees for clients?",
+      question: t("faq_guarantees_clients"),
       answer: "We offer a satisfaction guarantee for clients. If work doesn't meet the agreed-upon requirements, you can request revisions. If issues persist, our dispute resolution team will help mediate a solution, which may include partial or full refunds when appropriate."
     },
   ];
@@ -46,9 +46,9 @@ export default function FAQSection() {
     <section className="py-24 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white transition-colors duration-500">
       <div className="container mx-auto px-4">
         <AnimatedGroup>
-          <h2 className="text-4xl font-bold text-center mb-4">Frequently Asked Questions</h2>
+          <h2 className="text-4xl font-bold text-center mb-4">{t("faq_title")}</h2>
           <p className="text-xl text-gray-600 dark:text-gray-400 text-center max-w-3xl mx-auto mb-16">
-            Find answers to common questions about our freelancing platform
+            {t("faq_subtitle")}
           </p>
         </AnimatedGroup>
 

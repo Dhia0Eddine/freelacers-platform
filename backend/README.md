@@ -41,7 +41,13 @@ This is the backend application for the Freelancers Platform, built using FastAP
 3. Install dependencies:
    ```bash
    pip install -r requirements.txt
+   # Add this if you see ImportError for email-validator:
+   pip install email-validator
+   # Add this if you see RuntimeError for python-multipart:
+   pip install python-multipart
    ```
+   > **Note:** The backend uses Pydantic's `EmailStr` type, which requires the `email-validator` package.
+   > **Note:** FastAPI form data (e.g. login, file uploads) requires the `python-multipart` package.
 
 4. Set up environment variables:
    Create a `.env` file in the `backend` directory:

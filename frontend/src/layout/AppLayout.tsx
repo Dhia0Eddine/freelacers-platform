@@ -16,7 +16,7 @@ export default function AppLayout() {
                 <div className="min-h-screen flex flex-col bg-white dark:bg-gray-950 text-gray-900 dark:text-white transition-colors duration-200">
                     <HeroHeader />
                     {/* Add pt-24 to create space for the fixed header */}
-                    <main className="flex-1 pt-24">
+                    <main className="flex-1 pt-18">
                         <Outlet />
                     </main>
                     <Footer />

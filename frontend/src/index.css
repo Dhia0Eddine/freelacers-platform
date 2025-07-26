@@ -1,5 +1,29 @@
+/* Add Google Fonts for Arabic (example: Tajawal) */
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Cairo:wght@400;700&display=swap');
+
 @import "tailwindcss";
 @import "tw-animate-css";
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/path-to-fonts/Inter.woff2') format('woff2');
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Merriweather';
+  src: url('/path-to-fonts/Merriweather.woff2') format('woff2');
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Fira Code';
+  src: url('/path-to-fonts/FiraCode.woff2') format('woff2');
+  font-weight: 400 700;
+  font-display: swap;
+}
 
 @custom-variant dark (&:is(.dark *));
 
@@ -42,27 +66,7 @@
   --font-sans: 'Inter', sans-serif;
   --font-serif: 'Merriweather', serif;
   --font-mono: 'Fira Code', monospace;
-}
-
-@font-face {
-  font-family: 'Inter';
-  src: url('/path-to-fonts/Inter.woff2') format('woff2');
-  font-weight: 400 700;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Merriweather';
-  src: url('/path-to-fonts/Merriweather.woff2') format('woff2');
-  font-weight: 400 700;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Fira Code';
-  src: url('/path-to-fonts/FiraCode.woff2') format('woff2');
-  font-weight: 400 700;
-  font-display: swap;
+  --font-arabic: 'Cairo';
 }
 
 :root {
@@ -144,4 +148,77 @@
     @apply bg-background text-foreground;
     font-family: var(--font-family);
   }
+  html[dir="rtl"] body {
+    font-family: var(--font-arabic) !important;
+  }
 }
+
+/* RTL support for summary table and UI elements */
+html[dir="rtl"] {
+  /* Navigation: menu/logo right, menu items RTL */
+  nav, .header, .navbar {
+    direction: rtl;
+    text-align: right;
+  }
+
+  /* Search bar: input and icon on the right */
+  input[type="search"], .search-bar, .search-input {
+    text-align: right;
+    direction: rtl;
+  }
+  .search-bar .icon, .search-input .icon {
+    right: 1rem;
+    left: auto;
+  }
+
+  /* Buttons/CTAs: right-aligned text, logical padding */
+  button, .btn, .cta {
+    text-align: right;
+    padding-inline-start: 1.5rem;
+    padding-inline-end: 1rem;
+  }
+
+  /* Directional icons: flip chevrons/arrows */
+  .icon-chevron-left, .icon-arrow-left {
+    transform: scaleX(-1);
+  }
+  .icon-chevron-right, .icon-arrow-right {
+    transform: scaleX(-1);
+  }
+
+  /* Cards/Galleries: RTL flow for slides/thumbnails */
+  .card-gallery, .slider, .carousel {
+    direction: rtl;
+  }
+
+  /* Forms: label right, input left, dir auto */
+  label {
+    text-align: right;
+    margin-inline-end: 0.5rem;
+  }
+  input, textarea, select {
+    direction: auto;
+    text-align: right;
+  }
+
+  /* Global spacing: use logical properties */
+  .ml-auto { margin-inline-start: auto !important; margin-inline-end: 0 !important; }
+  .mr-auto { margin-inline-end: auto !important; margin-inline-start: 0 !important; }
+  .pl-4 { padding-inline-start: 1rem !important; padding-inline-end: 0 !important; }
+  .pr-4 { padding-inline-end: 1rem !important; padding-inline-start: 0 !important; }
+}
+  .card-gallery, .slider, .carousel {
+    direction: rtl;
+  }
+
+  /* Forms: label right, input left, dir auto */
+  label {
+    text-align: right;
+    margin-inline-end: 0.5rem;
+  }
+  input, textarea, select {
+    direction: auto;
+    text-align: right;
+  }
+
+ 

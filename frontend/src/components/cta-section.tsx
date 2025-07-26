@@ -1,10 +1,12 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { AnimatedGroup } from '@/components/ui/animated-group';
 import { ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-export default function CTASection() {
+export default function CTASection({ t }: { t: any }) {
+  const navigate = useNavigate();
+
   return (
     <section className="relative py-24 overflow-hidden bg-gradient-to-br from-indigo-50 via-blue-50 to-white dark:from-slate-900 dark:via-gray-900 dark:to-black transition-colors duration-500">
       {/* Animated background elements */}
@@ -32,7 +34,7 @@ export default function CTASection() {
           }}
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900 dark:text-white leading-tight">
-            Ready to Join Thousands of <span className="text-indigo-600 dark:text-indigo-400">Freelancers</span> and <span className="text-blue-600 dark:text-blue-400">Clients</span>?
+            {t('cta_ready_to_join')}
           </h2>
         </AnimatedGroup>
         
@@ -54,7 +56,7 @@ export default function CTASection() {
           }}
         >
           <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 mb-12 max-w-3xl mx-auto">
-            Whether you're looking for help or offering your talent, our platform is built to support your journey.
+            {t('cta_platform_supports_journey')}
           </p>
         </AnimatedGroup>
         
@@ -88,11 +90,9 @@ export default function CTASection() {
             <Button 
               size="lg" 
               className="relative px-8 py-6 bg-gray-900 rounded-xl text-white font-semibold text-lg"
-              asChild
+              onClick={() => navigate('/signup')}
             >
-              <Link to="/signup">
-                Sign Up Now <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
+              {t('cta_sign_up_now')} <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
           
@@ -100,11 +100,9 @@ export default function CTASection() {
             variant="ghost" 
             size="lg" 
             className="px-8 py-6 rounded-xl text-gray-800 dark:text-gray-100 border border-gray-400 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-lg"
-            asChild
+            onClick={() => navigate('/learn-more')}
           >
-            <Link to="/learn-more">
-              Learn More
-            </Link>
+            {t('cta_learn_more')}
           </Button>
         </AnimatedGroup>
       </div>
@@ -130,3 +128,4 @@ export default function CTASection() {
     </section>
   );
 }
+  

@@ -26,59 +26,15 @@ import {
   Heart
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
-const features = [
-  {
-    name: "Verified Professionals",
-    description: "All service providers are screened and reviewed by users.",
-    icon: ShieldCheck,
-  },
-  {
-    name: "Quick Booking",
-    description: "Compare quotes and hire in just a few clicks.",
-    icon: Clock,
-  },
-  {
-    name: "Secure Payments",
-    description: "We hold the payment until your job is done right.",
-    icon: Lock,
-  },
-];
-
-// Function to get icon by category name
-function getCategoryIcon(name: string) {
-  switch (name) {
-    case "Home Services":
-      return Home;
-    case "Repair and technical support":
-      return Wrench;
-    case "Tech & IT":
-      return Laptop;
-    case "Tutoring & Education":
-      return GraduationCap;
-    case "Health & Wellness":
-      return Heart;
-    case "Events & Lifestyle":
-      return Users;
-    case "Writing & Translation":
-      return Pen;
-    case "Moving & Delivery":
-      return Briefcase;
-    case "Clothing & Tailoring":
-      return Sofa;
-    case "Automotive Services":
-      return Car;
-    default:
-      return Globe;
-  }
-}
-
-export default function FeaturesSection() {
+export default function FeaturesSection({ t }: { t: any }) {
   const [categories, setCategories] = useState<{ id: number; name: string; description?: string }[]>([]);
   const [services, setServices] = useState<{ id: number; name: string; category_id: number }[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [trendingCategories, setTrendingCategories] = useState<string[]>(["Home Services", "Tech Help", "Tutoring"]);
   const navigate = useNavigate();
+  const { i18n } = useTranslation();
 
   // Fetch categories and services from backend
   useEffect(() => {
@@ -108,19 +64,43 @@ export default function FeaturesSection() {
     ...categories.filter(c => !trendingCategories.includes(c.name)),
   ];
 
+  const features = [
+    {
+      name: t("verified_professionals"),
+      description: t("verified_professionals_desc"),
+      icon: ShieldCheck,
+    },
+    {
+      name: t("quick_booking"),
+      description: t("quick_booking_desc"),
+      icon: Clock,
+    },
+    {
+      name: t("secure_payments"),
+      description: t("secure_payments_desc"),
+      icon: Lock,
+    },
+  ];
+
   return (
     <section className="py-16 bg-white dark:bg-gray-900">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         {/* Headline & Subheadline */}
-        <div className="sm:text-center mb-10">
+        <div
+          className={cn(
+            "mb-10",
+            "sm:text-center",
+            i18n.language === "ar" ? "text-right" : ""
+          )}
+        >
           <h2 className="text-base font-semibold leading-7 text-indigo-600 dark:text-indigo-400">
-            Why choose our platform?
+            {t("why_choose_platform")}
           </h2>
           <p className="mt-2 text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
-            Find help. Book services. Get things done.
+            {t("find_help_book_services")}
           </p>
           <p className="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300">
-            Whether it's fixing a faucet, building a website, or tutoring your child — we make hiring easy, fast, and safe.
+            {t("easy_fast_safe")}
           </p>
         </div>
 
@@ -196,4 +176,32 @@ export default function FeaturesSection() {
       </div>
     </section>
   );
+}
+
+// Function to get icon by category name
+function getCategoryIcon(name: string) {
+  switch (name) {
+    case "Home Services":
+      return Home;
+    case "Repair and technical support":
+      return Wrench;
+    case "Tech & IT":
+      return Laptop;
+    case "Tutoring & Education":
+      return GraduationCap;
+    case "Health & Wellness":
+      return Heart;
+    case "Events & Lifestyle":
+      return Users;
+    case "Writing & Translation":
+      return Pen;
+    case "Moving & Delivery":
+      return Briefcase;
+    case "Clothing & Tailoring":
+      return Sofa;
+    case "Automotive Services":
+      return Car;
+    default:
+      return Globe;
+  }
 }
