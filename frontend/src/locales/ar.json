@@ -132,9 +132,6 @@
   "cta_learn_more": "اكتشف المزيد",
   "footer_platform_name": "منصة المستقلين",
   "footer_connecting_talent": "نربط المستقلين الموهوبين بالعملاء المميزين حول العالم.",
-  "footer_subscribe_newsletter": "اشترك في النشرة البريدية",
-  "footer_enter_email": "أدخل بريدك الإلكتروني",
-  "footer_subscribe": "اشتراك",
   "footer_for_clients": "للعملاء",
   "footer_find_freelancers": "ابحث عن مستقلين",
   "footer_post_project": "انشر مشروعًا",
@@ -155,6 +152,12 @@
   "footer_contact_us": "اتصل بنا",
   "footer_privacy_policy": "سياسة الخصوصية",
   "footer_terms_of_service": "شروط الاستخدام",
-  "footer_copyright": "© 2025 منصة المستقلين. جميع الحقوق محفوظة."
+  "footer_copyright": "© {{year}} منصة المستقلين. جميع الحقوق محفوظة.",
+
+  "footer_terms_of_service": "شروط الاستخدام",
+  "footer_copyright": "© 2025 منصة المستقلين. جميع الحقوق محفوظة.",
+  "footer_subscribe_newsletter": "اشترك في النشرة الإخبارية",
+  "footer_enter_email": "أدخل بريدك الإلكتروني",
+  "footer_subscribe": "اشترك"
 }
   

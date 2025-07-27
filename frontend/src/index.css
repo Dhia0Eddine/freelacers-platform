@@ -1,6 +1,6 @@
 /* Add Google Fonts for Arabic (example: Tajawal) */
-@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Cairo:wght@400;700&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -63,10 +63,7 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --font-sans: 'Inter', sans-serif;
-  --font-serif: 'Merriweather', serif;
-  --font-mono: 'Fira Code', monospace;
-  --font-arabic: 'Cairo';
+  /* Remove individual font variables from theme - handle differently */
 }
 
 :root {
@@ -102,7 +99,6 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  --font-family: var(--font-sans);
 }
 
 .dark {
@@ -137,7 +133,63 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
-  --font-family: var(--font-sans);
+}
+
+/* Font Family Setup - FIXED APPROACH */
+:root {
+  /* Default fonts for LTR (English) */
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: 'Merriweather', serif;
+  --font-mono: 'Fira Code', monospace;
+  --font-arabic: 'Cairo', sans-serif;
+}
+
+/* Base font setup - Mixed content support */
+body {
+  /* Use a font stack that handles both Arabic and English */
+  font-family: 'Inter', 'Cairo', sans-serif;
+}
+
+/* RTL specific font handling */
+html[dir="rtl"] body {
+  /* Prioritize Arabic font for RTL content */
+  font-family: 'Cairo', 'Inter', sans-serif;
+}
+
+/* Explicit classes for language-specific content */
+.font-english {
+  font-family: 'Inter', sans-serif !important;
+}
+
+.font-arabic {
+  font-family: 'Cairo', sans-serif !important;
+}
+
+.font-mixed {
+  /* For mixed Arabic/English content */
+  font-family: 'Cairo', 'Inter', sans-serif;
+}
+
+/* Tailwind font family utilities - Fixed */
+.font-sans {
+  font-family: var(--font-sans);
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Update font-sans based on direction */
+html[dir="rtl"] {
+  --font-sans: 'Cairo', 'Inter', sans-serif;
+}
+
+html[dir="ltr"] {
+  --font-sans: 'Inter', 'Cairo', sans-serif;
 }
 
 @layer base {
@@ -146,10 +198,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-family);
-  }
-  html[dir="rtl"] body {
-    font-family: var(--font-arabic) !important;
+    /* Font family is now handled above */
   }
 }
 
@@ -202,23 +251,20 @@ html[dir="rtl"] {
   }
 
   /* Global spacing: use logical properties */
-  .ml-auto { margin-inline-start: auto !important; margin-inline-end: 0 !important; }
-  .mr-auto { margin-inline-end: auto !important; margin-inline-start: 0 !important; }
-  .pl-4 { padding-inline-start: 1rem !important; padding-inline-end: 0 !important; }
-  .pr-4 { padding-inline-end: 1rem !important; padding-inline-start: 0 !important; }
+  .ml-auto { 
+    margin-inline-start: auto !important; 
+    margin-inline-end: 0 !important; 
+  }
+  .mr-auto { 
+    margin-inline-end: auto !important; 
+    margin-inline-start: 0 !important; 
+  }
+  .pl-4 { 
+    padding-inline-start: 1rem !important; 
+    padding-inline-end: 0 !important; 
+  }
+  .pr-4 { 
+    padding-inline-end: 1rem !important; 
+    padding-inline-start: 0 !important; 
+  }
 }
-  .card-gallery, .slider, .carousel {
-    direction: rtl;
-  }
-
-  /* Forms: label right, input left, dir auto */
-  label {
-    text-align: right;
-    margin-inline-end: 0.5rem;
-  }
-  input, textarea, select {
-    direction: auto;
-    text-align: right;
-  }
-
- 
