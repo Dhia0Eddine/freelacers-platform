@@ -1,3 +1,4 @@
+// main.tsx
 import './index.css'
 
 // src/main.tsx
@@ -11,11 +12,18 @@ import ErrorBoundary from './components/ErrorBoundary'
 import { I18nextProvider } from "react-i18next";
 import i18n from "./i18n.ts"; // You need to create this file (see below)
 
-// Add this component to handle the dir attribute
+// Add this component to handle the dir attribute and update on language change
 function DirectionSetter() {
   React.useEffect(() => {
-    document.documentElement.dir = i18n.language === "ar" ? "rtl" : "ltr";
-  }, [i18n.language]);
+    const setDir = () => {
+      document.documentElement.dir = i18n.language === "ar" ? "rtl" : "ltr";
+    };
+    setDir();
+    i18n.on("languageChanged", setDir);
+    return () => {
+      i18n.off("languageChanged", setDir);
+    };
+  }, []);
   return null;
 }
 

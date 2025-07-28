@@ -153,5 +153,16 @@
   "footer_copyright": "© {{year}} Freelance Hub. All rights reserved.",
   "footer_subscribe_newsletter": "Subscribe to our newsletter",
   "footer_enter_email": "Enter your email",
-  "footer_subscribe": "Subscribe"
+  "footer_subscribe": "Subscribe",
+  "i_am_joining_as": "I am joining as:",
+  "register_customer_desc": "I need to hire talent for projects",
+  "register_provider_desc": "I want to offer my services",
+  "creating_account": "Creating Account...",
+  "back_to_profile": "Back to Profile",
+  "edit_profile": "Edit Profile",
+  "update_personal_info": "Update Personal Information",
+  "bio": "Bio",
+  "save_changes": "Save Changes",
+  "profile_updated_successfully": "Profile updated successfully",
+  "profile_picture_upload": "Profile Picture Upload"
 }

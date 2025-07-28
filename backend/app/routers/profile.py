@@ -16,10 +16,11 @@ router = APIRouter(prefix="/profiles", tags=["Profiles"])
 async def upload_profile_picture(
     file: UploadFile = File(...),
 ):
-    # Save image to disk (for demo; in prod use S3 or similar)
-    ext = os.path.splitext(file.filename)[1]
-    if ext.lower() not in [".jpg", ".jpeg", ".png", ".gif"]:
-        raise HTTPException(status_code=400, detail="Invalid image type")
+    # Accept more image types and handle missing extension
+    ext = os.path.splitext(file.filename)[1].lower()
+    allowed_exts = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"]
+    if not ext or ext not in allowed_exts:
+        raise HTTPException(status_code=400, detail="Invalid image type. Allowed: jpg, jpeg, png, gif, webp, bmp")
     upload_dir = "static/uploads/profile_pics"
     os.makedirs(upload_dir, exist_ok=True)
     filename = f"profile_{uuid4().hex}{ext}"

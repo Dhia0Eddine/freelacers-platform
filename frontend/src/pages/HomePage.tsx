@@ -18,7 +18,7 @@ export default function HomePage() {
             {/* Pass t to sections if they need translation */}
             <HeroSection t={t} />
             <Example t={t} />
-            <HowItWorksSection t={t} />
+            <HowItWorksSection />
             <FAQSection t={t} />
             <CTASection t={t} />
             {/* You can add more sections or components here as needed */}

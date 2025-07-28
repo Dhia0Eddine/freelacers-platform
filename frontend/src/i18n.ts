@@ -3,6 +3,10 @@ import { initReactI18next } from "react-i18next";
 import en from "./locales/en.json";
 import ar from "./locales/ar.json";
 
+// Persist language selection across refreshes
+const savedLang = localStorage.getItem("lang");
+const initialLang = savedLang || "en";
+
 i18n
   .use(initReactI18next)
   .init({
@@ -10,10 +14,15 @@ i18n
       en: { translation: en },
       ar: { translation: ar },
     },
-    lng: "en",
+    lng: initialLang,
     fallbackLng: "en",
     interpolation: { escapeValue: false },
   });
+
+// Update localStorage when language changes
+i18n.on("languageChanged", (lng: string) => {
+  localStorage.setItem("lang", lng);
+});
 
 export default i18n;
 

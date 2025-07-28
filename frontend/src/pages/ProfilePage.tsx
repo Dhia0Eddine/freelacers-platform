@@ -321,7 +321,7 @@ export default function ProfilePage() {
       </div>
       
       {/* Main layout wrapper */}
-      <div className="flex pt-24">
+      <div className="flex pt-14">
         {/* Left Sidebar - Desktop */}
         <div className={`fixed top-0 left-0 h-full ${sidebarCollapsed ? 'w-20' : 'w-64'} bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 pt-24 hidden md:block shadow-sm`}>
           <div className="px-4 mb-8">
@@ -341,13 +341,13 @@ export default function ProfilePage() {
         
         {/* Main content */}
         <div className={`flex-1 transition-all duration-300 ${sidebarCollapsed ? 'md:ml-20' : 'md:ml-64'}`}>
-          <div className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+          <div className="max-w-6xl mx-auto px-4 py-0 sm:px-6 lg:px-8">
             <div className="fade-in-up animate-fadeIn">
               {/* Profile Header Card */}
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm overflow-hidden mb-6 transition-all duration-300 hover:shadow-md">
                 <div className="relative">
                   {/* Cover image with animation */}
-                  <div className="h-48 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 animate-gradientShift rounded-t-2xl"></div>
+                  <div className="h-55 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 animate-gradientShift rounded-t-2xl"></div>
                   
                   {/* Avatar with pulsing animation on hover */}
                   <div className="absolute -bottom-12 left-8">
@@ -801,7 +801,7 @@ export default function ProfilePage() {
                                   </div>
                                   
                                   <div className="flex flex-wrap gap-3 mt-4">
-                                    <div className="bg-gray-100 dark:bg-gray-600 px-3 py-1 rounded-full text-sm flex items-center text-gray-700 dark:text-gray-300">
+                                    <div className="bg-gray-100 dark:bg-gray-600 px-3 py-0 rounded-full text-sm flex items-center text-gray-700 dark:text-gray-300">
                                       <Calendar className="h-3 w-3 mr-1" />
                                       {new Date(booking.scheduled_time).toLocaleDateString()}
                                     </div>

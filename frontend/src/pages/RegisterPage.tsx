@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { useAuthContext } from '@/context/AuthContext';
 import { ArrowLeft } from 'lucide-react';
 import { authService } from '@/services/api';
+import { useTranslation } from "react-i18next";
+import axios from "axios";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -13,8 +15,36 @@ export default function RegisterPage() {
   const [role, setRole] = useState('customer'); // Changed default to match backend
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [profilePicture, setProfilePicture] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null);
   const navigate = useNavigate();
   const { login } = useAuthContext();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
+
+  // Replace with your API URL or import from config
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+  const handleProfilePictureChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      // Adjust endpoint as needed for your backend
+      const res = await axios.post(`${API_URL}/profiles/upload-picture`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setProfilePicture(file);
+      setProfilePictureUrl(res.data.url);
+    } catch (err) {
+      setError("Failed to upload profile picture.");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,17 +70,20 @@ export default function RegisterPage() {
     try {
       // Register the user with the backend
       await authService.register(email, password, role);
-      
+
       // Login automatically after successful registration
       const loginResponse = await authService.login(email, password);
       login(loginResponse.access_token);
-      
+
       // Store registration data for profile setup
       sessionStorage.setItem('registration', JSON.stringify({
         email,
-        role
+        role,
+        profile_picture: profilePictureUrl || undefined
       }));
-      
+
+      // Optionally, send profile picture to backend here if not handled above
+
       // Redirect to profile setup page
       navigate('/profile-setup');
     } catch (err) {
@@ -62,13 +95,13 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-black px-4 py-12">
+    <div className={`min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-white dark:from-gray-900 dark:via-gray-800 dark:to-black px-4 py-12 ${isRTL ? 'font-arabic' : ''}`} dir={isRTL ? "rtl" : "ltr"}>
       <div className="w-full max-w-md">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden p-8 space-y-8">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Create an account</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t("create_account")}</h1>
             <p className="mt-2 text-gray-600 dark:text-gray-300">
-              Step 1: Basic information
+              {t("step_1_basic_info")}
             </p>
           </div>
 
@@ -79,9 +112,33 @@ export default function RegisterPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Profile Picture Upload */}
+            <div className="flex flex-col items-center gap-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {t("profile_picture") || (isRTL ? "صورة الملف الشخصي" : "Profile Picture")}
+              </label>
+              <div className="relative flex flex-col items-center">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProfilePictureChange}
+                  disabled={uploading}
+                  className="block"
+                />
+                {uploading && <span className="text-xs text-gray-500 mt-1">{t("loading")}</span>}
+                {profilePictureUrl && (
+                  <img
+                    src={profilePictureUrl.startsWith("http") ? profilePictureUrl : `${API_URL}${profilePictureUrl}`}
+                    alt="Profile Preview"
+                    className="mt-2 h-20 w-20 rounded-full object-cover border"
+                  />
+                )}
+              </div>
+            </div>
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Email address
+                {t("email")}
               </label>
               <input
                 id="email"
@@ -89,14 +146,14 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="you@example.com"
+                placeholder={t("email")}
                 required
               />
             </div>
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Password
+                {t("password")}
               </label>
               <input
                 id="password"
@@ -111,7 +168,7 @@ export default function RegisterPage() {
 
             <div>
               <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Confirm Password
+                {t("confirm_password")}
               </label>
               <input
                 id="confirm-password"
@@ -126,7 +183,7 @@ export default function RegisterPage() {
 
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                I am joining as:
+                {t("i_am_joining_as") || (isRTL ? "أسجل كـ:" : "I am joining as:")}
               </label>
               <div className="grid grid-cols-2 gap-4">
                 <div 
@@ -144,9 +201,9 @@ export default function RegisterPage() {
                       onChange={() => setRole('customer')}
                       className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
                     />
-                    <span className="ml-2 font-medium text-gray-900 dark:text-white">Customer</span>
+                    <span className={`ml-2 font-medium text-gray-900 dark:text-white ${isRTL ? "ml-0 mr-2" : ""}`}>{t("customer")}</span>
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">I need to hire talent for projects</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{t("register_customer_desc") || (isRTL ? "أحتاج إلى توظيف مستقلين لمشاريعي" : "I need to hire talent for projects")}</p>
                 </div>
                 
                 <div 
@@ -164,9 +221,9 @@ export default function RegisterPage() {
                       onChange={() => setRole('provider')}
                       className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
                     />
-                    <span className="ml-2 font-medium text-gray-900 dark:text-white">Provider</span>
+                    <span className={`ml-2 font-medium text-gray-900 dark:text-white ${isRTL ? "ml-0 mr-2" : ""}`}>{t("provider")}</span>
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">I want to offer my services</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{t("register_provider_desc") || (isRTL ? "أرغب في تقديم خدماتي" : "I want to offer my services")}</p>
                 </div>
               </div>
             </div>
@@ -177,16 +234,16 @@ export default function RegisterPage() {
                 className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg"
                 disabled={loading}
               >
-                {loading ? 'Creating Account...' : 'Continue'}
+                {loading ? t("creating_account") || 'Creating Account...' : t("continue")}
               </Button>
             </div>
           </form>
 
           <div className="text-center text-sm">
             <p className="text-gray-600 dark:text-gray-400">
-              Already have an account?{' '}
+              {t("already_have_account")}{' '}
               <Link to="/login" className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">
-                Log in
+                {t("log_in")}
               </Link>
             </p>
           </div>
@@ -195,7 +252,7 @@ export default function RegisterPage() {
         <div className="mt-6">
           <Link to="/" className="inline-flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400">
             <ArrowLeft className="h-4 w-4 mr-1" />
-            Back to home
+            {t("back_to_home")}
           </Link>
         </div>
       </div>

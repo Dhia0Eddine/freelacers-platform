@@ -158,6 +158,15 @@
   "footer_copyright": "© 2025 منصة المستقلين. جميع الحقوق محفوظة.",
   "footer_subscribe_newsletter": "اشترك في النشرة الإخبارية",
   "footer_enter_email": "أدخل بريدك الإلكتروني",
-  "footer_subscribe": "اشترك"
+  "footer_subscribe": "اشترك",
+  "i_am_joining_as": "أسجل كـ:",
+  "register_customer_desc": "أحتاج إلى توظيف مستقلين لمشاريعي",
+  "register_provider_desc": "أرغب في تقديم خدماتي",
+  "creating_account": "جاري إنشاء الحساب...",
+  "back_to_profile": "العودة إلى الملف الشخصي",
+  "edit_profile": "تعديل الملف الشخصي",
+  "update_personal_info": "تحديث المعلومات الشخصية",
+  "bio": "السيرة الذاتية",
+  "save_changes": "حفظ التغييرات",
+  "profile_updated_successfully": "تم تحديث الملف الشخصي بنجاح"
 }
-  
