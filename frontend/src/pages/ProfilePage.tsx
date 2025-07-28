@@ -104,6 +104,8 @@ export default function ProfilePage() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [listingToDelete, setListingToDelete] = useState<Listing | null>(null);
+  const [completedBookings, setCompletedBookings] = useState<Booking[]>([]);
+  const [uniqueClients, setUniqueClients] = useState<number>(0);
   
   const { isAuthenticated, isCustomer, isProvider,userRole } = useAuthContext();
   const navigate = useNavigate();
@@ -190,7 +192,7 @@ export default function ProfilePage() {
             console.error("Error fetching customer data:", customerErr);
           }
         } 
-        // If the user is a provider, fetch their listings and reviews about them
+        // If the user is a provider, fetch their listings, reviews, and completed bookings
         else if (isProvider) {
           try {
             const listingsData = await listingService.getMyListings();
@@ -201,6 +203,29 @@ export default function ProfilePage() {
             const reviewsData = await reviewService.getReviewsAboutMe();
             setReviews(Array.isArray(reviewsData) ? reviewsData : []);
             console.log("Provider reviews received:", reviewsData);
+            
+            // Fetch all bookings where this user is the provider and status is 'completed'
+            const allBookings = await bookingService.getMyBookings?.();
+            // Fallback: if not available, filter from all bookings
+            let completed: Booking[] = [];
+            if (Array.isArray(allBookings)) {
+              completed = allBookings.filter(
+                (b: Booking) => b.status === "completed"
+              );
+            } else {
+              // fallback: try to fetch all bookings and filter
+              const fallbackBookings = await bookingService.getMyBookings?.();
+              if (Array.isArray(fallbackBookings)) {
+                completed = fallbackBookings.filter(
+                  (b: Booking) => b.status === "completed" && b.provider_id === profileData.user_id
+                );
+              }
+            }
+            setCompletedBookings(completed);
+
+            // Calculate unique clients from completed bookings
+            const clientIds = new Set(completed.map(b => b.customer_id));
+            setUniqueClients(clientIds.size);
           } catch (providerErr) {
             console.error("Error fetching provider data:", providerErr);
           }
@@ -267,7 +292,7 @@ export default function ProfilePage() {
     { id: 3, name: 'James Brown', role: 'Marketing', avatar: '👨🏾‍💼' },
   ];
 
-  const skills = ['JavaScript', 'React', 'Node.js', 'UI/UX Design', 'Project Management'];
+
 
   const profileCompleteness = 65; // Mock value, calculate based on filled profile fields
 
@@ -400,14 +425,35 @@ export default function ProfilePage() {
                     </div>
                     
                     <div className="flex gap-6 mt-4 md:mt-0">
-                      <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
-                        <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">12</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">Projects</div>
-                      </div>
-                      <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
-                        <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">36</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">Clients</div>
-                      </div>
+                      {/* Show real data for providers */}
+                      {isProvider ? (
+                        <>
+                          <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
+                            <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">
+                              {completedBookings.length}
+                            </div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">Completed Jobs</div>
+                          </div>
+                          <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
+                            <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">
+                              {uniqueClients}
+                            </div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">Clients</div>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          {/* fallback for customers */}
+                          <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
+                            <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">12</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">Projects</div>
+                          </div>
+                          <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
+                            <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">36</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">Clients</div>
+                          </div>
+                        </>
+                      )}
                       <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
                         <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">4.8</div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">Rating</div>
@@ -509,29 +555,8 @@ export default function ProfilePage() {
                             </div>
                           )}
                           
-                          {/* Skills Section with animation */}
-                          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
-                            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Skills</h2>
-                            <div className="flex flex-wrap gap-2">
-                              {skills.map((skill, index) => (
-                                <span 
-                                  key={skill} 
-                                  className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-lg text-sm transition-all duration-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-700 dark:hover:text-blue-300"
-                                  style={{ animationDelay: `${index * 0.1}s` }}
-                                >
-                                  {skill}
-                                </span>
-                              ))}
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="rounded-lg transition-all duration-300 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-900/30 dark:hover:text-blue-300"
-                              >
-                                <Plus className="h-4 w-4 mr-1" />
-                                Add Skill
-                              </Button>
-                            </div>
-                          </div>
+                       
+                          
                         </div>
                         
                         <div className="w-full lg:w-1/3 space-y-6">
@@ -941,39 +966,8 @@ export default function ProfilePage() {
                 )}
               </div>
               
-              {/* Connections section moved to bottom */}
-              {activeTab === 'overview' && (
-                <div className="mt-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Connections</h2>
-                    <Button variant="ghost" size="sm" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800">
-                      View All
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {mockConnections.map((connection, index) => (
-                      <div 
-                        key={connection.id} 
-                        className="flex items-center justify-between bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg transition-all duration-300 hover:shadow-md"
-                        style={{ animationDelay: `${index * 0.1}s` }}
-                      >
-                        <div className="flex items-center">
-                          <div className="bg-indigo-100 dark:bg-indigo-900/30 text-2xl rounded-full size-10 flex items-center justify-center mr-3">
-                            {connection.avatar}
-                          </div>
-                          <div>
-                            <h3 className="font-medium text-gray-900 dark:text-white">{connection.name}</h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">{connection.role}</p>
-                          </div>
-                        </div>
-                        <Button size="sm" variant="outline" className="h-8">
-                          Connect
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+             
+                 
             </div>
           </div>
         </div>
