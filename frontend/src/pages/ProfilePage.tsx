@@ -9,6 +9,7 @@ import {
   FileText, MessageSquare, Code, ArrowLeft, ArrowRight, Menu, X, Clock, Badge, ChevronRight
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from "react-i18next";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -106,9 +107,11 @@ export default function ProfilePage() {
   const [listingToDelete, setListingToDelete] = useState<Listing | null>(null);
   const [completedBookings, setCompletedBookings] = useState<Booking[]>([]);
   const [uniqueClients, setUniqueClients] = useState<number>(0);
-  
+
   const { isAuthenticated, isCustomer, isProvider,userRole } = useAuthContext();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const isRTL = i18n.language === "ar";
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -245,8 +248,8 @@ export default function ProfilePage() {
   if (loading) {
     console.log("Rendering loading state:", { isAuthenticated, isCustomer });
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="text-xl text-gray-600 dark:text-gray-300">Loading profile...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900" dir={isRTL ? "rtl" : "ltr"}>
+        <div className="text-xl text-gray-600 dark:text-gray-300">{t("loading")}</div>
       </div>
     );
   }
@@ -254,9 +257,9 @@ export default function ProfilePage() {
   if (error) {
     console.log("Rendering error state:", error);
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="text-red-500 mb-4">Error: {error}</div>
-        <Button onClick={() => window.location.reload()}>Retry</Button>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900" dir={isRTL ? "rtl" : "ltr"}>
+        <div className="text-red-500 mb-4">{t("error")}: {error}</div>
+        <Button onClick={() => window.location.reload()}>{t("retry")}</Button>
       </div>
     );
   }
@@ -264,9 +267,9 @@ export default function ProfilePage() {
   if (!profile) {
     console.log("No profile data available");
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="text-gray-600 dark:text-gray-300 mb-4">No profile found.</div>
-        <Button onClick={() => navigate('/profile-setup')}>Create Profile</Button>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900" dir={isRTL ? "rtl" : "ltr"}>
+        <div className="text-gray-600 dark:text-gray-300 mb-4">{t("no_profile_found")}</div>
+        <Button onClick={() => navigate('/profile-setup')}>{t("create_profile")}</Button>
       </div>
     );
   }
@@ -294,7 +297,6 @@ export default function ProfilePage() {
 
 
 
-  const profileCompleteness = 65; // Mock value, calculate based on filled profile fields
 
   // Handler for editing a listing
   const handleEditListing = (listingId: number) => {
@@ -329,43 +331,74 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-all duration-300">
+    <div
+      className={`min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-all duration-300 ${isRTL ? 'font-arabic' : ''}`}
+      dir={isRTL ? "rtl" : "ltr"}
+    >
       {/* Mobile menu toggle */}
       <button
-        className="fixed top-28 left-4 z-50 md:hidden bg-white dark:bg-gray-800 p-3 rounded-full shadow-lg"
+        className={`fixed top-28 ${isRTL ? 'right-4' : 'left-4'} z-50 md:hidden bg-white dark:bg-gray-800 p-3 rounded-full shadow-lg`}
         onClick={() => setShowMobileMenu(!showMobileMenu)}
+        style={isRTL ? { right: 16, left: 'auto' } : { left: 16, right: 'auto' }}
       >
         {showMobileMenu ? <X size={20} /> : <Menu size={20} />}
       </button>
-      
+
       {/* Left Sidebar - Mobile */}
-      <div className={`fixed top-0 left-0 h-full w-[280px] bg-white dark:bg-gray-800 z-40 shadow-xl transform ${
-        showMobileMenu ? 'translate-x-0' : '-translate-x-full'
-      } transition-transform duration-300 ease-in-out md:hidden pt-24 pb-6 overflow-y-auto`}>
-        <SidebarContent collapsed={false} />
+      <div
+        className={`fixed top-0 ${isRTL ? 'right-0' : 'left-0'} h-full w-[280px] bg-white dark:bg-gray-800 z-40 shadow-xl transform ${
+          showMobileMenu ? 'translate-x-0' : isRTL ? 'translate-x-full' : '-translate-x-full'
+        } transition-transform duration-300 ease-in-out md:hidden pt-24 pb-6 overflow-y-auto`}
+        style={isRTL ? { right: 0, left: 'auto' } : { left: 0, right: 'auto' }}
+      >
+        <SidebarContent collapsed={false} isRTL={isRTL} />
       </div>
-      
+
       {/* Main layout wrapper */}
-      <div className="flex pt-14">
+      <div className={`flex pt-14 ${isRTL ? 'flex-row-reverse' : ''}`}>
         {/* Left Sidebar - Desktop */}
-        <div className={`fixed top-0 left-0 h-full ${sidebarCollapsed ? 'w-20' : 'w-64'} bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 pt-24 hidden md:block shadow-sm`}>
-          <div className="px-4 mb-8">
-            <div className="flex items-center justify-between">
-              {!sidebarCollapsed && <h1 className="text-xl font-bold bg-gradient-to-r from-blue-500 to-blue-700 text-transparent bg-clip-text">Freelance Hub</h1>}
-              <button 
+        <div
+          className={`fixed top-0 ${isRTL ? 'right-0' : 'left-0'} h-full ${
+            sidebarCollapsed ? 'w-20' : 'w-64'
+          } bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 pt-24 hidden md:block shadow-sm`}
+          style={isRTL ? { right: 0, left: 'auto', borderRight: 0, borderLeft: '1px solid #4e4e4eff' } : {}}
+        >
+          <div className={`px-4 mb-8 ${isRTL ? 'text-right' : ''}`}>
+            <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
+              {!sidebarCollapsed && (
+                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-500 to-blue-700 text-transparent bg-clip-text">
+                  Freelance Hub
+                </h1>
+              )}
+              <button
                 className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300"
                 onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
               >
-                {sidebarCollapsed ? <ArrowRight size={20} /> : <ArrowLeft size={20} />}
+                {sidebarCollapsed
+                  ? isRTL
+                    ? <ArrowLeft size={20} />
+                    : <ArrowRight size={20} />
+                  : isRTL
+                    ? <ArrowRight size={20} />
+                    : <ArrowLeft size={20} />}
               </button>
             </div>
           </div>
-          
-          <SidebarContent collapsed={sidebarCollapsed} />
+          <SidebarContent collapsed={sidebarCollapsed} isRTL={isRTL} />
         </div>
-        
+
         {/* Main content */}
-        <div className={`flex-1 transition-all duration-300 ${sidebarCollapsed ? 'md:ml-20' : 'md:ml-64'}`}>
+        <div
+          className={`flex-1 transition-all duration-300 ${
+            sidebarCollapsed
+              ? isRTL
+                ? 'md:mr-20'
+                : 'md:ml-20'
+              : isRTL
+                ? 'md:mr-64'
+                : 'md:ml-64'
+          }`}
+        >
           <div className="max-w-6xl mx-auto px-4 py-0 sm:px-6 lg:px-8">
             <div className="fade-in-up animate-fadeIn">
               {/* Profile Header Card */}
@@ -375,7 +408,7 @@ export default function ProfilePage() {
                   <div className="h-55 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 animate-gradientShift rounded-t-2xl"></div>
                   
                   {/* Avatar with pulsing animation on hover */}
-                  <div className="absolute -bottom-12 left-8">
+                  <div className={`absolute -bottom-12 ${isRTL ? 'right-8' : 'left-8'}`}>
                     <div className="bg-white dark:bg-gray-700 border-4 border-white dark:border-gray-800 rounded-full size-24 flex items-center justify-center shadow-lg transition-transform duration-300 hover:scale-105 group overflow-hidden">
                       {profile?.profile_picture ? (
                         <img
@@ -392,27 +425,27 @@ export default function ProfilePage() {
                   </div>
                   
                   {/* Edit button */}
-                  <div className="absolute top-4 right-4">
+                  <div className={`absolute top-4 ${isRTL ? 'left-4' : 'right-4'}`}>
                     <Button 
                       className="bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm transition-all duration-300 hover:scale-105"
                       size="sm"
                       onClick={() => navigate('/profile/edit')}
                     >
                       <Edit className="h-4 w-4 mr-1" />
-                      Edit Profile
+                      {t("edit_profile")}
                     </Button>
                   </div>
                 </div>
                 
                 <div className="px-8 pt-16 pb-8">
-                  <div className="flex flex-col md:flex-row justify-between md:items-end">
-                    <div>
+                  <div className={`flex flex-col md:flex-row justify-between md:items-end ${isRTL ? 'md:flex-row-reverse' : ''}`}>
+                    <div className={`${isRTL ? 'md:order-2' : ''}`}>
                       <div className="flex items-center gap-3">
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white transition-all duration-300">
                           {profile?.full_name}
                         </h1>
                         <span className="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-3 py-1 rounded-full text-xs font-medium transition-all duration-300 hover:shadow-md">
-                          {isProvider ? 'Provider' : 'Customer'}
+                          {isProvider ? t("provider") : t("customer")}
                         </span>
                         {profile?.average_rating && (
                           <div className="flex items-center bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 px-3 py-1 rounded-full">
@@ -421,82 +454,118 @@ export default function ProfilePage() {
                           </div>
                         )}
                       </div>
-                      <p className="text-gray-600 dark:text-gray-300 mt-1 transition-all duration-300">Professional Web Developer</p>
+                      <p className="text-gray-600 dark:text-gray-300 mt-1 transition-all duration-300">
+                        {t("professional_web_developer")}
+                      </p>
                     </div>
-                    
-                    <div className="flex gap-6 mt-4 md:mt-0">
-                      {/* Show real data for providers */}
+                    {/* Statistics section */}
+                    <div
+                      className={`flex gap-6 mt-4 md:mt-0 ${
+                        isRTL ? 'flex-row-reverse md:justify-start md:order-1' : ''
+                      }`}
+                      style={isRTL ? { } : {}}
+                    >
                       {isProvider ? (
+                        isRTL ? (
+                          // Arabic order: Rating | Clients | Completed Jobs
+                          <>
+                            <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
+                              <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">4.8</div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">{t("rating")}</div>
+                            </div>
+                            <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
+                              <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">
+                                {uniqueClients}
+                              </div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">{t("clients")}</div>
+                            </div>
+                            <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
+                              <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">
+                                {completedBookings.length}
+                              </div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">{t("completed_jobs")}</div>
+                            </div>
+                          </>
+                        ) : (
+                          // English order: Completed Jobs | Clients | Rating
+                          <>
+                            <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
+                              <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">
+                                {completedBookings.length}
+                              </div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">{t("completed_jobs")}</div>
+                            </div>
+                            <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
+                              <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">
+                                {uniqueClients}
+                              </div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">{t("clients")}</div>
+                            </div>
+                            <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
+                              <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">4.8</div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">{t("rating")}</div>
+                            </div>
+                          </>
+                        )
+                      ) : isRTL ? (
+                        // Arabic order for customers: Rating | Clients | Projects
                         <>
                           <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
-                            <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">
-                              {completedBookings.length}
-                            </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">Completed Jobs</div>
-                          </div>
-                          <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
-                            <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">
-                              {uniqueClients}
-                            </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">Clients</div>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          {/* fallback for customers */}
-                          <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
-                            <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">12</div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">Projects</div>
+                            <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">4.8</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">{t("rating")}</div>
                           </div>
                           <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
                             <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">36</div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">Clients</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">{t("clients")}</div>
+                          </div>
+                          <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
+                            <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">12</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">{t("projects")}</div>
+                          </div>
+                        </>
+                      ) : (
+                        // English order for customers: Projects | Clients | Rating
+                        <>
+                          <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
+                            <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">12</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">{t("projects")}</div>
+                          </div>
+                          <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
+                            <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">36</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">{t("clients")}</div>
+                          </div>
+                          <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
+                            <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">4.8</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">{t("rating")}</div>
                           </div>
                         </>
                       )}
-                      <div className="text-center transition-all duration-300 hover:transform hover:scale-105">
-                        <div className="text-2xl font-semibold text-blue-600 dark:text-blue-400">4.8</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">Rating</div>
-                      </div>
                     </div>
                   </div>
-                  
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                     <div className="flex items-center text-gray-600 dark:text-gray-300 transition-all duration-300 hover:text-blue-500">
-                      <Mail className="h-5 w-5 mr-3 text-blue-500 dark:text-blue-400" />
+                      <Mail className="h-5 w-5 mr-5 ml-5 text-blue-500 dark:text-blue-400" />
                       <span>{user?.email}</span>
                     </div>
                     
                     <div className="flex items-center text-gray-600 dark:text-gray-300 transition-all duration-300 hover:text-blue-500">
-                      <Phone className="h-5 w-5 mr-3 text-blue-500 dark:text-blue-400" />
+                      <Phone className="h-5 w-5 mr-5 ml-5  text-blue-500 dark:text-blue-400" />
                       <span>
-                        {profile?.phone || 'No phone number provided'}
+                        {profile?.phone || t("no_phone_number_provided", "No phone number provided")}
                       </span>
                     </div>
                     
                     <div className="flex items-center text-gray-600 dark:text-gray-300 transition-all duration-300 hover:text-blue-500">
-                      <MapPin className="h-5 w-5 mr-3 text-blue-500 dark:text-blue-400" />
+                      <MapPin className="h-5 w-5 mr-5 ml-5 text-blue-500 dark:text-blue-400" />
                       <span>{profile?.location}</span>
                     </div>
                     
                     <div className="flex items-center text-gray-600 dark:text-gray-300 transition-all duration-300 hover:text-blue-500">
-                      <Globe className="h-5 w-5 mr-3 text-blue-500 dark:text-blue-400" />
+                      <Globe className="h-5 w-5 mr-5 ml-5 text-blue-500 dark:text-blue-400"  />
                       <span>yourwebsite.com</span>
                     </div>
                   </div>
-                  
-                  <div className="mt-6">
-                    <div className="flex justify-between items-center mb-2">
-                      <div className="text-sm text-gray-600 dark:text-gray-400">Profile Completeness</div>
-                      <div className="text-sm font-medium text-indigo-600 dark:text-indigo-400">{profileCompleteness}%</div>
-                    </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
-                      <div 
-                        className="bg-gradient-to-r from-blue-500 to-blue-700 h-2 rounded-full transition-all duration-1000 ease-out" 
-                        style={{ width: `${profileCompleteness}%` }}
-                      ></div>
-                    </div>
-                  </div>
+                 
                 </div>
               </div>
               
@@ -515,7 +584,7 @@ export default function ProfilePage() {
                         }`}
                         onClick={() => setActiveTab(tab)}
                       >
-                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                        {t(tab)}
                       </button>
                     ))
                   ) : (
@@ -530,7 +599,7 @@ export default function ProfilePage() {
                         }`}
                         onClick={() => setActiveTab(tab)}
                       >
-                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                        {t(tab === "requests" ? "my_requests" : tab === "bookings" ? "my_bookings" : "my_reviews")}
                       </button>
                     ))
                  ) }
@@ -548,9 +617,9 @@ export default function ProfilePage() {
                           {/* Bio Section */}
                           {(isFreelancer || profile?.bio) && (
                             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
-                              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">About Me</h2>
+                              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t("about_me")}</h2>
                               <p className="text-gray-600 dark:text-gray-300 whitespace-pre-line leading-relaxed">
-                                {profile?.bio || "I'm a professional developer with expertise in web and mobile applications. I have over 5 years of experience working with various technologies and frameworks."}
+                                {profile?.bio || t("default_bio")}
                               </p>
                             </div>
                           )}
@@ -562,7 +631,7 @@ export default function ProfilePage() {
                         <div className="w-full lg:w-1/3 space-y-6">
                           {/* Latest Updates */}
                           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
-                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Latest Updates</h2>
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t("latest_updates")}</h2>
                             <div className="space-y-4">
                               <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg transition-all duration-300 hover:shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700">
                                 <div className="flex justify-between items-start">
@@ -596,13 +665,13 @@ export default function ProfilePage() {
                     {activeTab === 'services' && (
                       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
                         <div className="flex justify-between items-center mb-6">
-                          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">My Services</h2>
+                          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t("my_services")}</h2>
                           <Button 
                             className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-300 hover:shadow-lg"
                             onClick={() => navigate('/listings/new')}
                           >
                             <Plus className="h-4 w-4 mr-1" />
-                            Add New listing
+                            {t("add_new_listing")}
                           </Button>
                         </div>
                         
@@ -624,12 +693,12 @@ export default function ProfilePage() {
                                     {listing.available ? (
                                       <span className="flex items-center text-green-600 dark:text-green-400 text-sm bg-green-50 dark:bg-green-900/30 px-3 py-1 rounded-full">
                                         <CheckCircle className="h-4 w-4 mr-1" />
-                                        Available
+                                        {t("available")}
                                       </span>
                                     ) : (
                                       <span className="flex items-center text-red-600 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/30 px-3 py-1 rounded-full">
                                         <XCircle className="h-4 w-4 mr-1" />
-                                        Unavailable
+                                        {t("unavailable")}
                                       </span>
                                     )}
                                   </div>
@@ -652,7 +721,7 @@ export default function ProfilePage() {
                                     className="transition-all duration-300 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-900/30 dark:hover:text-blue-300"
                                     onClick={() => handleEditListing(listing.id)}
                                   >
-                                    Edit
+                                    {t("edit")}
                                   </Button>
                                   <Button 
                                     variant="ghost" 
@@ -660,7 +729,7 @@ export default function ProfilePage() {
                                     className="text-red-600 dark:text-red-400 hover:text-red-800 transition-all duration-300"
                                     onClick={() => handleDeleteListing(listing)}
                                   >
-                                    Delete
+                                    {t("delete")}
                                   </Button>
                                 </div>
                               </div>
@@ -669,15 +738,15 @@ export default function ProfilePage() {
                         ) : (
                           <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg transition-all duration-300">
                             <Briefcase className="h-12 w-12 mx-auto text-gray-400 mb-3 animate-bounce" />
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No services listed yet</h3>
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t("no_services_listed_yet")}</h3>
                             <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-4">
-                              Start offering your services by creating your first listing.
+                              {t("start_offering_services")}
                             </p>
                             <Button 
                               className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-300 hover:shadow-lg"
                               onClick={() => navigate('/listings/new')}
                             >
-                              Create Your First Service
+                              {t("create_your_first_service")}
                             </Button>
                           </div>
                         )}
@@ -686,7 +755,7 @@ export default function ProfilePage() {
                     
                     {activeTab === 'activities' && (
                       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Recent Activities</h2>
+                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t("recent_activities")}</h2>
                         <div className="space-y-4">
                           {mockActivities.map((activity, index) => (
                             <div 
@@ -717,13 +786,13 @@ export default function ProfilePage() {
                     {activeTab === 'requests' && (
                       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
                         <div className="flex justify-between items-center mb-6">
-                          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">My Service Requests</h2>
+                          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t("my_service_requests")}</h2>
                           <Button 
                             className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-300 hover:shadow-lg"
                             onClick={() => navigate('/listings')}
                           >
                             <Plus className="h-4 w-4 mr-1" />
-                            Find Services
+                            {t("find_services")}
                           </Button>
                         </div>
                         
@@ -742,7 +811,7 @@ export default function ProfilePage() {
                                       {request.listing?.title || 'Service Request'}
                                     </h3>
                                     <p className="text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
-                                      {request.description || 'No description provided'}
+                                      {request.description || t("no_description_provided")}
                                     </p>
                                   </div>
                                   <div className="flex items-center">
@@ -772,7 +841,7 @@ export default function ProfilePage() {
                                 <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
                                   <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                                     <User className="h-4 w-4 mr-2" />
-                                    Provider: {request.listing?.profile?.full_name || 'Unknown Provider'}
+                                    Provider: {request.listing?.profile?.full_name || t("unknown_provider")}
                                   </div>
                                 </div>
                               </div>
@@ -781,15 +850,15 @@ export default function ProfilePage() {
                         ) : (
                           <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg transition-all duration-300">
                             <MessageSquare className="h-12 w-12 mx-auto text-gray-400 mb-3 animate-bounce" />
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No service requests yet</h3>
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t("no_service_requests_yet")}</h3>
                             <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-4">
-                              Browse our listings and send requests to service providers.
+                              {t("browse_listings_and_send_requests")}
                             </p>
                             <Button 
                               className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-300 hover:shadow-lg"
                               onClick={() => navigate('/listings')}
                             >
-                              Find Services
+                              {t("find_services")}
                             </Button>
                           </div>
                         )}
@@ -798,7 +867,7 @@ export default function ProfilePage() {
                     
                     {activeTab === 'bookings' && (
                       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">My Bookings</h2>
+                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">{t("my_bookings")}</h2>
                         
                         {bookings && bookings.length > 0 ? (
                           <div className="space-y-6">
@@ -815,7 +884,7 @@ export default function ProfilePage() {
                                         {booking.listing?.title || 'Service Booking'}
                                       </h3>
                                       <p className="text-gray-600 dark:text-gray-300 mt-1">
-                                        Provider: {booking.provider?.profile?.full_name || 'Unknown Provider'}
+                                        Provider: {booking.provider?.profile?.full_name || t("unknown_provider")}
                                       </p>
                                     </div>
                                     <div>
@@ -840,7 +909,7 @@ export default function ProfilePage() {
                                 <div className="bg-gray-50 dark:bg-gray-750 px-5 py-3 border-t border-gray-200 dark:border-gray-600">
                                   <div className="flex justify-between items-center">
                                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                                      Booked on {new Date(booking.created_at).toLocaleDateString()}
+                                      {t("booked_on")} {new Date(booking.created_at).toLocaleDateString()}
                                     </div>
                                     <div className="flex gap-2">
                                       {booking.status === 'completed' && (
@@ -848,17 +917,17 @@ export default function ProfilePage() {
                                           {hasReviewedBooking(booking) ? (
                                             <Button size="sm" variant="outline" disabled className="text-gray-500">
                                               <CheckCircle className="h-4 w-4 mr-1" />
-                                              Review Submitted
+                                              {t("review_submitted")}
                                             </Button>
                                           ) : (
                                             <Button size="sm">
-                                              Leave Review
+                                              {t("leave_review")}
                                             </Button>
                                           )}
                                         </>
                                       )}
                                       <Button size="sm">
-                                        View Details
+                                        {t("view_details")}
                                       </Button>
                                     </div>
                                   </div>
@@ -869,15 +938,15 @@ export default function ProfilePage() {
                         ) : (
                           <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg transition-all duration-300">
                             <Calendar className="h-12 w-12 mx-auto text-gray-400 mb-3 animate-bounce" />
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No bookings yet</h3>
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t("no_bookings_yet")}</h3>
                             <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-4">
-                              When you book services, they'll appear here.
+                              {t("when_you_book_services_theyll_appear_here")}
                             </p>
                             <Button 
                               className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-300 hover:shadow-lg"
                               onClick={() => navigate('/listings')}
                             >
-                              Find Services
+                              {t("find_services")}
                             </Button>
                           </div>
                         )}
@@ -886,7 +955,7 @@ export default function ProfilePage() {
                     
                     {activeTab === 'reviews' && (
                       <div className="bg-white dark:bg-gray-800 rounded-md shadow-md p-6 transition-all duration-300 hover:shadow-md">
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">My Reviews</h2>
+                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">{t("my_reviews")}</h2>
                         
                         {reviews && reviews.length > 0 ? (
                           <div className="space-y-6">
@@ -913,7 +982,7 @@ export default function ProfilePage() {
                                       </h3>
                                     )}
                                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                                      Posted on {new Date(review.created_at).toLocaleDateString()}
+                                      {t("posted_on")} {new Date(review.created_at).toLocaleDateString()}
                                     </div>
                                   </div>
                                   
@@ -943,7 +1012,7 @@ export default function ProfilePage() {
                                       variant="outline"
                                       onClick={() => navigate(`/listings/${review.listing_id}`)}
                                     >
-                                      View Service
+                                      {t("view_service")}
                                       <ChevronRight className="h-4 w-4 ml-1" />
                                     </Button>
                                   </div>
@@ -954,9 +1023,9 @@ export default function ProfilePage() {
                         ) : (
                           <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg transition-all duration-300">
                             <MessageSquare className="h-12 w-12 mx-auto text-gray-400 mb-3 animate-bounce" />
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No reviews yet</h3>
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t("no_reviews_yet")}</h3>
                             <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-                              After completing a service, you can leave reviews for your service providers.
+                              {t("after_completing_service_you_can_leave_reviews")}
                             </p>
                           </div>
                         )}
@@ -1009,16 +1078,16 @@ export default function ProfilePage() {
       {deleteDialogOpen && listingToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 max-w-md w-full">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Delete Listing</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">{t("delete_listing")}</h2>
             <p className="mb-6 text-gray-700 dark:text-gray-300">
-              Are you sure you want to delete <span className="font-bold">{listingToDelete.title}</span>? This action cannot be undone.
+              {t("are_you_sure_you_want_to_delete", { title: listingToDelete.title })}
             </p>
             <div className="flex justify-end gap-3">
               <Button variant="outline" onClick={cancelDeleteListing}>
-                Cancel
+                {t("cancel")}
               </Button>
               <Button variant="destructive" onClick={confirmDeleteListing}>
-                Delete
+                {t("delete")}
               </Button>
             </div>
           </div>
@@ -1029,51 +1098,61 @@ export default function ProfilePage() {
 }
 
 // Extracted sidebar content component
-function SidebarContent({ collapsed }: { collapsed: boolean }) {
+function SidebarContent({ collapsed, isRTL }: { collapsed: boolean; isRTL?: boolean }) {
+  // Use the translation hook from react-i18next
+  // This assumes SidebarContent is always rendered inside ProfilePage, so we can use the parent's translation context.
+  function t(key: string): React.ReactNode {
+    const { t } = useTranslation();
+    return t(key);
+  }
+
   return (
-    <div className="px-4 space-y-6">
+    <div className={`px-4 space-y-6 ${isRTL ? 'text-right' : ''}`}>
       <div className="space-y-2">
-        <Link to="/dashboard" className={`flex items-center space-x-3 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-700 text-white transition-all duration-300 hover:shadow-md`}>
+        <Link
+          to="/dashboard"
+          className={`flex items-center ${isRTL ? 'flex-row-reverse space-x-reverse' : ''} space-x-3 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-700 text-white transition-all duration-300 hover:shadow-md`}
+        >
           <Home size={20} />
-          {!collapsed && <span>Dashboard</span>}
+          {!collapsed && <span>{t("dashboard")}</span>}
         </Link>
         
         <Link to="/analytics" className={`flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-300`}>
           <BarChart2 size={20} />
-          {!collapsed && <span>Analytics</span>}
+          {!collapsed && <span>{t("analytics")}</span>}
         </Link>
 
         <Link to="/schedule" className={`flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-300`}>
           <Calendar size={20} />
-          {!collapsed && <span>Schedule</span>}
+          {!collapsed && <span>{t("schedule")}</span>}
         </Link>
       </div>
       
       {!collapsed && <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
         <h3 className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mb-2 px-3">
-          Communication
+          {t("communication")}
         </h3>
       </div>}
       
       <div className="space-y-2">
         <Link to="/messages" className={`flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-300`}>
           <MessageSquare size={20} />
-          {!collapsed && <span>Messages</span>}
+          {!collapsed && <span>{t("messages")}</span>}
         </Link>
         
         <Link to="/documents" className={`flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-300`}>
           <FileText size={20} />
-          {!collapsed && <span>Documents</span>}
+          {!collapsed && <span>{t("documents")}</span>}
         </Link>
         
         <Link to="/connections" className={`flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-300`}>
           <Users size={20} />
-          {!collapsed && <span>Connections</span>}
+          {!collapsed && <span>{t("connections")}</span>}
         </Link>
         
         <Link to="/settings" className={`flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-300`}>
           <Settings size={20} />
-          {!collapsed && <span>Settings</span>}
+          {!collapsed && <span>{t("settings")}</span>}
         </Link>
       </div>
       
@@ -1081,29 +1160,28 @@ function SidebarContent({ collapsed }: { collapsed: boolean }) {
         <>
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
             <h3 className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mb-2 px-3">
-              AI Tools
+              {t("ai_tools")}
             </h3>
           </div>
           
           <div className="space-y-2">
             <Link to="/ai-chat" className={`flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-300`}>
               <MessageSquare size={20} />
-              <span>AI Chat</span>
+              <span>{t("ai_chat")}</span>
             </Link>
             
-            <Link to="/code-generator" className={`flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-300`}>
-              <Code size={20} />
-              <span>Code Generator</span>
-            </Link>
+            
           </div>
           
           <div className="mt-8">
             <div className="bg-gradient-to-r from-blue-500/10 to-blue-700/10 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-4 relative overflow-hidden transition-all duration-300 hover:shadow-md">
               <div className="absolute -bottom-8 -right-8 w-24 h-24 rounded-full bg-blue-500/20 blur-xl"></div>
-              <h3 className="font-medium text-blue-700 dark:text-blue-400 mb-2 relative z-10">Upgrade to Pro</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 relative z-10">Unlock premium features and get more clients.</p>
+              <h3 className="font-medium text-blue-700 dark:text-blue-400 mb-2 relative z-10">{t("upgrade_to_pro")}</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 relative z-10">
+                {t("unlock_premium_features")}
+              </p>
               <Button className="w-full bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-300 hover:shadow-lg relative z-10">
-                Upgrade Now
+                {t("upgrade_now")}
               </Button>
             </div>
           </div>

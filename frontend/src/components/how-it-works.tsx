@@ -99,7 +99,7 @@ export default function HowItWorksSection() {
                       {step.number}
                     </div>
                     <div className="flex-1">
-                      <div className={`flex items-center gap-2 mb-1${isRTL ? " flex-row-reverse" : ""}`}>
+                      <div className={`flex items-center gap-2 mb-1`}>
                         <span className="text-blue-600 dark:text-blue-300">
                           {step.icon}
                         </span>
@@ -136,7 +136,7 @@ export default function HowItWorksSection() {
                       {step.number}
                     </div>
                     <div className="flex-1">
-                      <div className={`flex items-center gap-2 mb-1${isRTL ? " flex-row-reverse" : ""}`}>
+                      <div className={`flex items-center gap-2 mb-1`}>
                         <span className="text-purple-600 dark:text-purple-300">
                           {step.icon}
                         </span>
