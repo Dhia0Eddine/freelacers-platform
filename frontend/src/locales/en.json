@@ -193,6 +193,25 @@
   "activities": "Activities",
   "about_me": "About Me",
   "latest_updates": "Latest Updates",
-  "default_bio": "I'm a professional developer with expertise in web and mobile applications. I have over 5 years of experience working with various technologies and frameworks."
+  "default_bio": "I'm a professional developer with expertise in web and mobile applications. I have over 5 years of experience working with various technologies and frameworks.",
+   "error": "Error",
+  "no_listing_id": "No listing ID provided",
+  "failed_to_load_listing_or_services": "Failed to load listing or services",
+  "failed_to_update_listing": "Failed to update listing",
+  "success": "Success",
+  "listing_updated_successfully": "Listing updated successfully!",
+  "loading": "Loading...",
+  "back": "Back",
+  "edit": "Edit",
+  "listing": "Listing",
+  "title": "Title",
+  "description": "Description",
+  "min_price": "Minimum Price",
+  "max_price": "Maximum Price",
+  "location": "Location",
+  "category": "Service Category",
+  "choose_service": "Choose a service",
+  "available": "Available",
+  "save_changes": "Save Changes"
 }
 
