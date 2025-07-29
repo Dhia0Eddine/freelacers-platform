@@ -822,6 +822,19 @@ export const reviewService = {
       throw new Error('Failed to update review due to network issue');
     }
   },
+
+  // Add method for provider to review customer after booking completion
+  createBookingReview: async (bookingId: number, reviewData: { rating: number; comment?: string }) => {
+    try {
+      const response = await api.post(`/bookings/${bookingId}/review`, reviewData);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        throw new Error(error.response.data.detail || 'Failed to create review');
+      }
+      throw new Error('Failed to create review due to network issue');
+    }
+  },
 };
 
 // Dashboard related API calls

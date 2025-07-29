@@ -21,7 +21,7 @@ class ReviewUpdate(BaseModel):
 
 router = APIRouter(prefix="/reviews", tags=["Reviews"])
 
-# 1. Submit review (customer only)
+# 1. Submit review (customer only, but now allow provider too)
 @router.post("/", response_model=ReviewOut)
 def create_review(data: ReviewCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     booking = db.query(Booking).filter_by(id=data.booking_id).first()
@@ -30,45 +30,48 @@ def create_review(data: ReviewCreate, db: Session = Depends(get_db), current_use
         raise HTTPException(status_code=404, detail="Booking not found")
     if booking.status != BookingStatus.completed:
          raise HTTPException(status_code=400, detail="Cannot review an incomplete booking")
-    if booking.customer_id != current_user.id:
-        raise HTTPException(status_code=403, detail="You didn't make this booking")
+    # Allow both customer and provider to review each other
+    if current_user.id not in [booking.customer_id, booking.provider_id]:
+        raise HTTPException(status_code=403, detail="You are not part of this booking")
 
-    existing = db.query(Review).filter_by(booking_id=booking.id).first()
+    # Determine reviewee
+    if current_user.id == booking.customer_id:
+        reviewee_id = booking.provider_id
+    else:
+        reviewee_id = booking.customer_id
+
+    # Prevent duplicate reviews by the same user for this booking
+    existing = db.query(Review).filter_by(booking_id=booking.id, reviewer_id=current_user.id).first()
     if existing:
-        raise HTTPException(status_code=400, detail="Review already exists for this booking")
+        raise HTTPException(status_code=400, detail="You have already reviewed this booking.")
 
     # Create the review
     review = Review(
         booking_id=booking.id,
         reviewer_id=current_user.id,
-        reviewee_id=booking.provider_id,
+        reviewee_id=reviewee_id,
         rating=data.rating,
         comment=data.comment,
         created_at=datetime.utcnow()
     )
     db.add(review)
-    
-    # Set the has_review flag on the booking
+
+    # Set the has_review flag on the booking if both customer and provider have reviewed
+    # (or keep as soon as one reviews for backward compatibility)
+    # Optionally, you can track separate flags for customer/provider reviews if needed
     booking.has_review = True
-    
+
     db.commit()
     db.refresh(review)
 
-    # Update provider's average rating
-    # 1. Find the provider for this booking
-    booking = db.query(Booking).filter(Booking.id == data.booking_id).first()
-    if not booking:
-        raise HTTPException(status_code=404, detail="Booking not found")
-    provider_id = booking.provider_id
-
-    # 2. Get the provider's profile
-    profile = db.query(Profile).filter(Profile.user_id == provider_id).first()
+    # Update average rating for the reviewee (provider or customer)
+    profile = db.query(Profile).filter(Profile.user_id == reviewee_id).first()
     if profile:
-        # 3. Calculate new average: (old_avg + new_rating) / 2 if old_avg exists, else just new_rating
-        if profile.average_rating is not None:
-            profile.average_rating = (profile.average_rating + data.rating) / 2
+        all_reviews = db.query(Review).filter(Review.reviewee_id == reviewee_id).all()
+        if all_reviews:
+            profile.average_rating = sum(r.rating for r in all_reviews) / len(all_reviews)
         else:
-            profile.average_rating = data.rating
+            profile.average_rating = None
         db.commit()
 
     return review
@@ -132,11 +135,12 @@ def get_review_by_booking_id(booking_id: int, db: Session = Depends(get_db), cur
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
     
-    # Check if user is authorized (either the customer or provider)
+    # Only allow customer or provider to access, but only return the review written by the customer
     if current_user.id not in [booking.customer_id, booking.provider_id]:
         raise HTTPException(status_code=403, detail="Not authorized to view this review")
     
-    review = db.query(Review).filter_by(booking_id=booking_id).first()
+    # Only fetch the review where the reviewer is the customer
+    review = db.query(Review).filter_by(booking_id=booking_id, reviewer_id=booking.customer_id).first()
     if not review:
         raise HTTPException(status_code=404, detail="Review not found for this booking")
     

@@ -145,6 +145,36 @@ export function DashboardBookingsCard({ bookings, isProvider }: DashboardBooking
     }
   };
 
+  // Add provider review logic
+  const handleProviderReviewSubmit = async (data: { rating: number; comment?: string }) => {
+    if (!selectedBooking) return;
+    setIsSubmitting(true);
+    try {
+      await reviewService.createBookingReview(selectedBooking.id, {
+        rating: data.rating,
+        comment: data.comment,
+      });
+      setReviews([
+        ...reviews,
+        {
+          bookingId: selectedBooking.id,
+          review: {
+            id: 0,
+            rating: data.rating,
+            comment: data.comment,
+            created_at: new Date().toISOString(),
+          },
+        },
+      ]);
+      selectedBooking.has_review = true;
+      setShowReviewModal(false);
+    } catch (error) {
+      console.error('Error submitting provider review:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const filteredBookings = activeFilter === 'all'
     ? bookings
     : bookings.filter(b => b.status.toLowerCase() === activeFilter.toLowerCase());
@@ -322,6 +352,33 @@ export function DashboardBookingsCard({ bookings, isProvider }: DashboardBooking
                               )}
                             </>
                           )}
+                          {/* Provider can review customer after completion */}
+                          {isProvider && booking.status === 'completed' && (
+                            <>
+                              {hasReviewedBooking(booking) ? (
+                                <Button 
+                                  size="sm"
+                                  variant="outline"
+                                  disabled
+                                  className="text-gray-500"
+                                >
+                                  <CheckCircle className="h-4 w-4 mr-1" />
+                                  Review Submitted
+                                </Button>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedBooking(booking);
+                                    setShowReviewModal(true);
+                                  }}
+                                >
+                                  <Star className="h-4 w-4 mr-1" />
+                                  Review Customer
+                                </Button>
+                              )}
+                            </>
+                          )}
                           <Button
                             size="sm"
                             variant="outline"
@@ -345,18 +402,26 @@ export function DashboardBookingsCard({ bookings, isProvider }: DashboardBooking
       <Dialog open={showReviewModal} onOpenChange={setShowReviewModal}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Leave a Review</DialogTitle>
+            <DialogTitle>
+              {isProvider ? "Review Customer" : "Leave a Review"}
+            </DialogTitle>
             <DialogDescription>
-              Share your experience with {selectedBooking?.provider_name || 'this provider'}.
+              {isProvider
+                ? `Share your experience with ${selectedBooking?.customer_name || 'this customer'}.`
+                : `Share your experience with ${selectedBooking?.provider_name || 'this provider'}.`}
             </DialogDescription>
           </DialogHeader>
           {selectedBooking && (
             <ReviewForm
-              onSubmit={async (data) => {
+              onSubmit={isProvider ? handleProviderReviewSubmit : async (data) => {
                 await handleReviewSubmit(data);
                 window.location.reload();
               }}
-              providerName={selectedBooking.provider_name || 'the provider'}
+              providerName={
+                isProvider
+                  ? selectedBooking.customer_name || 'the customer'
+                  : selectedBooking.provider_name || 'the provider'
+              }
               serviceName={selectedBooking.service_title || 'this service'}
               disabled={isSubmitting}
             />
@@ -401,4 +466,4 @@ function getStatusBadgeClass(status: string) {
       return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
   }
 }
-  
+

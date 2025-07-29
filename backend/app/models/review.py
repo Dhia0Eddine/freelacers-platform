@@ -7,7 +7,7 @@ class Review(Base, TimestampMixin):
     __tablename__ = "reviews"
 
     id = Column(Integer, primary_key=True, index=True)
-    booking_id = Column(Integer, ForeignKey("bookings.id", ondelete="CASCADE"), unique=True)
+    booking_id = Column(Integer, ForeignKey("bookings.id", ondelete="CASCADE"), unique=False)
     reviewer_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"))
     reviewee_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"))
     rating = Column(Integer, nullable=False)  # 1–5
