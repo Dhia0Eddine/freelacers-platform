@@ -465,9 +465,7 @@ export default function ProfilePage() {
                           </div>
                         )}
                       </div>
-                      <p className="text-gray-600 dark:text-gray-300 mt-1 transition-all duration-300">
-                        {t("professional_web_developer")}
-                      </p>
+            
                     </div>
                     {/* Statistics section */}
                     <div
@@ -1122,7 +1120,7 @@ function SidebarContent({ collapsed, isRTL }: { collapsed: boolean; isRTL?: bool
       <div className="space-y-2">
         <Link
           to="/dashboard"
-          className={`flex items-center ${isRTL ? 'flex-row-reverse space-x-reverse' : ''} space-x-3 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-700 text-white transition-all duration-300 hover:shadow-md`}
+          className={`flex items-center ${isRTL ? 'space-x-3' : ''} space-x-3 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-700 text-white transition-all duration-300 hover:shadow-md`}
         >
           <Home size={20} />
           {!collapsed && <span>{t("dashboard")}</span>}

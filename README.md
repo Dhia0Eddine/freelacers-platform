@@ -9,22 +9,6 @@
 
 ---
 
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Technology Stack](#technology-stack)
-- [Project Structure](#project-structure)
-- [Screenshots](#screenshots)
-- [Quick Start](#quick-start)
-- [Installation](#installation)
-- [API Documentation](#api-documentation)
-- [Contributing](#contributing)
-- [Roadmap](#roadmap)
-- [License](#license)
-
----
-
 ## 🎯 Overview
 
 The Freelance Platform is a comprehensive service marketplace that bridges the gap between customers seeking services and skilled providers. Built with modern web technologies, it offers a seamless experience for service discovery, booking, and management.
@@ -303,6 +287,47 @@ If you encounter any issues or have questions:
 1. Check the [Issues](../../issues) page for existing solutions
 2. Create a new issue with detailed information
 3. Join our community discussions
+
+---
+
+## 🆕 Latest Updates
+
+### 🌐 Multi-language & Arabization Support
+
+- **partial Arabic Language Support**: The platform now supports both English and Arabic interfaces with arabic integrated with 80% of the website.
+- **RTL (Right-to-Left) Layout**: Automatic RTL layout and font switching for Arabic users.
+- **Dynamic Language Switching**: Users can switch between Arabic and English; language preference is saved.
+- **i18n Integration**: All user-facing strings are translated using `react-i18next` and JSON locale files.
+- **Arabic Fonts**: Modern Arabic fonts (Cairo, Tajawal) are integrated for a native look and feel.
+- **RTL UI Enhancements**: Navigation, forms, and UI elements adapt to RTL direction for Arabic.
+
+#### 📸 Arabization Screenshots
+
+| Main Landing (Arabic) | About Section (Arabic) |
+|-----------------------|-----------------------|
+| ![Arabic Landing](frontend/public/static/screenshots/image.png) | ![Arabic About](frontend/public/static/screenshots/Screenshot%202025-07-29%20154437.png) |
+
+| Profile (Arabic) |
+|------------------|
+| ![Arabic Profile](frontend/public/static/screenshots/Screenshot%202025-07-29%20154416.png) |
+
+> **Note:** To contribute translations or improve localization, edit the files in `frontend/src/locales/ar.json` and `frontend/src/locales/en.json`.
+
+---
+
+## 📋 Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [Project Structure](#project-structure)
+- [Screenshots](#screenshots)
+- [Quick Start](#quick-start)
+- [Installation](#installation)
+- [API Documentation](#api-documentation)
+- [Contributing](#contributing)
+- [Roadmap](#roadmap)
+- [License](#license)
 
 ---
 
