@@ -338,8 +338,8 @@ export default function ProfilePage() {
      {/* Mobile menu toggle */}
 {!showMobileMenu && (
   <button
-    className={`absolute  top-18 z-50 md:hidden bg-gray dark:bg-gray-850 p-3 transition-all duration-300 ${
-      isRTL ? 'left-7' : 'right-5'
+    className={`absolute  top-18 z-0 md:hidden bg-gray dark:bg-gray-850 p-3 transition-all duration-300 ${
+      isRTL ? 'left-7' : 'right-6'
     }`}
     onClick={() => setShowMobileMenu(true)}
   >
@@ -374,17 +374,13 @@ export default function ProfilePage() {
         {/* Left Sidebar - Desktop */}
         <div
           className={`fixed top-0 ${isRTL ? 'right-0' : 'left-0'} h-full ${
-            sidebarCollapsed ? 'w-20' : 'w-64'
-          } bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 pt-24 hidden md:block shadow-sm`}
-          style={isRTL ? { right: 0, left: 'auto', borderRight: 0, borderLeft: '1px solid #4e4e4eff' } : {}}
+            sidebarCollapsed ? 'w-20' : 'w-55'
+          } bg-white dark:bg-gray-950  dark:border-gray-700 transition-all duration-300 pt-24 hidden md:block `}
+          style={isRTL ? { right: 0, left: 'auto', borderRight: 0 } : {}}
         >
           <div className={`px-4 mb-8 ${isRTL ? 'text-right' : ''}`}>
             <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-              {!sidebarCollapsed && (
-                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-500 to-blue-700 text-transparent bg-clip-text">
-                  Freelance Hub
-                </h1>
-              )}
+             
               <button
                 className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300"
                 onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
