@@ -288,7 +288,7 @@ export const HeroHeader = () => {
                                 </div>
                                 
                                 {/* Language & Theme Controls */}
-                                <div className={`flex items-center py-2 ${isRTL ? 'justify-end' : 'justify-start'}`}>
+                                <div className={`flex items-center py-2 ${isRTL ? 'justify-end' : 'justify-end'}`}>
                                     {/* Language Switcher */}
                                     <Button
                                         variant="outline"
@@ -297,7 +297,7 @@ export const HeroHeader = () => {
                                             i18n.changeLanguage(i18n.language === "ar" ? "en" : "ar");
                                             setMenuState(false);
                                         }}
-                                        className={`rounded-full px-4 py-2 text-sm h-8 min-w-[70px] ${isRTL ? 'ml-auto' : 'mr-auto'}`}
+                                        className={`rounded-full px-4 py-2 text-sm h-8 min-w-[70px] mr-auto `}
                                     >
                                         {i18n.language === "ar" ? "English" : "عربي"}
                                     </Button>
@@ -316,7 +316,7 @@ export const HeroHeader = () => {
                                                 to="/admin/dashboard" 
                                                 onClick={() => setMenuState(false)}
                                                 className={`flex items-center gap-3 py-3 px-2 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition-all duration-200 ${
-                                                    isRTL ? 'flex-row-reverse text-right' : 'text-left'
+                                                    isRTL ? 'flex-row text-right' : 'text-left'
                                                 }`}
                                             >
                                                 <User className="w-5 h-5" />
@@ -327,7 +327,7 @@ export const HeroHeader = () => {
                                                 to="/profile/me" 
                                                 onClick={() => setMenuState(false)}
                                                 className={`flex items-center gap-3 py-3 px-2 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition-all duration-200 ${
-                                                    isRTL ? 'flex-row-reverse text-right' : 'text-left'
+                                                    isRTL ? 'flex-row text-right' : 'text-left'
                                                 }`}
                                             >
                                                 <User className="w-5 h-5" />
@@ -340,7 +340,7 @@ export const HeroHeader = () => {
                                             to="/settings" 
                                             onClick={() => setMenuState(false)}
                                             className={`flex items-center gap-3 py-3 px-2 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition-all duration-200 ${
-                                                isRTL ? 'flex-row-reverse text-right' : 'text-left'
+                                                isRTL ? 'flex-row text-right' : 'text-left'
                                             }`}
                                         >
                                             <Settings className="w-5 h-5" />
@@ -354,7 +354,7 @@ export const HeroHeader = () => {
                                                 setMenuState(false);
                                             }}
                                             className={`flex w-full items-center gap-3 py-3 px-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 ${
-                                                isRTL ? 'flex-row-reverse text-right' : 'text-left'
+                                                isRTL ? ' text-right' : 'text-left'
                                             }`}
                                         >
                                             <LogOut className="w-5 h-5" />
