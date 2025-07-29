@@ -11,6 +11,8 @@ import { Label } from '@/components/ui/label';
 import { ArrowLeft, DollarSign, MapPin, Tag, FileText, Check, Loader2, AlertCircle, XCircle } from 'lucide-react';
 import { API_URL } from '@/config';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n';
 
 interface Service {
   id: number;
@@ -34,6 +36,7 @@ export default function CreateListingPage() {
 
   const { isAuthenticated, isCustomer, isProvider, userRole } = useAuthContext();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Check if user is authenticated and is a provider
   useEffect(() => {
@@ -47,13 +50,13 @@ export default function CreateListingPage() {
     
     // Use isProvider directly from context instead of computing it
     if (!isProvider) {
-      setErrorMessage('Only service providers can create listings');
+      setErrorMessage(t('Only service providers can create listings'));
       // Navigate after showing the error message
       setTimeout(() => {
         navigate('/profile/me');
       }, 3000);
     }
-  }, [isAuthenticated, isCustomer, isProvider, userRole, navigate]);
+  }, [isAuthenticated, isCustomer, isProvider, userRole, navigate, t]);
 
   // Fetch services for dropdown
   useEffect(() => {
@@ -64,18 +67,18 @@ export default function CreateListingPage() {
         setServices(servicesData);
         
         if (servicesData.length === 0) {
-          setErrorMessage('No service categories available. Please contact the administrator.');
+          setErrorMessage(t('No service categories available. Please contact the administrator.'));
         }
       } catch (error) {
         console.error('Error fetching services:', error);
-        setErrorMessage('Failed to load service categories');
+        setErrorMessage(t('Failed to load service categories'));
       } finally {
         setLoading(false);
       }
     };
 
     fetchServices();
-  }, []);
+  }, [t]);
 
   // Clear error message after 5 seconds
   useEffect(() => {
@@ -101,12 +104,12 @@ export default function CreateListingPage() {
     e.preventDefault();
     
     if (!title || !description || minPrice === '' || maxPrice === '' || !location || serviceId === '') {
-      setErrorMessage('Please fill in all required fields');
+      setErrorMessage(t('Please fill in all required fields'));
       return;
     }
 
     if (minPrice > maxPrice) {
-      setErrorMessage('Minimum price cannot be greater than maximum price');
+      setErrorMessage(t('Minimum price cannot be greater than maximum price'));
       return;
     }
 
@@ -124,7 +127,7 @@ export default function CreateListingPage() {
       };
 
       await listingService.createListing(listingData);
-      setSuccessMessage('Listing created successfully!');
+      setSuccessMessage(t('listing_updated_successfully'));
       
       // Navigate after showing success message
       setTimeout(() => {
@@ -132,7 +135,7 @@ export default function CreateListingPage() {
       }, 2000);
     } catch (error) {
       console.error('Error creating listing:', error);
-      setErrorMessage('Failed to create listing. Please try again.');
+      setErrorMessage(t('Failed to create listing. Please try again.'));
     } finally {
       setSubmitting(false);
     }
@@ -145,7 +148,7 @@ export default function CreateListingPage() {
         {errorMessage && (
           <Alert variant="destructive" className="mb-6 animate-fade-in">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
+            <AlertTitle>{t('error')}</AlertTitle>
             <AlertDescription>{errorMessage}</AlertDescription>
             <Button 
               variant="ghost" 
@@ -162,7 +165,7 @@ export default function CreateListingPage() {
         {successMessage && (
           <Alert className="mb-6 bg-green-50 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 animate-fade-in">
             <Check className="h-4 w-4" />
-            <AlertTitle>Success</AlertTitle>
+            <AlertTitle>{t('success')}</AlertTitle>
             <AlertDescription>{successMessage}</AlertDescription>
           </Alert>
         )}
@@ -175,11 +178,11 @@ export default function CreateListingPage() {
             className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Profile
+            {t('back_to_profile')}
           </Button>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mt-4">Create New Listing</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mt-4">{t('add_new_listing')}</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Add a new service listing to your profile
+            {t('add_new_listing')}
           </p>
         </div>
 
@@ -190,11 +193,11 @@ export default function CreateListingPage() {
               <div>
                 <Label htmlFor="title" className="text-base font-medium flex items-center gap-2">
                   <FileText className="h-5 w-5 text-blue-500" />
-                  Listing Title
+                  {t('title')}
                 </Label>
                 <Input
                   id="title"
-                  placeholder="e.g., Professional Web Development Services"
+                  placeholder={t('title')}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className="mt-2"
@@ -206,11 +209,11 @@ export default function CreateListingPage() {
               <div>
                 <Label htmlFor="description" className="text-base font-medium flex items-center gap-2">
                   <FileText className="h-5 w-5 text-blue-500" />
-                  Description
+                  {t('description')}
                 </Label>
                 <Textarea
                   id="description"
-                  placeholder="Describe your service in detail..."
+                  placeholder={t('description')}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className="mt-2 min-h-32"
@@ -222,12 +225,12 @@ export default function CreateListingPage() {
               <div>
                 <Label htmlFor="service" className="text-base font-medium flex items-center gap-2">
                   <Tag className="h-5 w-5 text-blue-500" />
-                  Service Category
+                  {t('category')}
                 </Label>
                 {loading ? (
                   <div className="mt-2 flex items-center text-gray-500">
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Loading service categories...
+                    {t('loading')}
                   </div>
                 ) : services.length > 0 ? (
                   <Select 
@@ -235,7 +238,7 @@ export default function CreateListingPage() {
                     value={serviceId ? String(serviceId) : undefined}
                   >
                     <SelectTrigger className="mt-2">
-                      <SelectValue placeholder="Select a service category" />
+                      <SelectValue placeholder={t('choose_service')} />
                     </SelectTrigger>
                     <SelectContent>
                       {services.map((service) => (
@@ -247,7 +250,7 @@ export default function CreateListingPage() {
                   </Select>
                 ) : (
                   <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-md">
-                    No service categories available. Please try again later or contact support.
+                    {t('no_services_listed_yet')}
                   </div>
                 )}
               </div>
@@ -256,15 +259,15 @@ export default function CreateListingPage() {
               <div>
                 <Label className="text-base font-medium flex items-center gap-2">
                   <DollarSign className="h-5 w-5 text-blue-500" />
-                  Price Range
+                  {t('min_price')} - {t('max_price')}
                 </Label>
                 <div className="grid grid-cols-2 gap-4 mt-2">
                   <div>
-                    <Label htmlFor="min-price" className="text-sm">Minimum Price ($)</Label>
+                    <Label htmlFor="min-price" className="text-sm">{t('min_price')}</Label>
                     <Input
                       id="min-price"
                       type="number"
-                      placeholder="Min price"
+                      placeholder={t('min_price')}
                       value={minPrice}
                       onChange={(e) => setMinPrice(e.target.value ? Number(e.target.value) : '')}
                       min="0"
@@ -272,11 +275,11 @@ export default function CreateListingPage() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="max-price" className="text-sm">Maximum Price ($)</Label>
+                    <Label htmlFor="max-price" className="text-sm">{t('max_price')}</Label>
                     <Input
                       id="max-price"
                       type="number"
-                      placeholder="Max price"
+                      placeholder={t('max_price')}
                       value={maxPrice}
                       onChange={(e) => setMaxPrice(e.target.value ? Number(e.target.value) : '')}
                       min="0"
@@ -290,11 +293,11 @@ export default function CreateListingPage() {
               <div>
                 <Label htmlFor="location" className="text-base font-medium flex items-center gap-2">
                   <MapPin className="h-5 w-5 text-blue-500" />
-                  Location
+                  {t('location')}
                 </Label>
                 <Input
                   id="location"
-                  placeholder="e.g., New York, Remote"
+                  placeholder={t('location')}
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   className="mt-2"
@@ -307,7 +310,7 @@ export default function CreateListingPage() {
                 <div className="flex items-center justify-between">
                   <Label htmlFor="available" className="text-base font-medium flex items-center gap-2">
                     <Check className="h-5 w-5 text-blue-500" />
-                    Available for Hire
+                    {t('available')}
                   </Label>
                   <Switch
                     id="available"
@@ -316,7 +319,7 @@ export default function CreateListingPage() {
                   />
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  Toggle this if your service is currently available to be hired
+                  {t('Toggle this if your service is currently available to be hired')}
                 </p>
               </div>
               
@@ -328,7 +331,7 @@ export default function CreateListingPage() {
                   className="mr-4"
                   disabled={submitting || loading}
                 >
-                  Cancel
+                  {t('cancel')}
                 </Button>
                 <Button
                   type="submit"
@@ -338,9 +341,9 @@ export default function CreateListingPage() {
                   {submitting ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Creating...
+                      {t('creating_account')}
                     </>
-                  ) : 'Create Listing'}
+                  ) : t('add_new_listing')}
                 </Button>
               </div>
             </div>
