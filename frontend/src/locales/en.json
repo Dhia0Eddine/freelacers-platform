@@ -213,5 +213,9 @@
   "choose_service": "Choose a service",
   "available": "Available",
   "save_changes": "Save Changes"
+  ,
+  "no_listings_for_category": "There are currently no listings for this service category.",
+  "no_listings_available": "No listings available",
+  "browse_other_services": "Browse Other Services"
 }
 

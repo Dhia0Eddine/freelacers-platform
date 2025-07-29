@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { 
   SearchIcon, ArrowRightIcon
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface Category {
   id: number;
@@ -42,6 +43,7 @@ export default function ServiceBrowsingPage() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     // Fetch categories
@@ -109,20 +111,20 @@ export default function ServiceBrowsingPage() {
       <div className="container mx-auto max-w-6xl">
         {/* Hero Section */}
         <div className="text-center mb-12 animate-fadeIn">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Browse Services</h1>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">{t('browse_listings')}</h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Find the perfect service for your needs from our wide range of professional offerings
+            {t('find_services_now')}
           </p>
           {/* Category Filter Dropdown */}
           <div className="mt-6 flex flex-col sm:flex-row gap-3 items-center justify-center">
             <div className="flex items-center gap-2">
-              <span className="text-gray-700 dark:text-gray-300 text-sm">Filter by Category:</span>
+              <span className="text-gray-700 dark:text-gray-300 text-sm">{t('category')}:</span>
               <select
                 value={selectedCategory ?? ''}
                 onChange={e => setSelectedCategory(e.target.value ? Number(e.target.value) : null)}
                 className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               >
-                <option value="">All Categories</option>
+                <option value="">{t('view_all')}</option>
                 {categories.map(cat => (
                   <option key={cat.id} value={cat.id}>
                     {cat.name}
@@ -139,7 +141,7 @@ export default function ServiceBrowsingPage() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search services..."
+                placeholder={t('search') + '...'}
                 className="w-full px-4 py-3 pl-12 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               />
               <SearchIcon className="absolute left-4 top-3.5 h-5 w-5 text-gray-400" />
@@ -155,7 +157,7 @@ export default function ServiceBrowsingPage() {
           <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-300 p-6 rounded-xl text-center">
             <p>{error}</p>
             <Button onClick={() => window.location.reload()} className="mt-4">
-              Try Again
+              {t('retry')}
             </Button>
           </div>
         ) : (
@@ -186,7 +188,7 @@ export default function ServiceBrowsingPage() {
                       )}
                       {/* Example status badge */}
                       <span className="absolute top-3 left-3 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs font-medium px-3 py-1 rounded-full shadow-sm">
-                        Available
+                        {t('available')}
                       </span>
                     </div>
                     {/* Main Zone */}
@@ -197,7 +199,7 @@ export default function ServiceBrowsingPage() {
                         </h3>
                       </div>
                       <p className="text-[15px] text-gray-600 dark:text-gray-300 mb-2 truncate">
-                        {service.description || "No description available."}
+                        {service.description || t('no_services_listed_yet')}
                       </p>
                       {/* Category Name */}
                       <div className="text-xs text-blue-600 dark:text-blue-300 font-medium mb-1">
@@ -212,7 +214,6 @@ export default function ServiceBrowsingPage() {
                     </div>
                     {/* Bottom Zone */}
                     <div className="flex items-center justify-between px-6 pb-4 pt-2">
-                   
                       <Button
                         variant="outline"
                         className="rounded-md px-4 py-2 text-sm font-medium border-blue-600 text-blue-700 dark:text-blue-300 border hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
@@ -222,14 +223,14 @@ export default function ServiceBrowsingPage() {
                           handleServiceClick(service.id);
                         }}
                       >
-                        View Details
+                        {t('view_details')}
                       </Button>
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="col-span-full text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
-                  <p className="text-gray-600 dark:text-gray-300">No services found matching your search.</p>
+                  <p className="text-gray-600 dark:text-gray-300">{t('no_services_listed_yet')}</p>
                 </div>
               )}
             </div>

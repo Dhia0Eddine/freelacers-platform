@@ -216,6 +216,9 @@
   "category": "فئة الخدمة",
   "choose_service": "اختر خدمة",
   "available": "متاح",
-  "save_changes": "حفظ التغييرات"
+  "save_changes": "حفظ التغييرات",
+  "no_listings_for_category": "لا توجد عروض في هذه الفئة.",
+  "no_listings_available": "لا توجد عروض متاحة حالياً.",
+  "browse_other_services": "تصفح خدمات أخرى"
 
 }
