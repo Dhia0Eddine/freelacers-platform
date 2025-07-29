@@ -335,24 +335,39 @@ export default function ProfilePage() {
       className={`min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-all duration-300 ${isRTL ? 'font-arabic' : ''}`}
       dir={isRTL ? "rtl" : "ltr"}
     >
-      {/* Mobile menu toggle */}
-      <button
-        className={`fixed top-28 ${isRTL ? 'right-4' : 'left-4'} z-50 md:hidden bg-white dark:bg-gray-800 p-3 rounded-full shadow-lg`}
-        onClick={() => setShowMobileMenu(!showMobileMenu)}
-        style={isRTL ? { right: 16, left: 'auto' } : { left: 16, right: 'auto' }}
-      >
-        {showMobileMenu ? <X size={20} /> : <Menu size={20} />}
-      </button>
+     {/* Mobile menu toggle */}
+{!showMobileMenu && (
+  <button
+    className={`absolute  top-18 z-50 md:hidden bg-gray dark:bg-gray-850 p-3 transition-all duration-300 ${
+      isRTL ? 'left-7' : 'right-5'
+    }`}
+    onClick={() => setShowMobileMenu(true)}
+  >
+    <Menu size={20} />
+  </button>
+)}
 
-      {/* Left Sidebar - Mobile */}
-      <div
-        className={`fixed top-0 ${isRTL ? 'right-0' : 'left-0'} h-full w-[280px] bg-white dark:bg-gray-800 z-40 shadow-xl transform ${
-          showMobileMenu ? 'translate-x-0' : isRTL ? 'translate-x-full' : '-translate-x-full'
-        } transition-transform duration-300 ease-in-out md:hidden pt-24 pb-6 overflow-y-auto`}
-        style={isRTL ? { right: 0, left: 'auto' } : { left: 0, right: 'auto' }}
-      >
-        <SidebarContent collapsed={false} isRTL={isRTL} />
-      </div>
+{/* Overlay for closing sidebar when clicking outside */}
+{showMobileMenu && (
+  
+  <div
+    className="fixed inset-0 z-30 bg-black/30 backdrop-blur-sm md:hidden"
+    onClick={() => setShowMobileMenu(false)}
+  />
+)}
+
+{/* Left Sidebar - Mobile */}
+<div
+  className={`fixed top-0 h-full w-[280px] bg-white dark:bg-gray-800 z-40 shadow-xl transform transition-transform duration-300 ease-in-out md:hidden pt-24 pb-6 overflow-y-auto ${
+    showMobileMenu 
+      ? 'translate-x-0' 
+      : isRTL 
+        ? 'translate-x-full' 
+        : '-translate-x-full'
+  } ${isRTL ? 'right-0' : 'left-0'}`}
+>
+  <SidebarContent collapsed={false} isRTL={isRTL} />
+</div>
 
       {/* Main layout wrapper */}
       <div className={`flex pt-14 ${isRTL ? 'flex-row-reverse' : ''}`}>
