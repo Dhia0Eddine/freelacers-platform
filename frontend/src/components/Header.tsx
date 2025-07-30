@@ -150,7 +150,7 @@ export const HeroHeader = () => {
                                             {userRole === 'admin' ? (
                                                 <Link 
                                                     to="/admin/dashboard" 
-                                                    className={`flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm ${isRTL ? 'flex-row-reverse text-right' : ''}`}
+                                                    className={`flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm ${isRTL ? ' text-right' : ''}`}
                                                     onClick={() => setProfileDropdownOpen(false)}
                                                 >
                                                     <User className="w-4 h-4" />
@@ -159,7 +159,7 @@ export const HeroHeader = () => {
                                             ) : (
                                                 <Link 
                                                     to="/profile/me" 
-                                                    className={`flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm ${isRTL ? 'flex-row-reverse text-right' : ''}`}
+                                                    className={`flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm ${isRTL ? ' text-right' : ''}`}
                                                     onClick={() => setProfileDropdownOpen(false)}
                                                 >
                                                     <User className="w-4 h-4" />
@@ -168,7 +168,7 @@ export const HeroHeader = () => {
                                             )}
                                             <Link 
                                                 to="/settings" 
-                                                className={`flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm ${isRTL ? 'flex-row-reverse text-right' : ''}`}
+                                                className={`flex items-center gap-3 px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm ${isRTL ? ' text-right' : ''}`}
                                                 onClick={() => setProfileDropdownOpen(false)}
                                             >
                                                 <Settings className="w-4 h-4" />
@@ -196,7 +196,7 @@ export const HeroHeader = () => {
                                                     logout();
                                                     setProfileDropdownOpen(false);
                                                 }}
-                                                className={`flex w-full items-center gap-3 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm ${isRTL ? 'flex-row-reverse text-right' : ''}`}
+                                                className={`flex w-full items-center gap-3 px-4 py-2 text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm ${isRTL ? 'text-right' : ''}`}
                                             >
                                                 <LogOut className="w-4 h-4" />
                                                 <span>{t('logout')}</span>
@@ -336,7 +336,7 @@ export const HeroHeader = () => {
                                             to="/admin/dashboard" 
                                             onClick={() => setMenuState(false)}
                                             className={`flex items-center gap-3 py-3 px-4 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-xl transition-all duration-200 group ${
-                                                isRTL ? 'flex-row-reverse text-right' : 'text-left'
+                                                isRTL ? ' text-right' : 'text-left'
                                             }`}
                                         >
                                             <User className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
@@ -347,7 +347,7 @@ export const HeroHeader = () => {
                                             to="/profile/me" 
                                             onClick={() => setMenuState(false)}
                                             className={`flex items-center gap-3 py-3 px-4 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-xl transition-all duration-200 group ${
-                                                isRTL ? ' text-right' : 'text-left'
+                                                isRTL ? '' : 'text-left'
                                             }`}
                                         >
                                             <User className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
