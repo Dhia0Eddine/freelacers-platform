@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { serviceService } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { 
-  SearchIcon, ArrowRightIcon
+  SearchIcon
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -21,15 +21,7 @@ interface Service {
   photo?: string; // Add this line to match backend schema
 }
 
-// Service card background colors based on index
-const cardColors = [
-  'bg-blue-50 dark:bg-blue-900/20',
-  'bg-green-50 dark:bg-green-900/20',
-  'bg-purple-50 dark:bg-purple-900/20',
-  'bg-amber-50 dark:bg-amber-900/20',
-  'bg-teal-50 dark:bg-teal-900/20',
-  'bg-rose-50 dark:bg-rose-900/20',
-];
+
 
 // Service card icons (using emoji for simplicity)
 const serviceIcons = ['🔧', '🛠️', '📊', '📝', '🎨', '💻', '📱', '🔍', '📢', '🏠', '🚗', '👩‍💼'];
@@ -43,7 +35,7 @@ export default function ServiceBrowsingPage() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Fetch categories

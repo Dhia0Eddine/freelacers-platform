@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Card, CardContent, CardDescription, CardHeader, CardTitle
@@ -11,7 +11,7 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription
 } from '@/components/ui/dialog';
-import { Calendar, User, Clock, CheckCircle, XCircle, Star, ChevronRight } from 'lucide-react';
+import { Calendar,  Clock, CheckCircle,  Star, ChevronRight } from 'lucide-react';
 import { ReviewForm } from '@/components/review-form';
 import { reviewService } from '@/services/api';
 

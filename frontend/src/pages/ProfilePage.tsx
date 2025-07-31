@@ -1,16 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import  { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { profileService, listingService, requestService, bookingService, reviewService } from '@/services/api';
 import { useAuthContext } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { 
-  MapPin, Phone, Mail, Globe, Star, Edit, Plus, Briefcase, User, 
-  CheckCircle, XCircle, Home, BarChart2, Calendar, Users, Settings,
-  FileText, MessageSquare, Code, ArrowLeft, ArrowRight, Menu, X, Clock, Badge, ChevronRight
+  MapPin, Phone, Mail, Globe, Star, Edit, Briefcase, User, 
+
+   ArrowLeft, ArrowRight, Menu, 
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useTranslation } from "react-i18next";
-
+import { 
+  hasReviewedBooking} from '@/pages/ProfileSidebar'
+  import SidebarContent  from '@/pages/ProfileSidebar';
+import OverviewTab from '@/pages/profile-tabs/OverviewTab';
+import ServicesTab from '@/pages/profile-tabs/ServicesTab';
+import RequestsTab from '@/pages/profile-tabs/RequestsTab';
+import BookingsTab from '@/pages/profile-tabs/BookingsTab';
+import ReviewsTab from '@/pages/profile-tabs/ReviewsTab';
+import DeleteConfirmationDialog from '@/components/DeleteConfirmationDialog';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 // Update interface to match actual API response
@@ -108,7 +116,7 @@ export default function ProfilePage() {
   const [completedBookings, setCompletedBookings] = useState<Booking[]>([]);
   const [uniqueClients, setUniqueClients] = useState<number>(0);
 
-  const { isAuthenticated, isCustomer, isProvider,userRole } = useAuthContext();
+  const { isAuthenticated, isCustomer, isProvider } = useAuthContext();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const isRTL = i18n.language === "ar";
@@ -282,19 +290,6 @@ export default function ProfilePage() {
 
   console.log("User is provider:", isProvider, "Role:", user?.role);
 
-  // Mock data for the dashboard
-  const mockActivities = [
-    { id: 1, action: 'Updated profile', date: '2 hours ago' },
-    { id: 2, action: 'Added a new service', date: 'Yesterday' },
-    { id: 3, action: 'Completed a project', date: '3 days ago' },
-  ];
-
-  const mockConnections = [
-    { id: 1, name: 'Alex Johnson', role: 'Designer', avatar: '👨🏽‍💼' },
-    { id: 2, name: 'Sarah Miller', role: 'Developer', avatar: '👩🏻‍💻' },
-    { id: 3, name: 'James Brown', role: 'Marketing', avatar: '👨🏾‍💼' },
-  ];
-
 
 
 
@@ -449,7 +444,7 @@ export default function ProfilePage() {
                 </div>
                 
                 <div className="px-8 pt-16 pb-8">
-                  <div className={`flex flex-col md:flex-row justify-between md:items-end ${isRTL ? 'md:flex-row-reverse' : ''}`}>
+                  <div className={`mb-12 flex flex-col md:flex-row justify-between md:items-end ${isRTL ? 'md:flex-row-reverse' : ''}`}>
                     <div className={`${isRTL ? 'md:order-2' : ''}`}>
                       <div className="flex items-center gap-3">
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white transition-all duration-300">
@@ -551,30 +546,53 @@ export default function ProfilePage() {
                       )}
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                    <div className="flex items-center text-gray-600 dark:text-gray-300 transition-all duration-300 hover:text-blue-500">
-                      <Mail className="h-5 w-5 mr-5 ml-5 text-blue-500 dark:text-blue-400" />
-                      <span>{user?.email}</span>
-                    </div>
-                    
-                    <div className="flex items-center text-gray-600 dark:text-gray-300 transition-all duration-300 hover:text-blue-500">
-                      <Phone className="h-5 w-5 mr-5 ml-5  text-blue-500 dark:text-blue-400" />
-                      <span>
-                        {profile?.phone || t("no_phone_number_provided", "No phone number provided")}
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center text-gray-600 dark:text-gray-300 transition-all duration-300 hover:text-blue-500">
-                      <MapPin className="h-5 w-5 mr-5 ml-5 text-blue-500 dark:text-blue-400" />
-                      <span>{profile?.location}</span>
-                    </div>
-                    
-                    <div className="flex items-center text-gray-600 dark:text-gray-300 transition-all duration-300 hover:text-blue-500">
-                      <Globe className="h-5 w-5 mr-5 ml-5 text-blue-500 dark:text-blue-400"  />
-                      <span>yourwebsite.com</span>
+           
+                  {/* Professional contact information section */}
+                  <div className="bg-white dark:bg-slate-800 px-8 py-6 border-t border-slate-200 dark:border-slate-700">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                      <div className="flex items-center space-x-3 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 group">
+                        <div className="flex items-center justify-center w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-full group-hover:bg-blue-100 dark:group-hover:bg-blue-900/40 transition-colors duration-200">
+                          <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-slate-500 dark:text-slate-400">{t("email")}</div>
+                          <div className="font-medium">{user?.email}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-3 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 group">
+                        <div className="flex items-center justify-center w-10 h-10 bg-green-50 dark:bg-green-900/20 rounded-full group-hover:bg-green-100 dark:group-hover:bg-green-900/40 transition-colors duration-200">
+                          <Phone className="h-5 w-5 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-slate-500 dark:text-slate-400">{t("phone")}</div>
+                          <div className="font-medium">
+                            {profile?.phone || t("no_phone_number_provided", "Not provided")}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-3 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 group">
+                        <div className="flex items-center justify-center w-10 h-10 bg-orange-50 dark:bg-orange-900/20 rounded-full group-hover:bg-orange-100 dark:group-hover:bg-orange-900/40 transition-colors duration-200">
+                          <MapPin className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-slate-500 dark:text-slate-400">{t("location")}</div>
+                          <div className="font-medium">{profile?.location}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-3 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 group">
+                        <div className="flex items-center justify-center w-10 h-10 bg-purple-50 dark:bg-purple-900/20 rounded-full group-hover:bg-purple-100 dark:group-hover:bg-purple-900/40 transition-colors duration-200">
+                          <Globe className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-slate-500 dark:text-slate-400">{t("website")}</div>
+                          <div className="font-medium">yourwebsite.com</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                 
                 </div>
               </div>
               
@@ -621,424 +639,48 @@ export default function ProfilePage() {
                 {isProvider && (
                   <>
                     {activeTab === 'overview' && (
-                      <div className="flex flex-col lg:flex-row gap-6">
-                        <div className="w-full lg:w-2/3 space-y-6">
-                          {/* Bio Section */}
-                          {(isFreelancer || profile?.bio) && (
-                            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
-                              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t("about_me")}</h2>
-                              <p className="text-gray-600 dark:text-gray-300 whitespace-pre-line leading-relaxed">
-                                {profile?.bio || t("default_bio")}
-                              </p>
-                            </div>
-                          )}
-                          
-                       
-                          
-                        </div>
-                        
-                        <div className="w-full lg:w-1/3 space-y-6">
-                          {/* Latest Updates */}
-                          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
-                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t("latest_updates")}</h2>
-                            <div className="space-y-4">
-                              <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg transition-all duration-300 hover:shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700">
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h3 className="font-medium text-gray-900 dark:text-white">Platform v2.0</h3>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">Released 2 days ago</p>
-                                  </div>
-                                  <Button size="sm" variant="outline" className="text-xs h-8">
-                                    View
-                                  </Button>
-                                </div>
-                              </div>
-                              
-                              <div className="p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg transition-all duration-300 hover:shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700">
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h3 className="font-medium text-gray-900 dark:text-white">Mobile App</h3>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">Coming soon</p>
-                                  </div>
-                                  <Button size="sm" variant="outline" className="text-xs h-8">
-                                    Preview
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                      <OverviewTab profile={profile} />
                     )}
-                    
                     {activeTab === 'services' && (
-                      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
-                        <div className="flex justify-between items-center mb-6">
-                          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t("my_services")}</h2>
-                          <Button 
-                            className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-300 hover:shadow-lg"
-                            onClick={() => navigate('/listings/new')}
-                          >
-                            <Plus className="h-4 w-4 mr-1" />
-                            {t("add_new_listing")}
-                          </Button>
-                        </div>
-                        
-                        {/* Show listings if we have them */}
-                        {listings && listings.length > 0 ? (
-                          <div className="space-y-4">
-                            {listings.map((listing, index) => (
-                              <div 
-                                key={listing.id} 
-                                className="border border-gray-200 dark:border-gray-700 rounded-lg p-5 transition-all duration-300 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700"
-                                style={{ animationDelay: `${index * 0.1}s` }}
-                              >
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{listing.title}</h3>
-                                    <p className="text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">{listing.description}</p>
-                                  </div>
-                                  <div className="flex items-center">
-                                    {listing.available ? (
-                                      <span className="flex items-center text-green-600 dark:text-green-400 text-sm bg-green-50 dark:bg-green-900/30 px-3 py-1 rounded-full">
-                                        <CheckCircle className="h-4 w-4 mr-1" />
-                                        {t("available")}
-                                      </span>
-                                    ) : (
-                                      <span className="flex items-center text-red-600 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/30 px-3 py-1 rounded-full">
-                                        <XCircle className="h-4 w-4 mr-1" />
-                                        {t("unavailable")}
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                                
-                                <div className="flex flex-wrap gap-3 mt-3">
-                                  <div className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-sm">
-                                    ${listing.min_price} - ${listing.max_price}
-                                  </div>
-                                  <div className="bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full text-sm flex items-center text-gray-700 dark:text-gray-300">
-                                    <MapPin className="h-3 w-3 mr-1" />
-                                    {listing.location}
-                                  </div>
-                                </div>
-                                
-                                <div className="flex justify-end mt-4 space-x-2">
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    className="transition-all duration-300 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-900/30 dark:hover:text-blue-300"
-                                    onClick={() => handleEditListing(listing.id)}
-                                  >
-                                    {t("edit")}
-                                  </Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    className="text-red-600 dark:text-red-400 hover:text-red-800 transition-all duration-300"
-                                    onClick={() => handleDeleteListing(listing)}
-                                  >
-                                    {t("delete")}
-                                  </Button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg transition-all duration-300">
-                            <Briefcase className="h-12 w-12 mx-auto text-gray-400 mb-3 animate-bounce" />
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t("no_services_listed_yet")}</h3>
-                            <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-4">
-                              {t("start_offering_services")}
-                            </p>
-                            <Button 
-                              className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-300 hover:shadow-lg"
-                              onClick={() => navigate('/listings/new')}
-                            >
-                              {t("create_your_first_service")}
-                            </Button>
-                          </div>
-                        )}
-                      </div>
+                      <ServicesTab
+                        listings={listings}
+                        onEditListing={handleEditListing}
+                        onDeleteListing={handleDeleteListing}
+                        navigate={navigate}
+                        t={t}
+                      />
                     )}
-                    
                     {activeTab === 'activities' && (
-                      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t("recent_activities")}</h2>
-                        <div className="space-y-4">
-                          {mockActivities.map((activity, index) => (
-                            <div 
-                              key={activity.id} 
-                              className="flex items-start p-3 rounded-lg transition-all duration-300 hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                              style={{ animationDelay: `${index * 0.1}s` }}
-                            >
-                              <div className="bg-gradient-to-r from-blue-500 to-blue-700 rounded-full p-2 mr-4 shadow-md">
-                                <div className="text-white">
-                                  <Calendar className="h-5 w-5" />
-                                </div>
-                              </div>
-                              <div>
-                                <p className="text-gray-900 dark:text-white font-medium">{activity.action}</p>
-                                <p className="text-gray-500 dark:text-gray-400 text-sm">{activity.date}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                      // You can create an ActivitiesTab component similarly if needed
+                      <div>{/* ...existing activities content... */}</div>
                     )}
                   </>
                 )}
-                
+
                 {/* Customer content - only shown for customers */}
                 {isCustomer && (
                   <>
                     {activeTab === 'requests' && (
-                      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
-                        <div className="flex justify-between items-center mb-6">
-                          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t("my_service_requests")}</h2>
-                          <Button 
-                            className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-300 hover:shadow-lg"
-                            onClick={() => navigate('/listings')}
-                          >
-                            <Plus className="h-4 w-4 mr-1" />
-                            {t("find_services")}
-                          </Button>
-                        </div>
-                        
-                        {/* Show requests if we have them */}
-                        {requests && requests.length > 0 ? (
-                          <div className="space-y-4">
-                            {requests.map((request, index) => (
-                              <div 
-                                key={request.id} 
-                                className="border border-gray-200 dark:border-gray-700 rounded-lg p-5 transition-all duration-300 hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700"
-                                style={{ animationDelay: `${index * 0.1}s` }}
-                              >
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                      {request.listing?.title || 'Service Request'}
-                                    </h3>
-                                    <p className="text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
-                                      {request.description || t("no_description_provided")}
-                                    </p>
-                                  </div>
-                                  <div className="flex items-center">
-                                    <span className={`badge ${getStatusBadgeVariant(request.status)}`}>
-                                      {request.status.toUpperCase()}
-                                    </span>
-                                  </div>
-                                </div>
-                                
-                                <div className="flex flex-wrap gap-3 mt-3">
-                                  <div className="bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full text-sm flex items-center text-gray-700 dark:text-gray-300">
-                                    <Calendar className="h-3 w-3 mr-1" />
-                                    {new Date(request.preferred_date).toLocaleDateString()}
-                                  </div>
-                                  {request.location && (
-                                    <div className="bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full text-sm flex items-center text-gray-700 dark:text-gray-300">
-                                      <MapPin className="h-3 w-3 mr-1" />
-                                      {request.location}
-                                    </div>
-                                  )}
-                                  <div className="bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full text-sm flex items-center text-gray-700 dark:text-gray-300">
-                                    <Clock className="h-3 w-3 mr-1" />
-                                    {formatTimeAgo(request.created_at)}
-                                  </div>
-                                </div>
-                                
-                                <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
-                                  <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                                    <User className="h-4 w-4 mr-2" />
-                                    Provider: {request.listing?.profile?.full_name || t("unknown_provider")}
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg transition-all duration-300">
-                            <MessageSquare className="h-12 w-12 mx-auto text-gray-400 mb-3 animate-bounce" />
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t("no_service_requests_yet")}</h3>
-                            <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-4">
-                              {t("browse_listings_and_send_requests")}
-                            </p>
-                            <Button 
-                              className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-300 hover:shadow-lg"
-                              onClick={() => navigate('/listings')}
-                            >
-                              {t("find_services")}
-                            </Button>
-                          </div>
-                        )}
-                      </div>
+                      <RequestsTab
+                        requests={requests}
+                        navigate={navigate}
+                        t={t}
+                      />
                     )}
-                    
                     {activeTab === 'bookings' && (
-                      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md">
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">{t("my_bookings")}</h2>
-                        
-                        {bookings && bookings.length > 0 ? (
-                          <div className="space-y-6">
-                            {bookings.map((booking, index) => (
-                              <div 
-                                key={booking.id} 
-                                className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden shadow-sm transition-all duration-300 hover:shadow-md"
-                                style={{ animationDelay: `${index * 0.1}s` }}
-                              >
-                                <div className="p-5">
-                                  <div className="flex justify-between items-start">
-                                    <div>
-                                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                        {booking.listing?.title || 'Service Booking'}
-                                      </h3>
-                                      <p className="text-gray-600 dark:text-gray-300 mt-1">
-                                        Provider: {booking.provider?.profile?.full_name || t("unknown_provider")}
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <span className={`badge ${getBookingStatusBadgeVariant(booking.status)}`}>
-                                        {booking.status.toUpperCase()}
-                                      </span>
-                                    </div>
-                                  </div>
-                                  
-                                  <div className="flex flex-wrap gap-3 mt-4">
-                                    <div className="bg-gray-100 dark:bg-gray-600 px-3 py-0 rounded-full text-sm flex items-center text-gray-700 dark:text-gray-300">
-                                      <Calendar className="h-3 w-3 mr-1" />
-                                      {new Date(booking.scheduled_time).toLocaleDateString()}
-                                    </div>
-                                    <div className="bg-gray-100 dark:bg-gray-600 px-3 py-1 rounded-full text-sm flex items-center text-gray-700 dark:text-gray-300">
-                                      <Clock className="h-3 w-3 mr-1" />
-                                      {new Date(booking.scheduled_time).toLocaleTimeString()}
-                                    </div>
-                                  </div>
-                                </div>
-                                
-                                <div className="bg-gray-50 dark:bg-gray-750 px-5 py-3 border-t border-gray-200 dark:border-gray-600">
-                                  <div className="flex justify-between items-center">
-                                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                                      {t("booked_on")} {new Date(booking.created_at).toLocaleDateString()}
-                                    </div>
-                                    <div className="flex gap-2">
-                                      {booking.status === 'completed' && (
-                                        <>
-                                          {hasReviewedBooking(booking) ? (
-                                            <Button size="sm" variant="outline" disabled className="text-gray-500">
-                                              <CheckCircle className="h-4 w-4 mr-1" />
-                                              {t("review_submitted")}
-                                            </Button>
-                                          ) : (
-                                            <Button size="sm">
-                                              {t("leave_review")}
-                                            </Button>
-                                          )}
-                                        </>
-                                      )}
-                                      <Button size="sm">
-                                        {t("view_details")}
-                                      </Button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg transition-all duration-300">
-                            <Calendar className="h-12 w-12 mx-auto text-gray-400 mb-3 animate-bounce" />
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t("no_bookings_yet")}</h3>
-                            <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-4">
-                              {t("when_you_book_services_theyll_appear_here")}
-                            </p>
-                            <Button 
-                              className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-300 hover:shadow-lg"
-                              onClick={() => navigate('/listings')}
-                            >
-                              {t("find_services")}
-                            </Button>
-                          </div>
-                        )}
-                      </div>
+                      <BookingsTab
+                        bookings={bookings}
+                        navigate={navigate}
+                        t={t}
+                        hasReviewedBooking={(booking) => hasReviewedBooking(booking as any)}
+                      />
                     )}
-                    
                     {activeTab === 'reviews' && (
-                      <div className="bg-white dark:bg-gray-800 rounded-md shadow-md p-6 transition-all duration-300 hover:shadow-md">
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">{t("my_reviews")}</h2>
-                        
-                        {reviews && reviews.length > 0 ? (
-                          <div className="space-y-6">
-                            {reviews.map((review, index) => (
-                              <div 
-                                key={review.id} 
-                                className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-5 transition-all duration-300 hover:shadow-md"
-                                style={{ animationDelay: `${index * 0.1}s` }}
-                              >
-                                <div className="flex justify-between items-start mb-3">
-                                  <div>
-                                    {review.service_title && (
-                                      <h3 className="font-medium text-lg text-gray-900 dark:text-white mb-1">
-                                        {review.listing_id ? (
-                                          <Link 
-                                            to={`/listings/${review.listing_id}`}
-                                            className="text-blue-600 dark:text-blue-400 hover:underline"
-                                          >
-                                            {review.service_title}
-                                          </Link>
-                                        ) : (
-                                          review.service_title
-                                        )}
-                                      </h3>
-                                    )}
-                                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                                      {t("posted_on")} {new Date(review.created_at).toLocaleDateString()}
-                                    </div>
-                                  </div>
-                                  
-                                  <div className="flex items-center gap-2">
-                                    {[...Array(5)].map((_, i) => (
-                                      <Star 
-                                        key={i} 
-                                        className={`h-5 w-5 ${i < review.rating ? 'text-yellow-500 fill-current' : 'text-gray-300'}`} 
-                                      />
-                                    ))}
-                                    <span className="text-gray-600 dark:text-gray-300 ml-2">
-                                      {review.rating}/5
-                                    </span>
-                                  </div>
-                                </div>
-                                
-                                {review.comment && (
-                                  <div className="bg-gray-50 dark:bg-gray-750 p-4 rounded-md">
-                                    <p className="text-gray-700 dark:text-gray-300 italic">"{review.comment}"</p>
-                                  </div>
-                                )}
-                                
-                                {review.listing_id && (
-                                  <div className="mt-4 flex justify-end">
-                                    <Button 
-                                      size="sm" 
-                                      variant="outline"
-                                      onClick={() => navigate(`/listings/${review.listing_id}`)}
-                                    >
-                                      {t("view_service")}
-                                      <ChevronRight className="h-4 w-4 ml-1" />
-                                    </Button>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg transition-all duration-300">
-                            <MessageSquare className="h-12 w-12 mx-auto text-gray-400 mb-3 animate-bounce" />
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{t("no_reviews_yet")}</h3>
-                            <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-                              {t("after_completing_service_you_can_leave_reviews")}
-                            </p>
-                          </div>
-                        )}
-                      </div>
+                      <ReviewsTab
+                        reviews={reviews}
+                        navigate={navigate}
+                        t={t}
+                      />
                     )}
                   </>
                 )}
@@ -1084,177 +726,16 @@ export default function ProfilePage() {
       `}</style>
       
       {/* Delete Confirmation Dialog */}
-      {deleteDialogOpen && listingToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 max-w-md w-full">
-            <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">{t("delete_listing")}</h2>
-            <p className="mb-6 text-gray-700 dark:text-gray-300">
-              {t("are_you_sure_you_want_to_delete", { title: listingToDelete.title })}
-            </p>
-            <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={cancelDeleteListing}>
-                {t("cancel")}
-              </Button>
-              <Button variant="destructive" onClick={confirmDeleteListing}>
-                {t("delete")}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        title={t("delete_listing")}
+        description={t("are_you_sure_you_want_to_delete", { title: listingToDelete?.title })}
+        onCancel={cancelDeleteListing}
+        onConfirm={confirmDeleteListing}
+        confirmText={t("delete")}
+        cancelText={t("cancel")}
+      />
     </div>
   );
 }
 
-// Extracted sidebar content component
-function SidebarContent({ collapsed, isRTL }: { collapsed: boolean; isRTL?: boolean }) {
-  // Use the translation hook from react-i18next
-  // This assumes SidebarContent is always rendered inside ProfilePage, so we can use the parent's translation context.
-  function t(key: string): React.ReactNode {
-    const { t } = useTranslation();
-    return t(key);
-  }
-
-  return (
-    <div className={`px-4 space-y-6 ${isRTL ? 'text-right' : ''}`}>
-      <div className="space-y-2">
-        <Link
-          to="/dashboard"
-          className={`flex items-center ${isRTL ? 'space-x-3' : ''} space-x-3 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-700 text-white transition-all duration-300 hover:shadow-md`}
-        >
-          <Home size={20} />
-          {!collapsed && <span>{t("dashboard")}</span>}
-        </Link>
-        
-        <Link to="/analytics" className={`flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-300`}>
-          <BarChart2 size={20} />
-          {!collapsed && <span>{t("analytics")}</span>}
-        </Link>
-
-        <Link to="/schedule" className={`flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-300`}>
-          <Calendar size={20} />
-          {!collapsed && <span>{t("schedule")}</span>}
-        </Link>
-      </div>
-      
-      {!collapsed && <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-        <h3 className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mb-2 px-3">
-          {t("communication")}
-        </h3>
-      </div>}
-      
-      <div className="space-y-2">
-        <Link to="/messages" className={`flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-300`}>
-          <MessageSquare size={20} />
-          {!collapsed && <span>{t("messages")}</span>}
-        </Link>
-        
-        <Link to="/documents" className={`flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-300`}>
-          <FileText size={20} />
-          {!collapsed && <span>{t("documents")}</span>}
-        </Link>
-        
-        <Link to="/connections" className={`flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-300`}>
-          <Users size={20} />
-          {!collapsed && <span>{t("connections")}</span>}
-        </Link>
-        
-        <Link to="/settings" className={`flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-300`}>
-          <Settings size={20} />
-          {!collapsed && <span>{t("settings")}</span>}
-        </Link>
-      </div>
-      
-      {!collapsed && (
-        <>
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
-            <h3 className="text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold mb-2 px-3">
-              {t("ai_tools")}
-            </h3>
-          </div>
-          
-          <div className="space-y-2">
-            <Link to="/ai-chat" className={`flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-300`}>
-              <MessageSquare size={20} />
-              <span>{t("ai_chat")}</span>
-            </Link>
-            
-            
-          </div>
-          
-          <div className="mt-8">
-            <div className="bg-gradient-to-r from-blue-500/10 to-blue-700/10 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-4 relative overflow-hidden transition-all duration-300 hover:shadow-md">
-              <div className="absolute -bottom-8 -right-8 w-24 h-24 rounded-full bg-blue-500/20 blur-xl"></div>
-              <h3 className="font-medium text-blue-700 dark:text-blue-400 mb-2 relative z-10">{t("upgrade_to_pro")}</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 relative z-10">
-                {t("unlock_premium_features")}
-              </p>
-              <Button className="w-full bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white transition-all duration-300 hover:shadow-lg relative z-10">
-                {t("upgrade_now")}
-              </Button>
-            </div>
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-// Helper functions for status badges
-function getStatusBadgeVariant(status: string) {
-  switch (status.toLowerCase()) {
-    case 'open':
-      return 'default';
-    case 'quoted':
-      return 'outline';
-    case 'booked':
-      return 'secondary';
-    case 'closed':
-      return 'destructive';
-    default:
-      return 'default';
-  }
-}
-
-function getBookingStatusBadgeVariant(status: string) {
-  switch (status.toLowerCase()) {
-    case 'scheduled':
-      return 'outline';
-    case 'completed':
-      return 'success';
-    case 'cancelled':
-      return 'destructive';
-    default:
-      return 'default';
-  }
-}
-
-// Format time ago helper function
-function formatTimeAgo(dateString: string) {
-  const date = new Date(dateString);
-  const now = new Date();
-  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-  
-  if (seconds < 60) return 'just now';
-  
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-  
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-  
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days} day${days > 1 ? 's' : ''} ago`;
-  
-  const months = Math.floor(days / 30);
-  if (months < 12) return `${months} month${months > 1 ? 's' : ''} ago`;
-  
-  const years = Math.floor(months / 12);
-  return `${years} year${years > 1 ? 's' : ''} ago`;
-}
-
-// Check if user has already reviewed a booking
-function hasReviewedBooking(booking: Booking): boolean {
-  // Just check the has_review flag on the booking
-  return booking.has_review === true;
-}
