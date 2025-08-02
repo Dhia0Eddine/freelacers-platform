@@ -10,9 +10,11 @@ from app.models.request import Request
 from app.models.user import User
 from app.models.review import Review
 from app.models.profile import Profile
+from app.models.listing import Listing
 from app.schemas.booking import BookingCreate, BookingOut, BookingUpdate
 from app.utils.auth import get_current_user
 from app.dependencies.db import get_db
+from app.routers.notification import create_notification
 
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
@@ -50,6 +52,31 @@ def create_booking(data: BookingCreate, db: Session = Depends(get_db), current_u
     db.add(booking)
     db.commit()
     db.refresh(booking)
+    
+    # Send notification to provider
+    try:
+        provider_id = quote.provider_id
+        
+        # Get service title
+        quote_obj = db.query(Quote).filter_by(id=data.quote_id).first()
+        request_obj = db.query(Request).filter_by(id=quote_obj.request_id).first()
+        listing_obj = db.query(Listing).filter_by(id=request_obj.listing_id).first()
+        
+        formatted_date = booking.scheduled_time.strftime("%Y-%m-%d at %H:%M")
+        notification_message = f"Your service '{listing_obj.title}' has been booked for {formatted_date}"
+        
+        # Create notification for the provider
+        create_notification(
+            db=db,
+            user_id=provider_id,
+            notification_type="booking",
+            message=notification_message,
+            link=f"/booking/{booking.id}"
+        )
+    except Exception as e:
+        # Log error but don't stop execution
+        print(f"Error creating notification: {e}")
+    
     return booking
 
 # 2. GET bookings for current user
@@ -138,5 +165,30 @@ def create_review_for_booking(
                 avg = sum(r.rating for r in customer_reviews) / len(customer_reviews)
                 customer_profile.average_rating = avg
                 db.commit()
+    
+    # Send notification to the reviewee
+    try:
+        # Get listing info for more detailed notification
+        listing = db.query(Listing).filter_by(id=booking.listing_id).first()
+        service_name = listing.title if listing else "your service"
+        
+        # Craft appropriate message based on who is reviewing
+        if reviewer_role == "customer":
+            notification_message = f"You received a {data['rating']}-star review for {service_name}"
+        else:
+            notification_message = f"You received a {data['rating']}-star review from a service provider"
+        
+        # Create notification
+        from app.routers.notification import create_notification
+        create_notification(
+            db=db,
+            user_id=reviewee_id,
+            notification_type="review",
+            message=notification_message,
+            link=f"/booking/{booking_id}"
+        )
+    except Exception as e:
+        # Log error but don't stop execution
+        print(f"Error creating notification for review: {e}")
 
     return {"success": True, "review_id": review.id}

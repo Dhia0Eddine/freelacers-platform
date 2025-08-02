@@ -239,6 +239,19 @@ function DropdownMenuShortcut({
   )
 }
 
+function DropdownMenuFooter({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="dropdown-menu-footer"
+      className={cn("text-muted-foreground p-2 text-sm", className)}
+      {...props}
+    />
+  )
+}
+
 function DropdownMenuSub({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Sub>) {
@@ -292,6 +305,7 @@ export {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuFooter,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,

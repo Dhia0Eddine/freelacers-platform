@@ -201,5 +201,19 @@
   "no_listings_available": "لا توجد عروض متاحة حالياً.",
   "browse_other_services": "تصفح خدمات أخرى",
   "my_service_requests": "طلبات خدماتي",
-  "my_services": "خدماتي"
+  "my_services": "خدماتي",
+  "notifications": "الإشعارات",
+  "mark_all_as_read": "تعيين الكل كمقروءة",
+  "no_notifications": "لا توجد إشعارات حتى الآن",
+  "notifications_will_appear_here": "ستظهر الإشعارات حول نشاطك هنا",
+  "view_all_notifications": "عرض جميع الإشعارات",
+  "notifications_description": "ابق على اطلاع بآخر نشاطاتك",
+  "search_notifications": "البحث في الإشعارات...",
+  "all": "الكل",
+  "unread": "غير مقروءة",
+  "read": "مقروءة",
+  "something_went_wrong": "حدث خطأ ما",
+  "retry": "إعادة المحاولة",
+  "no_matching_notifications": "لا توجد إشعارات مطابقة",
+  "try_different_search": "جرب عبارة بحث مختلفة"
 }

@@ -8,11 +8,11 @@ from .quote import Quote
 from .booking import Booking
 from .payment import Payment
 from .review import Review
+from .notification import Notification
 
 
 #### for later use, if needed ###
 
-# from .notification import Notification
 # from .message import Message
 # from .conversation import Conversation
 # from .tag import Tag

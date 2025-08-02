@@ -10,6 +10,7 @@ os.makedirs("static/uploads/profile_pics", exist_ok=True)
 from fastapi.staticfiles import StaticFiles
 from app.routers import auth, profile, category, service, listing, request, booking, quote, review, payment, dashboard, user
 from app.routers import admin  # Add this import
+from app.routers import notification  # Import the new notification router
 
 app = FastAPI()
 origins = [
@@ -40,3 +41,4 @@ app.include_router(payment.router)
 app.include_router(dashboard.router)
 app.include_router(user.router)
 app.include_router(admin.router)  # Add this line
+app.include_router(notification.router)  # Add this line

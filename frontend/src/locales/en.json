@@ -210,7 +210,21 @@
   "no_listings_available": "No listings available",
   "browse_other_services": "Browse Other Services",
   "my_service_requests": "My Service Requests",
-  "my_services": "My Services"
-
+  "my_services": "My Services",
+  
+  "notifications": "Notifications",
+  "mark_all_as_read": "Mark all as read",
+  "no_notifications": "No notifications yet",
+  "notifications_will_appear_here": "Notifications about your activity will appear here",
+  "view_all_notifications": "View all notifications",
+  "notifications_description": "Stay updated with your latest activity",
+  "search_notifications": "Search notifications...",
+  "all": "All",
+  "unread": "Unread",
+  "read": "Read",
+  "something_went_wrong": "Something went wrong",
+  "retry": "Retry",
+  "no_matching_notifications": "No matching notifications",
+  "try_different_search": "Try a different search term"
 }
 

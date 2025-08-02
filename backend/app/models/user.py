@@ -37,3 +37,6 @@ class User(Base, TimestampMixin):
     # Reviews
     reviews_given = relationship("Review", foreign_keys="[Review.reviewer_id]", back_populates="reviewer")
     reviews_received = relationship("Review", foreign_keys="[Review.reviewee_id]", back_populates="reviewee")
+
+    # Notifications
+    notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")

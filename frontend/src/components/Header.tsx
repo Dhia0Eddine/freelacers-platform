@@ -1,4 +1,4 @@
-import  { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, Sun, Moon, User, ChevronDown, LogOut, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { useAuthContext } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useTranslation } from "react-i18next";
+import NotificationMenu from '@/components/notification-menu';
 
 // Temporary Logo component with modern styling
 const Logo = () => (
@@ -124,8 +125,11 @@ export const HeroHeader = () => {
                             </Button>
                             
                             {isAuthenticated ? (
-                                /* Profile/Dashboard Menu */
-                                <div className="relative">
+                                /* Profile/Dashboard Menu with Notifications */
+                                <div className="relative flex items-center">
+                                    {/* Add Notification Bell here */}
+                                    <NotificationMenu />
+                                    
                                     <Button
                                         variant="ghost"
                                         size="sm"
@@ -144,9 +148,9 @@ export const HeroHeader = () => {
                                         <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${profileDropdownOpen ? 'rotate-180' : ''}`} />
                                     </Button>
                                     
-                                    {/* Dropdown Menu */}
+                                    {/* Dropdown Menu - Fixed positioning */}
                                     {profileDropdownOpen && (
-                                        <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} mt-2 w-48 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg py-2 z-50 animate-fadeIn`}>
+                                        <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} top-full mt-3 w-48 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg py-2 z-50 animate-fadeIn`}>
                                             {userRole === 'admin' ? (
                                                 <Link 
                                                     to="/admin/dashboard" 
@@ -230,6 +234,13 @@ export const HeroHeader = () => {
 
                         {/* Mobile Menu Toggle */}
                         <div className="flex items-center lg:hidden">
+                            {/* Add notification bell for mobile */}
+                            {isAuthenticated && (
+                                <div className="mr-2">
+                                    <NotificationMenu />
+                                </div>
+                            )}
+                            
                             <Button
                                 variant="ghost"
                                 size="sm"

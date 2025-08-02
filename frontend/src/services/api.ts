@@ -907,4 +907,59 @@ export const adminService = {
   },
 };
 
+// Notification related API calls
+export const notificationService = {
+  getNotifications: async (unreadOnly = false) => {
+    try {
+      const params = unreadOnly ? '?unread_only=true' : '';
+      const response = await api.get(`/notifications/${params}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      if (axios.isAxiosError(error) && error.response) {
+        throw new Error(error.response.data.detail || 'Failed to get notifications');
+      }
+      throw new Error('Failed to get notifications due to network issue');
+    }
+  },
+
+  getUnreadCount: async () => {
+    try {
+      const response = await api.get('/notifications/count');
+      return response.data.unread_count;
+    } catch (error) {
+      console.error('Error fetching notification count:', error);
+      return 0; // Return 0 if there's an error to prevent UI issues
+    }
+  },
+
+  markAsRead: async (notificationId: number) => {
+    try {
+      const response = await api.patch(`/notifications/${notificationId}/read`, {
+        is_read: true
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      if (axios.isAxiosError(error) && error.response) {
+        throw new Error(error.response.data.detail || 'Failed to update notification');
+      }
+      throw new Error('Failed to update notification due to network issue');
+    }
+  },
+
+  markAllAsRead: async () => {
+    try {
+      const response = await api.patch('/notifications/read-all');
+      return response.data;
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      if (axios.isAxiosError(error) && error.response) {
+        throw new Error(error.response.data.detail || 'Failed to update notifications');
+      }
+      throw new Error('Failed to update notifications due to network issue');
+    }
+  }
+};
+
 export default api;

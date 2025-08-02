@@ -14,6 +14,7 @@ from app.models.quote import Quote  # already added
 from app.models.request import Request  # already added
 from app.models.booking import BookingStatus  # Add this import
 from datetime import datetime  # Add this import at the top
+from app.routers.notification import create_notification
 
 class ReviewUpdate(BaseModel):
     rating: int
@@ -56,14 +57,34 @@ def create_review(data: ReviewCreate, db: Session = Depends(get_db), current_use
     )
     db.add(review)
 
-    # Set the has_review flag on the booking if both customer and provider have reviewed
-    # (or keep as soon as one reviews for backward compatibility)
-    # Optionally, you can track separate flags for customer/provider reviews if needed
+    # Set the has_review flag on the booking
     booking.has_review = True
-
     db.commit()
     db.refresh(review)
-
+    
+    # Send notification to reviewee
+    try:
+        # Get booking info for better context
+        booking_obj = db.query(Booking).filter_by(id=data.booking_id).first()
+        
+        # Get reviewer name
+        reviewer_profile = db.query(Profile).filter_by(user_id=current_user.id).first()
+        reviewer_name = reviewer_profile.full_name if reviewer_profile else "Someone"
+        
+        notification_message = f"{reviewer_name} left you a {data.rating}-star review"
+        
+        # Create notification for the reviewee
+        create_notification(
+            db=db,
+            user_id=reviewee_id,
+            notification_type="review",
+            message=notification_message,
+            link=f"/reviews/received"
+        )
+    except Exception as e:
+        # Log error but don't stop execution
+        print(f"Error creating notification: {e}")
+    
     # Update average rating for the reviewee (provider or customer)
     profile = db.query(Profile).filter(Profile.user_id == reviewee_id).first()
     if profile:

@@ -9,6 +9,7 @@ from app.models.request import Request
 from app.models.listing import Listing
 from app.schemas.quote import QuoteCreate, QuoteOut, QuoteUpdate
 from app.utils.auth import get_current_user
+from app.routers.notification import create_notification
 
 router = APIRouter(prefix="/quotes", tags=["Quotes"])
 
@@ -36,6 +37,29 @@ def create_quote(data: QuoteCreate, db: Session = Depends(get_db), current_user:
     db.add(quote)
     db.commit()
     db.refresh(quote)
+    
+    # Send notification to customer
+    try:
+        # Get the customer ID from the request
+        request_obj = db.query(Request).filter_by(id=data.request_id).first()
+        if request_obj:
+            customer_id = request_obj.user_id
+            listing_title = db.query(Listing).filter_by(id=data.listing_id).first().title
+            
+            notification_message = f"You received a quote for '{listing_title}' - ${data.price}"
+            
+            # Create notification for the customer
+            create_notification(
+                db=db,
+                user_id=customer_id,
+                notification_type="quote",
+                message=notification_message,
+                link=f"/request/{data.request_id}"
+            )
+    except Exception as e:
+        # Log error but don't stop execution
+        print(f"Error creating notification: {e}")
+    
     return quote
 
 # GET all quotes (optional filters)

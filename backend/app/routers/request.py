@@ -9,6 +9,7 @@ from app.models.listing import Listing
 from app.models.user import User
 from app.schemas.request import RequestCreate, RequestOut, RequestUpdate
 from app.utils.auth import get_current_user
+from app.routers.notification import create_notification  # Add this import
 
 router = APIRouter(prefix="/requests", tags=["Requests"])
 
@@ -53,6 +54,26 @@ def create_request(
     db.add(new_request)
     db.commit()
     db.refresh(new_request)
+    
+    # Send notification to provider
+    try:
+        provider_id = listing.user_id
+        listing_title = listing.title
+        
+        notification_message = f"You have a new service request for '{listing_title}'"
+        
+        # Create notification for the provider
+        create_notification(
+            db=db,
+            user_id=provider_id,
+            notification_type="request",
+            message=notification_message,
+            link=f"/request/{new_request.id}"
+        )
+    except Exception as e:
+        # Log error but don't stop execution
+        print(f"Error creating notification: {e}")
+    
     return new_request
 
 # View all open requests with optional filters
