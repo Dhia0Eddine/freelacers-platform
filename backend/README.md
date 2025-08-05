@@ -101,4 +101,5 @@ backend/
 - **Review System**: Providers receive average ratings; customers can review completed bookings.
 - **Booking Flow**: Bookings are created only from accepted quotes; status can be updated by provider/customer.
 - **File Uploads**: Service and profile creation/update support image uploads via multipart/form-data.
+- **Notifications System**: Real-time notifications via WebSockets for various activities (bookings, requests, reviews, etc.) with unread count tracking and mark-as-read functionality. Users receive immediate alerts when actions affect them, such as new requests, accepted quotes, or reviews.
 

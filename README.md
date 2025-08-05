@@ -313,7 +313,28 @@ If you encounter any issues or have questions:
 
 > **Note:** To contribute translations or improve localization, edit the files in `frontend/src/locales/ar.json` and `frontend/src/locales/en.json`.
 
----
+### 🔔 Real-time Notification System
+
+- **WebSocket Integration**: Real-time notifications delivered instantly via WebSocket connections
+- **Multi-event Notifications**: Users receive alerts for various activities (bookings, requests, reviews, quotes)
+- **Unread Count Tracking**: Badge indicators show number of unread notifications
+- **Mark-as-Read Functionality**: Users can mark individual or all notifications as read
+- **Persistent Storage**: All notifications are stored in the database with user associations
+- **Notification Types**: Different notification types (request, quote, booking, review) with appropriate icons
+- **Deep Linking**: Notifications include direct links to related content (requests, bookings, etc.)
+- **Background Processing**: Notifications are generated asynchronously to maintain performance
+
+#### 📱 Notification Features
+
+| Feature | Description |
+|---------|-------------|
+| Bell Indicator | Real-time unread count badge on bell icon |
+| Notification Panel | Dropdown panel showing recent notifications |
+| Mark as Read | One-click functionality to mark notifications as read |
+| Persistent State | Notifications state persists across sessions |
+| Socket Reconnection | Automatic reconnection if connection is lost |
+
+> **Note:** Notifications are delivered in real-time for logged-in users and are also available when users return to the platform after being offline.
 
 ## 📋 Table of Contents
 
