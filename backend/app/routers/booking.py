@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List  
 from datetime import datetime
-
+import logging
 
 from app.models.booking import Booking
 from app.models.quote import Quote
@@ -14,7 +14,10 @@ from app.models.listing import Listing
 from app.schemas.booking import BookingCreate, BookingOut, BookingUpdate
 from app.utils.auth import get_current_user
 from app.dependencies.db import get_db
-from app.routers.notification import create_notification
+from app.routers.notification import create_notification_sync  # Change to sync version
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
@@ -62,20 +65,28 @@ def create_booking(data: BookingCreate, db: Session = Depends(get_db), current_u
         request_obj = db.query(Request).filter_by(id=quote_obj.request_id).first()
         listing_obj = db.query(Listing).filter_by(id=request_obj.listing_id).first()
         
+        if not listing_obj:
+            logger.warning(f"Could not find listing for booking {booking.id}")
+            return booking
+            
         formatted_date = booking.scheduled_time.strftime("%Y-%m-%d at %H:%M")
         notification_message = f"Your service '{listing_obj.title}' has been booked for {formatted_date}"
         
-        # Create notification for the provider
-        create_notification(
+        # Create notification for the provider - use sync version
+        notification = create_notification_sync(
             db=db,
             user_id=provider_id,
             notification_type="booking",
             message=notification_message,
             link=f"/booking/{booking.id}"
         )
+        
+        if notification:
+            logger.info(f"Notification created: ID {notification.id}")
+        else:
+            logger.warning(f"Failed to create notification for booking {booking.id}")
     except Exception as e:
-        # Log error but don't stop execution
-        print(f"Error creating notification: {e}")
+        logger.error(f"Error creating notification for booking {booking.id}: {str(e)}", exc_info=True)
     
     return booking
 
@@ -178,17 +189,20 @@ def create_review_for_booking(
         else:
             notification_message = f"You received a {data['rating']}-star review from a service provider"
         
-        # Create notification
-        from app.routers.notification import create_notification
-        create_notification(
+        # Create notification - use sync version
+        notification = create_notification_sync(
             db=db,
             user_id=reviewee_id,
             notification_type="review",
             message=notification_message,
             link=f"/booking/{booking_id}"
         )
+        
+        if notification:
+            logger.info(f"Notification created: ID {notification.id}")
+        else:
+            logger.warning(f"Failed to create notification for review on booking {booking_id}")
     except Exception as e:
-        # Log error but don't stop execution
-        print(f"Error creating notification for review: {e}")
+        logger.error(f"Error creating notification for review on booking {booking_id}: {str(e)}", exc_info=True)
 
     return {"success": True, "review_id": review.id}

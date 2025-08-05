@@ -2,6 +2,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
+import logging
+import threading
 
 from app.dependencies.db import get_db
 from app.models.request import Request as RequestModel
@@ -9,7 +11,10 @@ from app.models.listing import Listing
 from app.models.user import User
 from app.schemas.request import RequestCreate, RequestOut, RequestUpdate
 from app.utils.auth import get_current_user
-from app.routers.notification import create_notification  # Add this import
+from app.routers.notification import create_notification_sync
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/requests", tags=["Requests"])
 
@@ -55,24 +60,35 @@ def create_request(
     db.commit()
     db.refresh(new_request)
     
-    # Send notification to provider
-    try:
-        provider_id = listing.user_id
-        listing_title = listing.title
-        
-        notification_message = f"You have a new service request for '{listing_title}'"
-        
-        # Create notification for the provider
-        create_notification(
-            db=db,
-            user_id=provider_id,
-            notification_type="request",
-            message=notification_message,
-            link=f"/request/{new_request.id}"
-        )
-    except Exception as e:
-        # Log error but don't stop execution
-        print(f"Error creating notification: {e}")
+    # Now handle notification separately to completely isolate it
+    def send_notification_async():
+        """Send notification in a separate thread to avoid blocking"""
+        try:
+            with Session(db.bind) as notification_db:
+                provider_id = listing.user_id
+                listing_title = listing.title
+                
+                notification_message = f"You have a new service request for '{listing_title}'"
+                
+                notification = create_notification_sync(
+                    db=notification_db,
+                    user_id=provider_id,
+                    notification_type="request",
+                    message=notification_message,
+                    link=f"/request/{new_request.id}"
+                )
+                
+                if notification:
+                    logger.info(f"Notification created: ID {notification.id}")
+                else:
+                    logger.warning(f"Failed to create notification for request {new_request.id}")
+        except Exception as e:
+            logger.error(f"Error in notification thread: {str(e)}", exc_info=True)
+    
+    # Use Python's threading to handle notification asynchronously
+    notification_thread = threading.Thread(target=send_notification_async)
+    notification_thread.daemon = True
+    notification_thread.start()
     
     return new_request
 

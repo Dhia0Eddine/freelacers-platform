@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
+import logging
 
 from app.dependencies.db import get_db
 from app.models.quote import Quote
@@ -9,7 +10,10 @@ from app.models.request import Request
 from app.models.listing import Listing
 from app.schemas.quote import QuoteCreate, QuoteOut, QuoteUpdate
 from app.utils.auth import get_current_user
-from app.routers.notification import create_notification
+from app.routers.notification import create_notification_sync
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/quotes", tags=["Quotes"])
 
@@ -44,21 +48,33 @@ def create_quote(data: QuoteCreate, db: Session = Depends(get_db), current_user:
         request_obj = db.query(Request).filter_by(id=data.request_id).first()
         if request_obj:
             customer_id = request_obj.user_id
-            listing_title = db.query(Listing).filter_by(id=data.listing_id).first().title
+            listing = db.query(Listing).filter_by(id=data.listing_id).first()
+            
+            if not listing:
+                logger.warning(f"Could not find listing {data.listing_id} for notification")
+                return quote
+                
+            listing_title = listing.title
             
             notification_message = f"You received a quote for '{listing_title}' - ${data.price}"
             
-            # Create notification for the customer
-            create_notification(
+            # Create notification for the customer - use the sync version
+            notification = create_notification_sync(
                 db=db,
                 user_id=customer_id,
                 notification_type="quote",
                 message=notification_message,
                 link=f"/request/{data.request_id}"
             )
+            
+            if notification:
+                logger.info(f"Notification created: ID {notification.id}")
+            else:
+                logger.warning(f"Failed to create notification for quote {quote.id}")
+        else:
+            logger.warning(f"Could not find request {data.request_id} for notification")
     except Exception as e:
-        # Log error but don't stop execution
-        print(f"Error creating notification: {e}")
+        logger.error(f"Error creating notification for quote {quote.id}: {str(e)}", exc_info=True)
     
     return quote
 

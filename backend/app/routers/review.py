@@ -1,20 +1,24 @@
-from typing import List  # already added
+from typing import List
 from app.models.profile import Profile
 from app.models.booking import Booking
 from app.models.user import User
 from app.models.listing import Listing
 from app.models.review import Review
 from app.schemas.review import ReviewCreate, ReviewOut
-from pydantic import BaseModel  # Add this import if not present
+from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.dependencies.db import get_db
 from app.utils.auth import get_current_user
-from app.models.quote import Quote  # already added
-from app.models.request import Request  # already added
-from app.models.booking import BookingStatus  # Add this import
-from datetime import datetime  # Add this import at the top
-from app.routers.notification import create_notification
+from app.models.quote import Quote
+from app.models.request import Request
+from app.models.booking import BookingStatus
+from datetime import datetime
+from app.routers.notification import create_notification_sync  # Change to sync version
+import logging
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 class ReviewUpdate(BaseModel):
     rating: int
@@ -73,17 +77,21 @@ def create_review(data: ReviewCreate, db: Session = Depends(get_db), current_use
         
         notification_message = f"{reviewer_name} left you a {data.rating}-star review"
         
-        # Create notification for the reviewee
-        create_notification(
+        # Create notification for the reviewee - use sync version
+        notification = create_notification_sync(
             db=db,
             user_id=reviewee_id,
             notification_type="review",
             message=notification_message,
             link=f"/reviews/received"
         )
+        
+        if notification:
+            logger.info(f"Notification created: ID {notification.id}")
+        else:
+            logger.warning(f"Failed to create notification for review {review.id}")
     except Exception as e:
-        # Log error but don't stop execution
-        print(f"Error creating notification: {e}")
+        logger.error(f"Error creating notification for review {review.id}: {str(e)}", exc_info=True)
     
     # Update average rating for the reviewee (provider or customer)
     profile = db.query(Profile).filter(Profile.user_id == reviewee_id).first()

@@ -33,3 +33,31 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         return user
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
+
+async def verify_token_ws(token: str):
+    """Verify JWT token for WebSocket connections"""
+    try:
+        # Remove Bearer prefix if present
+        if token.startswith("Bearer "):
+            token = token[7:]
+            
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            return None
+            
+        # Get user from database asynchronously
+        async with async_session() as session:
+            result = await session.execute(select(User).filter(User.email == username))
+            user = result.scalars().first()
+            if user is None:
+                return None
+            if user.status != "enabled":
+                return None
+                
+        return user
+    except JWTError:
+        return None
+    except Exception as e:
+        logger.error(f"Error verifying token: {str(e)}")
+        return None

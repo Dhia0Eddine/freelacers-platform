@@ -25,6 +25,7 @@ interface AuthContextType {
     initialized: boolean;
     isCustomer: boolean;
     isProvider: boolean;
+    getToken: () => string | null; // Add getToken method
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -145,7 +146,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             logout, 
             initialized,
             isCustomer,
-            isProvider
+            isProvider,
+            getToken: () => token // Implement getToken method
         }}>
             {initialized ? children : <div>Loading...</div>}
         </AuthContext.Provider>

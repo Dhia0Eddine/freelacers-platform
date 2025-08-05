@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { BellIcon, CheckCircle2 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
@@ -10,9 +10,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { useNotifications } from "@/hooks/useNotifications"
+import { useNotifications} from "@/hooks/useNotifications"
+import type { Notification } from "@/hooks/useNotifications"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useSocket } from "@/context/SocketContext"
 
 function Dot({ className }: { className?: string }) {
   return (
@@ -49,6 +51,8 @@ export default function NotificationMenu() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
+  // Add a ref to track component mounts for debugging
+  const renderCount = useRef(0)
 
   const {
     notifications,
@@ -57,7 +61,18 @@ export default function NotificationMenu() {
     fetchNotifications,
     markAsRead,
     markAllAsRead,
+    updateUnreadCount,
+    addNotificationToList, // We'll add this method to useNotifications
   } = useNotifications()
+  
+  // Get socket context for real-time updates
+  const { connected: socketConnected, socket } = useSocket()
+
+  // Track renders for debugging
+  useEffect(() => {
+    renderCount.current += 1
+    console.log(`NotificationMenu rendered ${renderCount.current} times. Unread count: ${unreadCount}`)
+  })
 
   // Refetch notifications when popover opens
   useEffect(() => {
@@ -65,6 +80,66 @@ export default function NotificationMenu() {
       fetchNotifications()
     }
   }, [open, fetchNotifications])
+
+  // CRITICAL FIX: Direct socket message handling in component
+  useEffect(() => {
+    if (!socket) return
+    
+    console.log("Setting up socket message listener in NotificationMenu")
+    
+    // Define the message handler
+    const handleSocketMessage = (data: any) => {
+      console.log("NotificationMenu received socket message:", data)
+      
+      // Check if this is a notification message
+      if (data.type === "notification" && data.data) {
+        console.log("Processing new notification in menu component:", data.data)
+        
+        // Extract the notification data
+        const newNotification = data.data as Notification
+        
+        // Add to the notifications list
+        if (addNotificationToList) {
+          addNotificationToList(newNotification)
+        }
+        
+        // Update the unread count directly in this component
+        if (!newNotification.is_read) {
+          console.log("Incrementing unread count for new notification")
+          updateUnreadCount(prev => prev + 1)
+        }
+      }
+    }
+    
+    // Register the handler
+    socket.on("message", handleSocketMessage)
+    
+    // Clean up handler on unmount
+    return () => {
+      console.log("Cleaning up socket message listener in NotificationMenu")
+      socket.off("message", handleSocketMessage)
+    }
+  }, [socket, updateUnreadCount, addNotificationToList])
+
+  // Handle manual notification fetching periodically
+  useEffect(() => {
+    // Fetch initial data
+    fetchNotifications()
+    
+    // Set up polling for notifications
+    const intervalId = setInterval(() => {
+      if (!open) { // Only poll when the menu is closed
+        fetchNotifications()
+      }
+    }, 30000) // Every 30 seconds
+    
+    return () => clearInterval(intervalId)
+  }, [fetchNotifications, open])
+
+  // Debug logging for component renders
+  useEffect(() => {
+    console.log("NotificationMenu rendering with unread count:", unreadCount);
+  });
 
   const handleNotificationClick = async (id: number, link?: string) => {
     await markAsRead(id)
@@ -89,15 +164,20 @@ export default function NotificationMenu() {
           variant="ghost"
           className="text-muted-foreground relative size-8 rounded-full shadow-none"
           aria-label={t("notifications") || "Notifications"}
+          onClick={() => console.log("Bell clicked, current unread count:", unreadCount)}
         >
           <BellIcon size={16} aria-hidden="true" />
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
               className="absolute -top-1 -right-1 flex items-center justify-center size-5 p-0 text-[10px] font-bold"
+              data-testid="notification-badge"
             >
               {unreadCount > 99 ? "99+" : unreadCount}
             </Badge>
+          )}
+          {socketConnected && (
+            <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-green-500"></span>
           )}
         </Button>
       </PopoverTrigger>

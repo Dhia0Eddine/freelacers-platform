@@ -3,6 +3,17 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
+import logging
+import sys
+
+# Set up proper logging configuration at application startup
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
+)
 
 # Ensure the static directory exists before mounting
 os.makedirs("static/uploads/profile_pics", exist_ok=True)
@@ -11,6 +22,7 @@ from fastapi.staticfiles import StaticFiles
 from app.routers import auth, profile, category, service, listing, request, booking, quote, review, payment, dashboard, user
 from app.routers import admin  # Add this import
 from app.routers import notification  # Import the new notification router
+from app.routers import websocket
 
 app = FastAPI()
 origins = [
@@ -42,3 +54,13 @@ app.include_router(dashboard.router)
 app.include_router(user.router)
 app.include_router(admin.router)  # Add this line
 app.include_router(notification.router)  # Add this line
+app.include_router(websocket.router)
+
+# Add debug middleware to track WebSocket connections
+@app.middleware("http")
+async def log_requests(request, call_next):
+    if request.url.path.startswith("/ws"):
+        logging.info(f"WebSocket request: {request.url.path}")
+    
+    response = await call_next(request)
+    return response
