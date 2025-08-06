@@ -251,10 +251,10 @@ We welcome contributions! Please follow these steps:
 - [x] Booking system
 - [x] Review and rating system
 - [x] Admin dashboard
-
+- [x] **Real-time Notifications**: WebSocket-based updates
+      
 ### Phase 2: Enhanced Features (🚧 In Progress)
 - [ ] **Payment Integration**: Stripe/PayPal integration
-- [ ] **Real-time Notifications**: WebSocket-based updates
 - [ ] **Mobile App**: React Native applications
 - [ ] **Advanced Analytics**: Provider performance metrics
 
