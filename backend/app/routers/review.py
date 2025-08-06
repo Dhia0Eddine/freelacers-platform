@@ -193,8 +193,18 @@ def get_reviews_by_listing_id(listing_id: int, db: Session = Depends(get_db)):
     if not booking_ids:
         return []
     
-    # Then find all reviews for these bookings
-    reviews = db.query(Review).filter(Review.booking_id.in_(booking_ids)).all()
+    # Find all reviews for these bookings - MODIFIED: only include reviews where:
+    # 1. The reviewer is a customer (has role "customer")
+    # 2. The reviewer is reviewing the provider (not vice versa)
+    reviews_query = (
+        db.query(Review)
+        .join(Booking, Review.booking_id == Booking.id)
+        .join(User, Review.reviewer_id == User.id)
+        .filter(Review.booking_id.in_(booking_ids))
+        .filter(User.role == "customer")  # Only include reviews by customers
+    )
+    
+    reviews = reviews_query.all()
     
     # Enhance reviews with reviewer name and service name
     for review in reviews:
